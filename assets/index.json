@@ -1,0 +1,21 @@
+{
+    "bitmapPath": "assets/bitmaps/",
+    "bitmaps": [
+
+        {"name": "clouds", "path": "clouds.png"},
+        {"name": "tileset", "path": "tileset.png"},
+
+        {"name": "font", "path": "font.png"}
+    ],
+
+    "tilemapPath": "assets/tilemaps/",
+    "tilemaps": [
+
+    ],
+
+    "samplePath": "assets/audio/",
+    "samples": [
+
+    ]
+}
+
