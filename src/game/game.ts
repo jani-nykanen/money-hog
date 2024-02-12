@@ -4,6 +4,7 @@ import { Scene, SceneParameter } from "../core/scene.js";
 import { Align, Bitmap, Canvas, Flip, Grid, TransformTarget } from "../gfx/interface.js";
 import { ObjectManager } from "./objectmanager.js";
 import { Stage } from "./stage.js";
+import { Background } from "./background.js";
 
 
 export class Game implements Scene {
@@ -11,6 +12,8 @@ export class Game implements Scene {
 
     private objects : ObjectManager | undefined = undefined;
     private stage : Stage | undefined = undefined;
+
+    private background : Background | undefined = undefined;
 
 
     constructor() {
@@ -23,6 +26,7 @@ export class Game implements Scene {
 
         this.stage = new Stage(event);
         this.objects = new ObjectManager(this.stage, event);
+        this.background = new Background();
     }
 
 
@@ -38,13 +42,14 @@ export class Game implements Scene {
 
             this.objects?.update(this.stage, event);
         }
+
+        this.background?.update(event);
     }
 
 
     public redraw(canvas : Canvas) : void {
 
         canvas.setColor();
-        canvas.clear(64, 128, 192);
 
         canvas.transform.setTarget(TransformTarget.Model);
         canvas.transform.loadIdentity();
@@ -53,6 +58,8 @@ export class Game implements Scene {
         canvas.transform.view(canvas.width, canvas.height);
 
         canvas.applyTransform();    
+
+        this.background?.draw(canvas);
 
         this.stage?.draw(canvas);
         this.objects?.draw(canvas);

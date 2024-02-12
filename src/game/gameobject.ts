@@ -25,6 +25,7 @@ export class GameObject implements ExistingObject {
 
     protected exist : boolean;
     protected dying : boolean = false;
+    protected touchFloor : boolean = false;
 
     protected collisionBox : Rectangle;
 
@@ -78,13 +79,15 @@ export class GameObject implements ExistingObject {
 
         this.updateEvent?.(event);
         this.updateMovement(event);
+
+        this.touchFloor = false;
     }
 
 
     public floorCollision(x : number, y : number, w : number, event : ProgramEvent) : boolean {
 
-        const BOTTOM_MARGIN : number = 12.0;
-        const TOP_MARGIN : number = 6.0;
+        const BOTTOM_MARGIN : number = 4.0;
+        const TOP_MARGIN : number = 1.0;
 
         if (!this.exist || this.dying ||
             this.pos.x + this.collisionBox.x + this.collisionBox.w/2 < x ||
@@ -100,6 +103,8 @@ export class GameObject implements ExistingObject {
 
             this.pos.y = y - (this.collisionBox.y + this.collisionBox.h/2);
             this.speed.y = 0;
+
+            this.touchFloor = true;
 
             this.floorCollisionEvent?.(event);
 

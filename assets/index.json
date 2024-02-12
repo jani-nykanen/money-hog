@@ -4,6 +4,7 @@
 
         {"name": "clouds", "path": "clouds.png"},
         {"name": "tileset", "path": "tileset.png"},
+        {"name": "planets", "path": "planets.png"},
 
         {"name": "font", "path": "font.png"}
     ],
