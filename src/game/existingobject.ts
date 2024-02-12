@@ -9,7 +9,7 @@ export interface ExistingObject {
 }
 
 
-export function next(arr : ExistingObject[], type : Function) : ExistingObject {
+export function next<T extends ExistingObject> (arr : T[], type : Function) : T {
 
     for (let o of arr) {
 
@@ -19,8 +19,8 @@ export function next(arr : ExistingObject[], type : Function) : ExistingObject {
         }
     }
 
-    const o : ExistingObject = (new type.prototype.constructor()) as ExistingObject;
+    const o : T = (new type.prototype.constructor()) as T;
     arr.push(o);
 
-    return o;
+    return o as T;
 }

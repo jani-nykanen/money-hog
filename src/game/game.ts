@@ -21,7 +21,7 @@ export class Game implements Scene {
     
     public init(param : SceneParameter, event : ProgramEvent) : void {
 
-        this.stage = new Stage();
+        this.stage = new Stage(event);
         this.objects = new ObjectManager(this.stage, event);
     }
 
