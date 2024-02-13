@@ -19,8 +19,8 @@ const enum TileType {
 const enum Decoration {
 
     None = 0,
-    SmallBush = 1,
-    BigBush = 2,
+    BigBush = 1,
+    SmallBush = 2,
     Rock = 3,
     Mushroom = 4
 }
@@ -53,8 +53,8 @@ export class Platform implements ExistingObject {
 
     private createDecorations() : void {
 
+        const DECORATION_WIDTHS : number[] = [2, 1, 1, 1];
         const DECORATION_WEIGHTS : number[] = [0.25, 0.25, 0.25, 0.25];
-        const MIN_OFFSET : number = 2;
 
         let x : number = Math.floor(Math.random()*this.width);
 
@@ -67,14 +67,38 @@ export class Platform implements ExistingObject {
             }
 
             let type : Decoration = (sampleWeightedUniform(DECORATION_WEIGHTS) + 1) as Decoration;
+            let width : number = DECORATION_WIDTHS[type - 1];
 
-            if (type == Decoration.BigBush && (x == this.width - 1 || this.tiles[x + 1] != TileType.Ground)) {
+            // Check if enough room for wide objects
+            if (width == 2 && 
+                x < this.width - 1 && 
+                this.tiles[x + 1] != TileType.Ground) {
 
                 type = Decoration.SmallBush;
+                width = 1;
             }
-            this.decorations[x] = type;
 
-            x += MIN_OFFSET + Math.floor(Math.random()*this.width);
+            let skip : boolean = false;
+            for (let x2 = x; x2 < x + width; ++ x2) {
+
+                // Do not put decorations in the same places as
+                // fences
+                if ((x2 > 0 && this.tiles[x2 - 1] == TileType.Bridge) || 
+                    (x2 < this.width - 1 && this.tiles[x2 + 1] == TileType.Bridge)) {
+
+                    skip = true;
+                    break;
+                }
+            }
+
+            if (skip) {
+
+                ++ x;
+                continue;
+            }
+            
+            this.decorations[x] = type;
+            x += 1 + width + Math.floor(Math.random()*this.width);
         }
     }
 
@@ -241,6 +265,50 @@ export class Platform implements ExistingObject {
     }
 
 
+    private drawBridge(canvas : Canvas, bmp : Bitmap | undefined) : void {
+
+        for (let x = 0; x < this.width; ++ x) {
+
+            if (this.tiles[x] != TileType.Bridge)
+                continue;
+
+            this.drawBridgeTile(canvas, bmp, x);
+        }
+    }
+
+
+    private drawGround(canvas : Canvas, bmp : Bitmap | undefined) : void {
+
+        for (let x = 0; x < this.width; ++ x) {
+
+            if (this.tiles[x] != TileType.Ground)
+                continue;
+
+            this.drawGroundTile(canvas, bmp, x);
+        }
+    }
+
+
+    private drawDecorations(canvas : Canvas, bmp : Bitmap | undefined) : void {
+
+        const dy : number = Math.floor(this.y);
+
+        for (let x = 0; x < this.width; ++ x) {
+
+            const type : Decoration = this.decorations[x];
+            if (type == Decoration.None)
+                continue;
+
+            const sx : number = DECORATION_SX[type - 1];
+            const sy : number = DECORATION_SY[type - 1];
+            const sw : number = DECORATION_SW[type - 1];
+            const sh : number = DECORATION_SH[type - 1];
+
+            canvas.drawBitmap(bmp, Flip.None, x*TILE_WIDTH, dy - TILE_HEIGHT, sx, sy, sw, sh);
+        }
+    }   
+
+
     public spawn(y : number, width : number, initial : boolean = false) : void {
 
         if (this.tiles.length == 0)
@@ -276,38 +344,9 @@ export class Platform implements ExistingObject {
         if (!this.exist)
             return;
 
-        // Round 1: bridge tiles
-        for (let x = 0; x < this.width; ++ x) {
-
-            if (this.tiles[x] != TileType.Bridge)
-                continue;
-
-            this.drawBridgeTile(canvas, bmp, x);
-        }
-
-        // Round 2: ground tiles
-        for (let x = 0; x < this.width; ++ x) {
-
-            if (this.tiles[x] != TileType.Ground)
-                continue;
-
-            this.drawGroundTile(canvas, bmp, x);
-        }
-
-        // Round 3: decorations
-        for (let x = 0; x < this.width; ++ x) {
-
-            const type : Decoration = this.decorations[x];
-            if (type == Decoration.None)
-                continue;
-
-            const sx : number = DECORATION_SX[type - 1];
-            const sy : number = DECORATION_SY[type - 1];
-            const sw : number = DECORATION_SW[type - 1];
-            const sh : number = DECORATION_SH[type - 1];
-
-            canvas.drawBitmap(bmp, Flip.None, x*TILE_WIDTH, Math.round(this.y) - TILE_HEIGHT, sx, sy, sw, sh);
-        }
+        this.drawBridge(canvas, bmp);
+        this.drawGround(canvas, bmp);
+        this.drawDecorations(canvas, bmp);
     }
 
 
