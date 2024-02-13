@@ -3,6 +3,7 @@ import { ProgramEvent } from "../core/event.js";
 import { GameObject } from "./gameobject.js";
 import { Canvas, Bitmap, Flip, Effect } from "../gfx/interface.js";
 import { TILE_HEIGHT, TILE_WIDTH } from "./tilesize.js";
+import { sampleWeightedUniform } from "../math/random.js";
 
 
 const enum TileType {
@@ -15,11 +16,20 @@ const enum TileType {
 }
 
 
-const enum Modifier {
+const enum Decoration {
 
     None = 0,
-    Spike = 1
+    SmallBush = 1,
+    BigBush = 2,
+    Rock = 3,
+    Mushroom = 4
 }
+
+
+const DECORATION_SX : number[] = [0, 32, 0, 16];
+const DECORATION_SY : number[] = [16, 16, 32, 32];
+const DECORATION_SW : number[] = [32, 16, 16, 16];
+const DECORATION_SH : number[] = [16, 16, 16, 16];
 
 
 export class Platform implements ExistingObject {
@@ -28,7 +38,7 @@ export class Platform implements ExistingObject {
     private y : number = -16;
 
     private tiles : TileType[] = [];
-    private modifiers : Modifier[] = [];
+    private decorations : Decoration[] = [];
 
     private exist : boolean = false;
 
@@ -41,22 +51,31 @@ export class Platform implements ExistingObject {
     }
 
 
-    private sampleInitialType() : TileType {
+    private createDecorations() : void {
 
-        const WEIGHTS : number[] = [0.40, 0.40, 0.20];
+        const DECORATION_WEIGHTS : number[] = [0.25, 0.25, 0.25, 0.25];
+        const MIN_OFFSET : number = 2;
 
-        const p : number = Math.random();
+        let x : number = Math.floor(Math.random()*this.width);
 
-        let sum : number = 0.0;
-        for (let i = 0; i <= TileType.Last; ++ i) {
+        while (x < this.width) {
 
-            sum += WEIGHTS[i];
-            if (p <= sum) {
+            if (this.tiles[x] != TileType.Ground) {
 
-                return i as TileType;
+                ++ x;
+                continue;
             }
+
+            let type : Decoration = (sampleWeightedUniform(DECORATION_WEIGHTS) + 1) as Decoration;
+
+            if (type == Decoration.BigBush && (x == this.width - 1 || this.tiles[x + 1] != TileType.Ground)) {
+
+                type = Decoration.SmallBush;
+            }
+            this.decorations[x] = type;
+
+            x += MIN_OFFSET + Math.floor(Math.random()*this.width);
         }
-        return TileType.Bridge;
     }
 
 
@@ -74,11 +93,13 @@ export class Platform implements ExistingObject {
 
     private createPlatform(initial : boolean = false) : void {
 
+        const INITIAL_TYPE_WEIGHTS : number[] = [0.40, 0.40, 0.20];
+
         const SAFE_MARGIN_OFFSET : number = 3;
         const BRIDGE_PROB : number = 0.20;
 
         this.tiles.fill(TileType.Gap);
-        this.modifiers.fill(Modifier.None);
+        this.decorations.fill(Decoration.None);
 
         if (initial) {
             
@@ -93,7 +114,7 @@ export class Platform implements ExistingObject {
 
         let wait : number = 1 + Math.floor(Math.random()*maxWidth);
 
-        let fillType : TileType = this.sampleInitialType();
+        let fillType : TileType = sampleWeightedUniform(INITIAL_TYPE_WEIGHTS) as TileType;
         if (fillType == TileType.Bridge) {
 
             wait = Math.min(maxBridgeWidth, wait);
@@ -145,6 +166,8 @@ export class Platform implements ExistingObject {
                 counter = 0;
             }
         }
+
+        this.createDecorations();
     }
 
 
@@ -223,8 +246,8 @@ export class Platform implements ExistingObject {
         if (this.tiles.length == 0)
             this.tiles = new Array<TileType> (width);
 
-        if (this.modifiers.length == 0)
-            this.modifiers = new Array<number> (width);
+        if (this.decorations.length == 0)
+            this.decorations = new Array<number> (width);
 
         this.y = y;
         this.width = width;
@@ -269,6 +292,21 @@ export class Platform implements ExistingObject {
                 continue;
 
             this.drawGroundTile(canvas, bmp, x);
+        }
+
+        // Round 3: decorations
+        for (let x = 0; x < this.width; ++ x) {
+
+            const type : Decoration = this.decorations[x];
+            if (type == Decoration.None)
+                continue;
+
+            const sx : number = DECORATION_SX[type - 1];
+            const sy : number = DECORATION_SY[type - 1];
+            const sw : number = DECORATION_SW[type - 1];
+            const sh : number = DECORATION_SH[type - 1];
+
+            canvas.drawBitmap(bmp, Flip.None, x*TILE_WIDTH, Math.round(this.y) - TILE_HEIGHT, sx, sy, sw, sh);
         }
     }
 
