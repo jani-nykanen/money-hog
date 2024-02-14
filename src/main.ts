@@ -64,6 +64,6 @@ window.onload = () => (async () => {
     }
     catch (e : any) {
 
-        printError(e.message);
+        printError(e);
     }
 }) ();
