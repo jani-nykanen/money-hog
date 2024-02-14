@@ -39,6 +39,7 @@ export class Platform implements ExistingObject {
 
     private tiles : TileType[] = [];
     private decorations : Decoration[] = [];
+    private spikes : boolean[] = [];
 
     private exist : boolean = false;
 
@@ -51,6 +52,54 @@ export class Platform implements ExistingObject {
     }
 
 
+    private createSpikes() : void {
+
+        const SPIKE_MIN_DISTANCE : number = 1;
+
+        let admissableTileCount : number = 0;
+        let admissablePositions : boolean[] = (new Array<boolean> (this.width)).fill(false);
+
+        // Find "admissable" locations for spikes and compute the number of
+        // them
+        for (let i = 0; i < this.width; ++ i) {
+
+            // If not a ground tile OR overlaps a bridge fence
+            if (this.tiles[i] != TileType.Ground ||
+                (i > 0 && this.tiles[i - 1] == TileType.Bridge) ||
+                (i < this.width - 1 && this.tiles[i + 1] == TileType.Bridge)) {
+
+                continue;
+            }
+
+            ++ admissableTileCount;
+            admissablePositions[i] = true;
+        }
+
+        const maxSpikeCount : number = Math.floor(Math.random()*(admissableTileCount - 1));
+        if (maxSpikeCount <= 0)
+            return;
+
+        let x : number = Math.floor(Math.random()*this.width);
+
+        let count : number = 0;
+
+
+        while (count < admissableTileCount && x < this.width) {
+
+            if (!admissablePositions[x]) {
+
+                ++ x;
+                continue;
+            }
+
+            this.spikes[x] = true;
+
+            ++ count;
+            x += SPIKE_MIN_DISTANCE + (1 + Math.floor(Math.random()*this.width));
+        }
+    }
+
+
     private createDecorations() : void {
 
         const DECORATION_WIDTHS : number[] = [2, 1, 1, 1];
@@ -60,7 +109,7 @@ export class Platform implements ExistingObject {
 
         while (x < this.width) {
 
-            if (this.tiles[x] != TileType.Ground) {
+            if (this.tiles[x] != TileType.Ground || this.spikes[x]) {
 
                 ++ x;
                 continue;
@@ -82,9 +131,11 @@ export class Platform implements ExistingObject {
             for (let x2 = x; x2 < x + width; ++ x2) {
 
                 // Do not put decorations in the same places as
-                // fences
+                // fences or spikes (note that the spike check is also
+                // needed here for wide objects)
                 if ((x2 > 0 && this.tiles[x2 - 1] == TileType.Bridge) || 
-                    (x2 < this.width - 1 && this.tiles[x2 + 1] == TileType.Bridge)) {
+                    (x2 < this.width - 1 && this.tiles[x2 + 1] == TileType.Bridge) ||
+                    this.spikes[x2]) {
 
                     skip = true;
                     break;
@@ -124,6 +175,7 @@ export class Platform implements ExistingObject {
 
         this.tiles.fill(TileType.Gap);
         this.decorations.fill(Decoration.None);
+        this.spikes.fill(false);
 
         if (initial) {
             
@@ -191,6 +243,7 @@ export class Platform implements ExistingObject {
             }
         }
 
+        this.createSpikes();
         this.createDecorations();
     }
 
@@ -309,6 +362,22 @@ export class Platform implements ExistingObject {
     }   
 
 
+    private drawSpikes(canvas : Canvas, bmp : Bitmap | undefined) : void {
+
+        const dy : number = Math.floor(this.y);
+
+        for (let x = 0; x < this.width; ++ x) {
+
+            if (!this.spikes[x])
+                continue;
+
+            canvas.drawBitmap(bmp, Flip.None, 
+                x*TILE_WIDTH, dy - TILE_HEIGHT, 
+                7*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT);
+        }
+    }
+
+
     public spawn(y : number, width : number, initial : boolean = false) : void {
 
         if (this.tiles.length == 0)
@@ -316,6 +385,9 @@ export class Platform implements ExistingObject {
 
         if (this.decorations.length == 0)
             this.decorations = new Array<number> (width);
+
+        if (this.spikes.length == 0) 
+            this.spikes = new Array<boolean> (width);
 
         this.y = y;
         this.width = width;
@@ -347,6 +419,7 @@ export class Platform implements ExistingObject {
         this.drawBridge(canvas, bmp);
         this.drawGround(canvas, bmp);
         this.drawDecorations(canvas, bmp);
+        this.drawSpikes(canvas, bmp);
     }
 
 
