@@ -17,6 +17,7 @@ export class Stage {
 
     private platforms : Platform[];
     private platformTimer : number = 0;
+    private flickerTimer : number = 0.0;
 
 
     constructor(event : ProgramEvent) {
@@ -29,7 +30,7 @@ export class Stage {
 
     private spawnPlatform(yoff : number, event : ProgramEvent, initial : boolean = false) : void {
 
-        const BOTTOM_OFFSET : number = 1;
+        const BOTTOM_OFFSET : number = 2;
 
         next<Platform>(this.platforms, Platform).spawn(
             yoff + event.screenHeight + BOTTOM_OFFSET*TILE_HEIGHT,
@@ -66,8 +67,17 @@ export class Stage {
     } 
 
 
+    private updateTimers(event : ProgramEvent) : void {
+
+        const FLICKER_TIMER_SPEED : number = 1.0/30.0;
+
+        this.flickerTimer = (this.flickerTimer + FLICKER_TIMER_SPEED*event.tick) % 1.0;
+    }
+
+
     public update(globalSpeedFactor : number, event : ProgramEvent) : void {
 
+        this.updateTimers(event);
         this.updatePlatforms(globalSpeedFactor, event);
     }
 
@@ -78,7 +88,7 @@ export class Stage {
 
         for (let p of this.platforms) {
 
-            p.draw(canvas, bmpTileset);
+            p.draw(canvas, bmpTileset, this.flickerTimer);
         }
     }
 

@@ -22,14 +22,18 @@ const enum Decoration {
     BigBush = 1,
     SmallBush = 2,
     Rock = 3,
-    Mushroom = 4
+    Mushroom = 4,
+    TallMushroom = 5,
+    Tree = 6,
+
+    Last = 6,
 }
 
 
-const DECORATION_SX : number[] = [0, 32, 0, 16];
-const DECORATION_SY : number[] = [16, 16, 32, 32];
-const DECORATION_SW : number[] = [32, 16, 16, 16];
-const DECORATION_SH : number[] = [16, 16, 16, 16];
+const DECORATION_SX : number[] = [0, 32, 0, 16, 32, 48];
+const DECORATION_SY : number[] = [16, 16, 32, 32, 32, 16];
+const DECORATION_SW : number[] = [32, 16, 16, 16, 16, 16];
+const DECORATION_SH : number[] = [16, 16, 16, 16, 16, 32];
 
 
 export class Platform implements ExistingObject {
@@ -103,7 +107,7 @@ export class Platform implements ExistingObject {
     private createDecorations() : void {
 
         const DECORATION_WIDTHS : number[] = [2, 1, 1, 1];
-        const DECORATION_WEIGHTS : number[] = [0.25, 0.25, 0.25, 0.25];
+        // const DECORATION_WEIGHTS : number[] = [0.25, 0.25, 0.25, 0.25];
 
         let x : number = Math.floor(Math.random()*this.width);
 
@@ -115,7 +119,7 @@ export class Platform implements ExistingObject {
                 continue;
             }
 
-            let type : Decoration = (sampleWeightedUniform(DECORATION_WEIGHTS) + 1) as Decoration;
+            let type : Decoration = Math.floor(Math.random()*Decoration.Last) + 1; // (sampleWeightedUniform(DECORATION_WEIGHTS) + 1) as Decoration;
             let width : number = DECORATION_WIDTHS[type - 1];
 
             // Check if enough room for wide objects
@@ -357,14 +361,16 @@ export class Platform implements ExistingObject {
             const sw : number = DECORATION_SW[type - 1];
             const sh : number = DECORATION_SH[type - 1];
 
-            canvas.drawBitmap(bmp, Flip.None, x*TILE_WIDTH, dy - TILE_HEIGHT, sx, sy, sw, sh);
+            canvas.drawBitmap(bmp, Flip.None, x*TILE_WIDTH, dy - sh, sx, sy, sw, sh);
         }
     }   
 
 
-    private drawSpikes(canvas : Canvas, bmp : Bitmap | undefined) : void {
+    private drawSpikes(canvas : Canvas, bmp : Bitmap | undefined, flickerTime : number = 0.0) : void {
 
         const dy : number = Math.floor(this.y);
+
+        const frame : number = Math.floor(flickerTime*2.0);
 
         for (let x = 0; x < this.width; ++ x) {
 
@@ -373,7 +379,7 @@ export class Platform implements ExistingObject {
 
             canvas.drawBitmap(bmp, Flip.None, 
                 x*TILE_WIDTH, dy - TILE_HEIGHT, 
-                7*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT);
+                7*TILE_WIDTH, frame*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
         }
     }
 
@@ -411,7 +417,7 @@ export class Platform implements ExistingObject {
     }
 
 
-    public draw(canvas : Canvas, bmp : Bitmap | undefined) : void {
+    public draw(canvas : Canvas, bmp : Bitmap | undefined, flickerTime : number = 0.0) : void {
 
         if (!this.exist)
             return;
@@ -419,7 +425,7 @@ export class Platform implements ExistingObject {
         this.drawBridge(canvas, bmp);
         this.drawGround(canvas, bmp);
         this.drawDecorations(canvas, bmp);
-        this.drawSpikes(canvas, bmp);
+        this.drawSpikes(canvas, bmp, flickerTime);
     }
 
 
