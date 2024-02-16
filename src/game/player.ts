@@ -29,6 +29,7 @@ export class Player extends GameObject {
 
         this.friction = new Vector(0.25, 0.10);
         this.collisionBox = new Rectangle(0, 4, 12, 16);
+        this.hitbox = new Rectangle(0, 0, 16, 14);
 
         this.sprBody = new Sprite(24, 24);
     
@@ -110,9 +111,19 @@ export class Player extends GameObject {
     private updateDust(globalSpeedFactor : number, event : ProgramEvent) : void {
 
         const DUST_INTERVAL : number = 6.0;
-        const VANISH_SPEED : number = 1.0/60.0;
+        const VANISH_SPEED : number = 1.0/45.0;
+        const EPS : number = 0.01;
 
-        this.dustTimer += event.tick;
+
+        const standingStill : boolean = this.touchFloor && 
+            Math.abs(this.target.x) < EPS && 
+            Math.abs(this.speed.x) < EPS;
+
+        if (!standingStill) {
+
+            this.dustTimer += event.tick;
+        }
+
         if (this.dustTimer >= DUST_INTERVAL) {
 
             this.dustTimer %= DUST_INTERVAL;
@@ -131,7 +142,7 @@ export class Player extends GameObject {
     private animate(event : ProgramEvent) : void {
 
         const RUN_EPS : number = 0.1;
-        const JUMP_FRAME_DELTA : number = 0.5;
+        const JUMP_FRAME_DELTA : number = 0.25;
 
         if (this.touchFloor) {
 
@@ -204,7 +215,7 @@ export class Player extends GameObject {
         const bmp : Bitmap | undefined = canvas.getBitmap("player");
 
         canvas.applyEffect(Effect.FixedColor);
-        canvas.setColor(255, 219, 73);
+        canvas.setColor(256, 173, 219);
 
         this.dust.draw(canvas, bmp);
 

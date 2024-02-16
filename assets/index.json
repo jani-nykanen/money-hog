@@ -6,6 +6,7 @@
         {"name": "tileset", "path": "tileset.png"},
         {"name": "planets", "path": "planets.png"},
         {"name": "player", "path": "player.png"},
+        {"name": "collectibles", "path": "collectibles.png"},
 
         {"name": "font", "path": "font.png"}
     ],

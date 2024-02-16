@@ -1,13 +1,11 @@
 import { ProgramEvent } from "../core/event.js";
-import { InputState } from "../core/inputstate.js";
-import { Canvas, Bitmap, Flip, Effect } from "../gfx/interface.js";
+import { Canvas, Bitmap, Flip } from "../gfx/interface.js";
 import { Sprite } from "../gfx/sprite.js";
 import { Rectangle } from "../math/rectangle.js";
-import { negMod } from "../math/utility.js";
 import { Vector } from "../math/vector.js";
 import { GameObject } from "./gameobject.js";
-import { ParticleGenerator } from "./particlegenerator.js";
-import { DustParticle } from "./dustparticle.js";
+import { Player } from "./player.js";
+import { Spawnable } from "./spawnable.js";
 
 
 export const enum CollectibleType {
@@ -19,11 +17,10 @@ export const enum CollectibleType {
 }
 
 
-export class Collectible extends GameObject {
+export class Collectible extends Spawnable<CollectibleType> {
 
 
     private spr : Sprite;
-    private dynamic : boolean = false;
 
 
     constructor() {
@@ -33,6 +30,22 @@ export class Collectible extends GameObject {
         this.spr = new Sprite(32, 32);
 
         this.friction = new Vector(0.01, 0.15);
+        
+        this.hitbox = new Rectangle(0, 0, 14, 14);
+        this.collisionBox = new Rectangle(0, 4, 12, 12);
+    }
+
+
+    private updateStaticLogic(globalSpeedFactor : number, event : ProgramEvent) : void {
+        
+        const ANIM_SPEED : number = 6;
+
+        this.pos.y -= globalSpeedFactor*event.tick;
+
+        if (this.type == CollectibleType.Unknown)
+            return;
+
+        this.spr.animate(this.type - 1, 0, 3, ANIM_SPEED, event.tick);
     }
 
 
@@ -45,15 +58,68 @@ export class Collectible extends GameObject {
     }
 
 
+    protected spawnEvent() : void {
+
+        if (this.type != CollectibleType.Unknown)
+            this.spr.setFrame(0, this.type - 1);
+    }
+
+
+    protected playerCollisionEvent(player : Player, event : ProgramEvent) : void {
+
+        this.dying = true;
+        this.spr.setFrame(4, this.spr.getRow());
+
+        switch (this.type) {
+
+        case CollectibleType.Coin:
+        case CollectibleType.Gem:
+
+            break;
+
+        case CollectibleType.Heart:
+
+            break;
+
+        default:
+            break;
+        }
+    }
+
+
+    protected die(globalSpeedFactor : number, event : ProgramEvent) : boolean {
+
+        const DIE_ANIM_SPEED : number = 4;
+
+        this.spr.animate(this.spr.getRow(), 4, 8, DIE_ANIM_SPEED, event.tick);
+
+        this.pos.y -= globalSpeedFactor*event.tick;
+
+        return this.spr.getColumn() >= 8;
+    }
+
+
     protected updateEvent(globalSpeedFactor : number, event : ProgramEvent): void {
 
         if (!this.dynamic) {
 
-            this.pos.y -= globalSpeedFactor*event.tick;
+            this.updateStaticLogic(globalSpeedFactor, event);
+            return;
         }
-        else {
-
-            this.updateDynamicLogic(event);
-        }
+        this.updateDynamicLogic(event);
+ 
     }
+
+
+    public draw(canvas : Canvas, bmp : Bitmap | undefined) : void {
+
+        if (!this.exist)
+            return;
+
+        const dx : number = Math.round(this.pos.x) - this.spr.width/2;
+        const dy : number = Math.round(this.pos.y) - this.spr.height/2;
+
+        this.spr.draw(canvas, bmp, dx, dy, Flip.None);
+    }
+
 }

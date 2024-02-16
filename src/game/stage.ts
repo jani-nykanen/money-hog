@@ -6,6 +6,8 @@ import { GameObject } from "./gameobject.js";
 import { Platform } from "./platform.js";
 import { TILE_HEIGHT, TILE_WIDTH } from "./tilesize.js";
 import { next } from "./existingobject.js";
+import { ObjectGenerator } from "./objectgenerator.js";
+import { Collectible, CollectibleType } from "./collectible.js";
 
 
 
@@ -19,8 +21,10 @@ export class Stage {
     private platformTimer : number = 0;
     private flickerTimer : number = 0.0;
 
+    private collectibleGenerator : ObjectGenerator<CollectibleType, Collectible> | undefined = undefined;
 
-    constructor(event : ProgramEvent) {
+
+    constructor( event : ProgramEvent) {
 
         this.platforms = new Array<Platform> ();
 
@@ -28,13 +32,28 @@ export class Stage {
     }   
 
 
+    private spawnCoins(platform : Platform) : void {
+
+        const dx : number = Math.floor(Math.random()*platform.getWidth())*TILE_WIDTH + TILE_WIDTH/2;
+        const dy : number = platform.getY() - (PLATFORM_OFFSET - 1)/2*TILE_HEIGHT;
+
+        this.collectibleGenerator?.spawn(CollectibleType.Coin, dx, dy);
+    }
+
+
     private spawnPlatform(yoff : number, event : ProgramEvent, initial : boolean = false) : void {
 
         const BOTTOM_OFFSET : number = 2;
 
-        next<Platform>(this.platforms, Platform).spawn(
-            yoff + event.screenHeight + BOTTOM_OFFSET*TILE_HEIGHT,
+        const p : Platform = next<Platform>(this.platforms, Platform);
+
+        p.spawn(yoff + event.screenHeight + BOTTOM_OFFSET*TILE_HEIGHT,
             (event.screenWidth/TILE_WIDTH) | 0, initial);
+
+        if (!initial) {
+
+            this.spawnCoins(p);
+        }
     }
 
 
@@ -95,9 +114,18 @@ export class Stage {
 
     public objectCollision(o : GameObject, event : ProgramEvent) : void {
 
+        if (!o.doesExist() || o.isDying())
+            return;
+
         for (let p of this.platforms) {
 
             p.objectCollision(o, event);
         }
+    }
+
+
+    public passGenerators(collectibleGenerator : ObjectGenerator<CollectibleType, Collectible>) : void {
+
+        this.collectibleGenerator = collectibleGenerator;
     }
 }

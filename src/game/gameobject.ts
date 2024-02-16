@@ -28,6 +28,7 @@ export class GameObject implements ExistingObject {
     protected touchFloor : boolean = false;
 
     protected collisionBox : Rectangle;
+    protected hitbox : Rectangle;
 
 
     constructor(x : number = 0, y : number = 0, exist : boolean = false) {
@@ -38,6 +39,7 @@ export class GameObject implements ExistingObject {
         this.friction = new Vector(1, 1);
 
         this.collisionBox = new Rectangle();
+        this.hitbox = new Rectangle();
 
         this.exist = exist;
     }
@@ -45,7 +47,7 @@ export class GameObject implements ExistingObject {
 
     protected updateEvent?(globalSpeedFactor : number, event : ProgramEvent) : void;
     protected floorCollisionEvent?(event : ProgramEvent) : void;
-    protected die?(event : ProgramEvent) : boolean;
+    protected die?(globalSpeedFactor : number, event : ProgramEvent) : boolean;
     
 
     protected updateMovement(event : ProgramEvent) : void {
@@ -69,7 +71,7 @@ export class GameObject implements ExistingObject {
         if (this.dying) {
 
             // What an odd expression
-            if (this.die?.(event) ?? true) {
+            if (this.die?.(globalSpeedFactor, event) ?? true) {
 
                 this.exist = false;
                 this.dying = false;
@@ -130,4 +132,7 @@ export class GameObject implements ExistingObject {
 
     public isActive = () : boolean => this.exist && !this.dying;
     
+
+
+    public overlay = (o : GameObject) : boolean => overlayRect(this.pos, this.hitbox, o.pos, o.hitbox);
 }

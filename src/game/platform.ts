@@ -459,6 +459,8 @@ export class Platform implements ExistingObject {
 
     public doesExist = () : boolean => this.exist;
     public isDying = () : boolean => false;
+    public getWidth = () : number => this.width;
+    public getY = () : number => this.y;
 
 
     public forceKill() : void {
