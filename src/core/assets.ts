@@ -92,7 +92,7 @@ export class Assets {
         filter? : string, repeatx? : boolean, repeaty? : boolean) : void {
 
         // TODO: Also check other cases
-        const linearFilter = (filter ?? "linear") === "linear"
+        const linearFilter : boolean = filter === "linear";
 
         ++ this.totalAssets;
 

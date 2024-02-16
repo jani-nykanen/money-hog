@@ -9,14 +9,24 @@ export class Sprite {
     private row : number = 0;
     private timer : number = 0.0;
 
-    public readonly width : number;
-    public readonly height : number;
+    private frameWidth : number;
+    private frameHeight : number;
 
 
-    constructor(width : number, height : number) {
+    public get width() : number {
 
-        this.width = width;
-        this.height = height;
+        return this.frameWidth;
+    }
+    public get height() : number {
+
+        return this.frameHeight;
+    }
+
+
+    constructor(width : number = 0, height : number = 0) {
+
+        this.frameWidth = width;
+        this.frameHeight = height;
     }
 
 
@@ -80,6 +90,13 @@ export class Sprite {
         this.row = row;
 
         this.timer = 0.0;
+    }
+
+
+    public setDimensions(newWidth : number, newHeight : number) : void {
+
+        this.frameWidth = newWidth;
+        this.frameHeight = newHeight;
     }
 
 

@@ -40,7 +40,7 @@ export class Game implements Scene {
         this.stage?.update(globalSpeedFactor, event);
         if (this.stage !== undefined) {
 
-            this.objects?.update(this.stage, event);
+            this.objects?.update(globalSpeedFactor, this.stage, event);
         }
 
         this.background?.update(event);

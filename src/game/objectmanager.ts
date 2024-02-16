@@ -18,14 +18,16 @@ export class ObjectManager {
     }
 
 
-    public update(stage : Stage, event : ProgramEvent) {
+    public update(globalSpeedFactor : number, stage : Stage, event : ProgramEvent) {
 
-        this.player.update(event);
+        this.player.update(globalSpeedFactor, event);
         stage.objectCollision(this.player, event);
     }
 
 
     public draw(canvas : Canvas) : void {
+
+        this.player.drawDust(canvas);
 
         this.player.draw(canvas);
     }

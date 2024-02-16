@@ -6,7 +6,8 @@ import { Rectangle } from "../math/rectangle.js";
 import { negMod } from "../math/utility.js";
 import { Vector } from "../math/vector.js";
 import { GameObject } from "./gameobject.js";
-
+import { ParticleGenerator } from "./particlegenerator.js";
+import { DustParticle } from "./dustparticle.js";
 
 
 export class Player extends GameObject {
@@ -18,6 +19,9 @@ export class Player extends GameObject {
     private ledgeTimer : number = 0.0;
     private jumpTimer : number = 0.0;
 
+    private dust : ParticleGenerator<DustParticle>;
+    private dustTimer : number = 0.0;
+
 
     constructor(x : number, y : number) {
 
@@ -27,6 +31,8 @@ export class Player extends GameObject {
         this.collisionBox = new Rectangle(0, 4, 12, 16);
 
         this.sprBody = new Sprite(24, 24);
+    
+        this.dust = new ParticleGenerator<DustParticle> ();
     }
 
 
@@ -101,6 +107,27 @@ export class Player extends GameObject {
     }
 
 
+    private updateDust(globalSpeedFactor : number, event : ProgramEvent) : void {
+
+        const DUST_INTERVAL : number = 6.0;
+        const VANISH_SPEED : number = 1.0/60.0;
+
+        this.dustTimer += event.tick;
+        if (this.dustTimer >= DUST_INTERVAL) {
+
+            this.dustTimer %= DUST_INTERVAL;
+
+            const p : DustParticle = this.dust.spawn(DustParticle, this.pos.x, this.pos.y + 1, 0.0, 0.0, VANISH_SPEED);
+            p.setSprite(
+                this.sprBody.width, this.sprBody.height, 
+                this.sprBody.getColumn(), this.sprBody.getRow(),
+                this.flip);
+        }
+
+        this.dust.update(globalSpeedFactor, event);
+    }
+
+
     private animate(event : ProgramEvent) : void {
 
         const RUN_EPS : number = 0.1;
@@ -110,7 +137,7 @@ export class Player extends GameObject {
 
             if (Math.abs(this.target.x) > RUN_EPS) {
 
-                const speed : number = 10 - Math.abs(this.speed.x)*4;
+                const speed : number = 12 - Math.abs(this.speed.x)*5;
 
                 this.sprBody.animate(0, 0, 3, speed, event.tick);
             }
@@ -151,10 +178,11 @@ export class Player extends GameObject {
     }
 
 
-    protected updateEvent(event : ProgramEvent): void {
+    protected updateEvent(globalSpeedFactor : number, event : ProgramEvent): void {
 
         this.control(event);
         this.updateTimers(event);
+        this.updateDust(globalSpeedFactor, event);
         this.animate(event);
 
         if (this.pos.x < 0) {
@@ -168,12 +196,29 @@ export class Player extends GameObject {
     }
 
 
-    public draw(canvas: Canvas): void {
-
-        const bmp : Bitmap | undefined = canvas.getBitmap("player");
+    public drawDust(canvas : Canvas) : void {
 
         if (!this.exist)
             return;
+
+        const bmp : Bitmap | undefined = canvas.getBitmap("player");
+
+        canvas.applyEffect(Effect.FixedColor);
+        canvas.setColor(255, 219, 73);
+
+        this.dust.draw(canvas, bmp);
+
+        canvas.applyEffect(Effect.None);
+        canvas.setColor();
+    }
+
+
+    public draw(canvas: Canvas): void {
+
+        if (!this.exist)
+            return;
+
+        const bmp : Bitmap | undefined = canvas.getBitmap("player");
 
         if (this.pos.x < this.sprBody.width/2) {
 

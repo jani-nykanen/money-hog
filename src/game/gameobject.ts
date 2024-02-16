@@ -43,7 +43,7 @@ export class GameObject implements ExistingObject {
     }
 
 
-    protected updateEvent?(event : ProgramEvent) : void;
+    protected updateEvent?(globalSpeedFactor : number, event : ProgramEvent) : void;
     protected floorCollisionEvent?(event : ProgramEvent) : void;
     protected die?(event : ProgramEvent) : boolean;
     
@@ -61,7 +61,7 @@ export class GameObject implements ExistingObject {
     public draw?(canvas : Canvas, bmp? : Bitmap) : void;
 
 
-    public update(event : ProgramEvent) : void {
+    public update(globalSpeedFactor : number, event : ProgramEvent) : void {
 
         if (!this.exist) 
             return;
@@ -77,7 +77,7 @@ export class GameObject implements ExistingObject {
             return;
         }
 
-        this.updateEvent?.(event);
+        this.updateEvent?.(globalSpeedFactor, event);
         this.updateMovement(event);
 
         this.touchFloor = false;

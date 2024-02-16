@@ -110,6 +110,8 @@ export class Platform implements ExistingObject {
         // const DECORATION_WEIGHTS : number[] = [0.25, 0.25, 0.25, 0.25];
 
         let x : number = Math.floor(Math.random()*this.width);
+        let type : Decoration = Math.floor(Math.random()*Decoration.Last) + 1; 
+        let width : number = DECORATION_WIDTHS[type - 1];
 
         while (x < this.width) {
 
@@ -118,9 +120,6 @@ export class Platform implements ExistingObject {
                 ++ x;
                 continue;
             }
-
-            let type : Decoration = Math.floor(Math.random()*Decoration.Last) + 1; // (sampleWeightedUniform(DECORATION_WEIGHTS) + 1) as Decoration;
-            let width : number = DECORATION_WIDTHS[type - 1];
 
             // Check if enough room for wide objects
             if (width == 2 && 
@@ -153,7 +152,10 @@ export class Platform implements ExistingObject {
             }
             
             this.decorations[x] = type;
+
             x += 1 + width + Math.floor(Math.random()*this.width);
+            type = Math.floor(Math.random()*Decoration.Last) + 1
+            width = DECORATION_WIDTHS[type - 1];
         }
     }
 
