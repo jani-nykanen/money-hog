@@ -14,6 +14,7 @@ export class Player extends GameObject {
 
 
     private sprBody : Sprite;
+    private sprBashEffect : Sprite;
     private flip : Flip = Flip.None;
     private faceDirection : -1 | 1 = -1;
 
@@ -38,6 +39,7 @@ export class Player extends GameObject {
         this.hitbox = new Rectangle(0, 0, 16, 14);
 
         this.sprBody = new Sprite(24, 24);
+        this.sprBashEffect = new Sprite(32, 32);
     
         this.dust = new ParticleGenerator<DustParticle> ();
     }
@@ -210,9 +212,11 @@ export class Player extends GameObject {
 
         const RUN_EPS : number = 0.1;
         const JUMP_FRAME_DELTA : number = 0.25;
+        const BASH_EFFECT_FLICKER_SPEED : number = 3;
 
         if (this.headButting) {
 
+            this.sprBashEffect.animate(0, 0, 3, BASH_EFFECT_FLICKER_SPEED, event.tick);
             this.sprBody.setFrame(3, 1);
             return;
         }
@@ -245,12 +249,24 @@ export class Player extends GameObject {
     }
 
 
-    private drawBase(canvas : Canvas, bmp : Bitmap | undefined, xoff : number): void {
+    private drawBase(canvas : Canvas, 
+        bmpBody : Bitmap | undefined, bmpBashEffect : Bitmap | undefined, 
+        xoff : number): void {
+
+        const BASH_EFFECT_OFFSET_X : number[] = [-22, 14];
+        const BASH_EFFECT_OFFSET_Y : number = -4;
 
         const dx : number = Math.round(this.pos.x) - 12 + xoff;
         const dy : number = Math.round(this.pos.y) - 12 + 1;
 
-        this.sprBody.draw(canvas, bmp, dx, dy, this.flip);
+        this.sprBody.draw(canvas, bmpBody, dx, dy, this.flip);
+
+        if (this.headButting) {
+
+            this.sprBashEffect.draw(canvas, bmpBashEffect, 
+                dx + BASH_EFFECT_OFFSET_X[this.flip as number],
+                dy + BASH_EFFECT_OFFSET_Y, this.flip);
+        }
     }
 
 
@@ -307,16 +323,17 @@ export class Player extends GameObject {
         if (!this.exist)
             return;
 
-        const bmp : Bitmap | undefined = canvas.getBitmap("player");
+        const bmpBody : Bitmap | undefined = canvas.getBitmap("player");
+        const bmpBashEffect : Bitmap | undefined = canvas.getBitmap("bash_effect");
 
         if (this.pos.x < this.sprBody.width/2) {
 
-            this.drawBase(canvas, bmp, canvas.width);
+            this.drawBase(canvas, bmpBody, bmpBashEffect, canvas.width);
         }
         else if (this.pos.x > canvas.width - this.sprBody.width/2) {
 
-            this.drawBase(canvas, bmp, -canvas.width);
+            this.drawBase(canvas, bmpBody, bmpBashEffect, -canvas.width);
         }
-        this.drawBase(canvas, bmp, 0);
+        this.drawBase(canvas, bmpBody, bmpBashEffect, 0);
     }
 }
