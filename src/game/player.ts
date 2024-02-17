@@ -23,6 +23,7 @@ export class Player extends GameObject {
     private canHeadButt : boolean = false;
     private headButting : boolean = false;
     private headButtTimer : number = 0.0;
+    private gravityFreeHeadbutt : boolean = false;
 
     private dust : ParticleGenerator<DustParticle>;
     private dustTimer : number = 0.0;
@@ -47,6 +48,7 @@ export class Player extends GameObject {
         const HEADBUTT_SPEED : number = 4.0;
         const MAX_HEADBUTT_TIME : number = 16;
         const MIN_HEADBUTT_RELEASE_TIME : number = 8;
+        const FLOOR_HEADBUTT_JUMP : number = -2.25;
 
         const attackButton : InputState = event.input.getAction("attack");
 
@@ -58,6 +60,11 @@ export class Player extends GameObject {
             this.headButtTimer = MAX_HEADBUTT_TIME;
 
             this.canHeadButt = false;
+            this.gravityFreeHeadbutt = !this.touchFloor;
+            if (!this.gravityFreeHeadbutt) {
+
+                this.speed.y = FLOOR_HEADBUTT_JUMP;
+            }
         }
         else if (this.headButting) {
 
@@ -74,8 +81,11 @@ export class Player extends GameObject {
             this.speed.x = this.faceDirection*HEADBUTT_SPEED;
             this.target.x = this.speed.x;
 
-            this.speed.y = -globalSpeedFactor;
-            this.target.y = this.speed.y;
+            if (this.gravityFreeHeadbutt) {
+
+                this.speed.y = -globalSpeedFactor;
+                this.target.y = this.speed.y;
+            }
         }
     }
 
