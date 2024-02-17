@@ -66,8 +66,8 @@ const initGL = (gl : WebGLRenderingContext) : void => {
     gl.enableVertexAttribArray(0);
     gl.enableVertexAttribArray(1);
 
-    // gl.stencilMask(0xff);
-    // gl.disable(gl.STENCIL_TEST);
+    gl.stencilMask(0xff);
+    gl.disable(gl.STENCIL_TEST);
 }
 
 
@@ -77,6 +77,26 @@ export enum ShaderType {
     NoTexture = 1,
     FixedColorTextured = 2,
     InvertTextured = 3,
+};
+
+
+
+export const enum StencilCondition {
+
+    Always = 0, 
+    NotEqual = 1,
+    Equal = 2,
+    GreaterOrEqual = 3,
+    LessOrEqual = 4,
+    Less = 5,
+    Greater = 6
+};
+
+
+export const enum StencilOperation {
+
+    Keep = 0,
+    Zero = 1,
 };
 
 
@@ -449,5 +469,42 @@ export class WebGLRenderer implements Renderer {
         this.activeMesh?.bind();
 
         return out;
+    }
+
+
+    public setStencilCondition(cond : StencilCondition) {
+
+        const gl : WebGLRenderingContext  = this.gl;
+
+        const FUNCTION_LOOKUP : number[] = [gl.ALWAYS, gl.NOTEQUAL, gl.EQUAL, gl.GEQUAL, gl.LEQUAL, gl.LESS, gl.GREATER];
+
+        gl.stencilFunc(FUNCTION_LOOKUP[cond], 1, 0xff);
+    }
+
+
+    public setStencilOperation(op : StencilOperation) {
+
+        const gl : WebGLRenderingContext  = this.gl;
+
+        const FAIL_LOOKUP : number[] = [gl.KEEP, gl.ZERO];
+        const PASS_LOOKUP : number[] = [gl.REPLACE, gl.ZERO]
+
+        gl.stencilOp(FAIL_LOOKUP[op], FAIL_LOOKUP[op], PASS_LOOKUP[op]);
+    } 
+
+
+    public clearStencilBuffer() {
+
+        const gl : WebGLRenderingContext  = this.gl;
+
+        gl.clear(gl.STENCIL_BUFFER_BIT);
+    }
+
+
+    public toggleStencilTest(state : boolean) {
+
+        const gl : WebGLRenderingContext  = this.gl;
+
+        state ? gl.enable(gl.STENCIL_TEST) : gl.disable(gl.STENCIL_TEST);
     }
 }

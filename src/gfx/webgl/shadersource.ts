@@ -62,12 +62,12 @@ export const FragmentSource = {
     void main() {
     
         vec2 tex = uv * texScale + texPos;    
-        vec4 res = texture2D(texSampler, tex) * color;
+        vec4 res = texture2D(texSampler, tex)*color;
         
-        // TODO: Needed?
-        // if (res.a < 1.0/255.0) {
-        //      discard;
-        // }
+        // Needed to make the stencil buffer work
+        if (res.a < 1.0/255.0) {
+              discard;
+        }
         gl_FragColor = res;
     }`,
 
@@ -89,12 +89,13 @@ export const FragmentSource = {
     
     void main() {
     
-        vec2 tex = uv * texScale + texPos;    
-        float alpha = texture2D(texSampler, tex).a;
+        vec2 tex = uv*texScale + texPos;    
+        float alpha = color.a*texture2D(texSampler, tex).a;
     
-        //if (alpha < 1.0/255.0) {
-        //      discard;
-        //}
+        // Needed to make the stencil buffer work
+        if (alpha < 1.0/255.0) {
+              discard;
+        }
         gl_FragColor = vec4(color.rgb, alpha);
     }`,
 
@@ -119,10 +120,10 @@ export const FragmentSource = {
         vec2 tex = uv * texScale + texPos;    
         vec4 res = texture2D(texSampler, tex) * color;
         
-        // TODO: Needed?
-        // if (res.a < 1.0/255.0) {
-        //      discard;
-        // }
+        // Needed to make the stencil buffer work
+        if (res.a < 1.0/255.0) {
+            discard;
+      }
         gl_FragColor = vec4(vec3(1.0, 1.0, 1.0) - res.xyz, res.w);
     }`,
     

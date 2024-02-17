@@ -6,6 +6,7 @@ export class WebGLBitmap implements Bitmap {
 
     private texture : WebGLTexture | null = null;
     private framebuffer : WebGLFramebuffer | null = null;
+    private renderbuffer : WebGLRenderbuffer | null = null;
 
     private readonly gl : WebGLRenderingContext;
 
@@ -20,8 +21,12 @@ export class WebGLBitmap implements Bitmap {
         pixeldata : Uint8Array | undefined = undefined) {
 
         this.texture = gl.createTexture();
+        if (this.texture === null) {
 
-        const filter = linearFilter ? gl.LINEAR : gl.NEAREST;
+            throw new Error("Failed to create a WebGL texture!");
+        }
+
+        const filter : number = linearFilter ? gl.LINEAR : gl.NEAREST;
 
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
@@ -58,14 +63,32 @@ export class WebGLBitmap implements Bitmap {
             this.height = height;
         }
 
-        if (makeFramebuffer) {
+        // TODO: Split to smaller functions
+        if (makeFramebuffer) {  
 
             this.framebuffer = gl.createFramebuffer();
+            if (this.framebuffer === null) {
+
+                throw new Error("Failed to create a WebGL framebuffer!");
+            }
+
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
             gl.framebufferTexture2D(
                 gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, 
                 gl.TEXTURE_2D, this.texture, 0);
+
+            this.renderbuffer = gl.createRenderbuffer();
+            if (this.renderbuffer === null) {
+
+                throw new Error("Failed to create a WebGL renderbuffer!");
+            }
+
+            gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderbuffer);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.renderbuffer);
+            
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
         }
 
         gl.bindTexture(gl.TEXTURE_2D, null);

@@ -214,13 +214,17 @@ export class Player extends GameObject {
 
         const bmp : Bitmap | undefined = canvas.getBitmap("player");
 
+        canvas.toggleSilhouetteRendering(true);
+
         canvas.applyEffect(Effect.FixedColor);
-        canvas.setColor(256, 173, 219);
+        canvas.setColor(256, 173, 219, 0.67);
 
         this.dust.draw(canvas, bmp);
 
         canvas.applyEffect(Effect.None);
         canvas.setColor();
+
+        canvas.toggleSilhouetteRendering(false);
     }
 
 

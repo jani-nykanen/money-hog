@@ -95,6 +95,9 @@ export interface Canvas {
     setColor(r? : number, g? : number, b? : number, a? : number) : void;
     applyEffect(eff? : Effect) : void;
 
+    toggleSilhouetteRendering(state? : boolean) : void;
+    clearSilhouetteBuffer() : void;
+
     getBitmap(name : string) : Bitmap | undefined;
     getCloneBufferBitmap() : Bitmap;
 

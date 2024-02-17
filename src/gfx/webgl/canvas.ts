@@ -1,7 +1,7 @@
 import { Align, Bitmap, Canvas, Effect, Flip, Grid, Transform2D } from "../interface.js";
 import { WebGLBitmap } from "./bitmap.js";
 import { Mesh } from "./mesh.js";
-import { ShaderType, WebGLRenderer } from "./renderer.js";
+import { ShaderType, StencilCondition, StencilOperation, WebGLRenderer } from "./renderer.js";
 import { WebGLGrid } from "./grid.js";
 
 
@@ -288,6 +288,24 @@ export class WebGLCanvas implements Canvas {
     public applyEffect(eff : Effect = Effect.None) : void {
 
         this.activeEffect = eff;
+    }
+
+
+    public toggleSilhouetteRendering(state : boolean = false) : void {
+
+        this.renderer.toggleStencilTest(state);
+        if (state) {
+
+            this.renderer.clearStencilBuffer();
+            this.renderer.setStencilOperation(StencilOperation.Keep);
+            this.renderer.setStencilCondition(StencilCondition.NotEqual);
+        }
+    }
+
+    
+    public clearSilhouetteBuffer() : void {
+
+        this.renderer.clearStencilBuffer();
     }
     
 
