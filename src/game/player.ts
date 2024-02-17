@@ -15,9 +15,14 @@ export class Player extends GameObject {
 
     private sprBody : Sprite;
     private flip : Flip = Flip.None;
+    private faceDirection : -1 | 1 = -1;
 
     private ledgeTimer : number = 0.0;
     private jumpTimer : number = 0.0;
+
+    private canHeadButt : boolean = false;
+    private headButting : boolean = false;
+    private headButtTimer : number = 0.0;
 
     private dust : ParticleGenerator<DustParticle>;
     private dustTimer : number = 0.0;
@@ -37,6 +42,44 @@ export class Player extends GameObject {
     }
 
 
+    private handleHeadButting(globalSpeedFactor : number, event : ProgramEvent) : void {
+
+        const HEADBUTT_SPEED : number = 4.0;
+        const MAX_HEADBUTT_TIME : number = 16;
+        const MIN_HEADBUTT_RELEASE_TIME : number = 8;
+
+        const attackButton : InputState = event.input.getAction("attack");
+
+        if (!this.headButting &&
+            this.canHeadButt &&
+            attackButton == InputState.Pressed) {
+
+            this.headButting = true;
+            this.headButtTimer = MAX_HEADBUTT_TIME;
+
+            this.canHeadButt = false;
+        }
+        else if (this.headButting) {
+
+            this.headButtTimer -= event.tick;
+            if (((attackButton & InputState.DownOrPressed) == 0 &&
+                this.headButtTimer <= MIN_HEADBUTT_RELEASE_TIME) ||
+                this.headButtTimer <= 0) {
+
+                this.headButtTimer = 0;
+                this.headButting = false;
+                return;
+            }
+
+            this.speed.x = this.faceDirection*HEADBUTT_SPEED;
+            this.target.x = this.speed.x;
+
+            this.speed.y = -globalSpeedFactor;
+            this.target.y = this.speed.y;
+        }
+    }
+
+
     private handleJumping(event : ProgramEvent) : void {
 
         const JUMP_TIME : number = 16.0;
@@ -48,7 +91,8 @@ export class Player extends GameObject {
 
         if (jumpButton == InputState.Pressed) {
 
-            if (this.touchFloor && event.input.stick.y > DOWN_JUMP_EPS) {
+            if (this.touchFloor && 
+                event.input.stick.y > DOWN_JUMP_EPS) {
 
                 this.pos.y += DOWN_JUMP_SHIFT;
                 this.touchFloor = false;
@@ -70,13 +114,24 @@ export class Player extends GameObject {
     }
 
 
-    private control(event : ProgramEvent) : void {
+    private control(globalSpeedFactor : number, event : ProgramEvent) : void {
 
         const EPS : number = 0.1;
         const WALK_SPEED : number = 1.5;
         const BASE_GRAVITY : number = 4.0;
 
         const stick : Vector = event.input.stick;
+
+        if (Math.abs(stick.x) > EPS) {
+
+            this.faceDirection = stick.x > 0 ? 1 : -1;
+        }
+
+        this.handleHeadButting(globalSpeedFactor, event);
+        if (this.headButting) {
+
+            return;
+        }
 
         this.target.x = stick.x*WALK_SPEED
         this.target.y = BASE_GRAVITY;
@@ -111,6 +166,7 @@ export class Player extends GameObject {
     private updateDust(globalSpeedFactor : number, event : ProgramEvent) : void {
 
         const DUST_INTERVAL : number = 6.0;
+        const HEADBUTT_SPEED_BONUS : number = 2.0;
         const VANISH_SPEED : number = 1.0/45.0;
         const EPS : number = 0.01;
 
@@ -121,7 +177,8 @@ export class Player extends GameObject {
 
         if (!standingStill) {
 
-            this.dustTimer += event.tick;
+            const dustSpeed : number = this.headButting ? HEADBUTT_SPEED_BONUS : 1.0;
+            this.dustTimer += dustSpeed*event.tick;
         }
 
         if (this.dustTimer >= DUST_INTERVAL) {
@@ -143,6 +200,12 @@ export class Player extends GameObject {
 
         const RUN_EPS : number = 0.1;
         const JUMP_FRAME_DELTA : number = 0.25;
+
+        if (this.headButting) {
+
+            this.sprBody.setFrame(3, 1);
+            return;
+        }
 
         if (this.touchFloor) {
 
@@ -186,12 +249,13 @@ export class Player extends GameObject {
         const LEDGE_TIME : number = 8.0;
 
         this.ledgeTimer = LEDGE_TIME;
+        this.canHeadButt = true;
     }
 
 
     protected updateEvent(globalSpeedFactor : number, event : ProgramEvent): void {
 
-        this.control(event);
+        this.control(globalSpeedFactor, event);
         this.updateTimers(event);
         this.updateDust(globalSpeedFactor, event);
         this.animate(event);
