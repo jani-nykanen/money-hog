@@ -433,6 +433,9 @@ export class Platform implements ExistingObject {
 
     public objectCollision(o : GameObject, event : ProgramEvent) : void {
 
+        const SPIKE_WIDTH : number = 12;
+        const SPIKE_HEIGHT : number = 6;
+
         if (!this.exist || !o.doesExist() || o.isDying())
             return;
 
@@ -452,6 +455,15 @@ export class Platform implements ExistingObject {
             else if (x == this.width - 1 && this.tiles[0] == TileType.Gap) {
 
                 o.floorCollision(-TILE_WIDTH, this.y, TILE_WIDTH, event);
+            }
+
+            // Spikes
+            if (this.spikes[x]) {
+
+                const dx : number = x*TILE_WIDTH + (TILE_WIDTH - SPIKE_WIDTH)/2;
+                const dy : number = this.y - SPIKE_HEIGHT;
+
+                o.hurtCollision?.(dx, dy, SPIKE_WIDTH, SPIKE_HEIGHT, event);
             }
         }
     }

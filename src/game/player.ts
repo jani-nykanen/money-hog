@@ -1,8 +1,8 @@
 import { ProgramEvent } from "../core/event.js";
 import { InputState } from "../core/inputstate.js";
-import { Canvas, Bitmap, Flip, Effect } from "../gfx/interface.js";
+import { Canvas, Bitmap, Flip, Effect, TransformTarget } from "../gfx/interface.js";
 import { Sprite } from "../gfx/sprite.js";
-import { Rectangle } from "../math/rectangle.js";
+import { Rectangle, overlayRect } from "../math/rectangle.js";
 import { negMod } from "../math/utility.js";
 import { Vector } from "../math/vector.js";
 import { GameObject } from "./gameobject.js";
@@ -28,6 +28,8 @@ export class Player extends GameObject {
 
     private dust : ParticleGenerator<DustParticle>;
     private dustTimer : number = 0.0;
+
+    private hurtTimer : number = 0;
 
 
     constructor(x : number, y : number) {
@@ -134,7 +136,8 @@ export class Player extends GameObject {
 
         const stick : Vector = event.input.stick;
 
-        if (Math.abs(stick.x) > EPS) {
+        if (!this.headButting &&
+            Math.abs(stick.x) > EPS) {
 
             this.faceDirection = stick.x > 0 ? 1 : -1;
         }
@@ -171,6 +174,11 @@ export class Player extends GameObject {
         if (this.ledgeTimer > 0) {
 
             this.ledgeTimer -= event.tick;
+        }
+
+        if (this.hurtTimer > 0) {
+
+            this.hurtTimer -= event.tick;
         }
     }
 
@@ -320,8 +328,11 @@ export class Player extends GameObject {
 
     public draw(canvas: Canvas): void {
 
-        if (!this.exist)
+        if (!this.exist || 
+            (this.hurtTimer > 0 && Math.floor(this.hurtTimer/4) % 2 == 0)) {
+            
             return;
+        }
 
         const bmpBody : Bitmap | undefined = canvas.getBitmap("player");
         const bmpBashEffect : Bitmap | undefined = canvas.getBitmap("bash_effect");
@@ -335,5 +346,37 @@ export class Player extends GameObject {
             this.drawBase(canvas, bmpBody, bmpBashEffect, -canvas.width);
         }
         this.drawBase(canvas, bmpBody, bmpBashEffect, 0);
+    }
+
+
+    public hurtCollision(x : number, y : number, w : number, h : number, event : ProgramEvent) : boolean {
+
+        const HURT_TIME : number = 60;
+
+        if (!this.exist || this.dying || this.hurtTimer > 0)
+            return false;
+
+        if (!overlayRect(this.pos, this.collisionBox, new Vector(x + w/2, y + h/2), new Rectangle(0, 0, w, h)))
+            return false;
+
+        this.hurtTimer = HURT_TIME;
+
+        return true;
+    }
+
+
+    public applyShake(canvas : Canvas) : void {
+
+        const SHAKE_MAX : number = 4;
+
+        if (this.hurtTimer <= 0.0 || !this.exist)
+            return;
+
+        const shakex : number = Math.floor((Math.random()*2.0 - 1.0)*SHAKE_MAX);
+        const shakey : number = Math.floor((Math.random()*2.0 - 1.0)*SHAKE_MAX);
+
+        canvas.transform.setTarget(TransformTarget.Model);
+        canvas.transform.translate(shakex, shakey);
+        canvas.applyTransform();
     }
 }

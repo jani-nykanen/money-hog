@@ -152,7 +152,7 @@ export class WebGLCanvas implements Canvas {
 
     public drawText(font : Bitmap | undefined, text : string, 
         dx : number, dy : number, xoff : number = 0, yoff : number = 0, 
-        align : Align = Align.Left, scalex = 1.0, scaley = 1.0) : void {
+        align : Align = Align.Left, scalex : number = 1.0, scaley : number = 1.0) : void {
 
         if (font === undefined)
             return;
@@ -160,17 +160,17 @@ export class WebGLCanvas implements Canvas {
         const cw : number = (font.width / 16) | 0;
         const ch : number = cw;
 
-        let x = dx;
-        let y = dy;
+        let x : number = dx;
+        let y : number = dy;
 
         if (align == Align.Center) {
 
-            dx -= ((text.length)*(cw + xoff))*scalex / 2.0 ;
+            dx -= Math.round(((text.length + 1)*(cw + xoff))*scalex/2.0) ;
             x = dx;
         }
         else if (align == Align.Right) {
             
-            dx -= ((text.length)*(cw + xoff))*scalex;
+            dx -= Math.round(((text.length + 1)*(cw + xoff))*scalex);
             x = dx;
         }
 

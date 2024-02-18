@@ -43,4 +43,10 @@ export class ObjectManager {
         this.collectibleGenerator.draw(canvas, bmpCollectibles);
         this.player.draw(canvas);
     }
+
+
+    public applyShake(canvas : Canvas) : void {
+
+        this.player.applyShake(canvas);
+    }
 }

@@ -8,8 +8,10 @@
         {"name": "player", "path": "player.png"},
         {"name": "collectibles", "path": "collectibles.png"},
         {"name": "bash_effect", "path": "bash_effect.png"},
+        {"name": "hud", "path": "hud.png"},
 
-        {"name": "font", "path": "font.png"}
+        {"name": "font", "path": "font.png"},
+        {"name": "font_outlines", "path": "font_outlines.png"}
     ],
 
     "tilemapPath": "assets/tilemaps/",
