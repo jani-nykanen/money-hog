@@ -25,15 +25,19 @@ const enum Decoration {
     Mushroom = 4,
     TallMushroom = 5,
     Tree = 6,
+    FenceLeft = 7,
+    Fence = 8,
+    FenceRight = 9,
 
-    Last = 6,
+    Last = 9,
+    LastNonFence = 6,
 }
 
 
-const DECORATION_SX : number[] = [0, 32, 0, 16, 32, 48];
-const DECORATION_SY : number[] = [16, 16, 32, 32, 32, 16];
-const DECORATION_SW : number[] = [32, 16, 16, 16, 16, 16];
-const DECORATION_SH : number[] = [16, 16, 16, 16, 16, 32];
+const DECORATION_SX : number[] = [0, 32, 0, 16, 32, 48, 64, 80, 96];
+const DECORATION_SY : number[] = [16, 16, 32, 32, 32, 16, 16, 16, 16];
+const DECORATION_SW : number[] = [32, 16, 16, 16, 16, 16, 16, 16, 16];
+const DECORATION_SH : number[] = [16, 16, 16, 16, 16, 32, 16, 16, 16];
 
 
 export class Platform implements ExistingObject {
@@ -84,9 +88,7 @@ export class Platform implements ExistingObject {
             return;
 
         let x : number = Math.floor(Math.random()*this.width);
-
         let count : number = 0;
-
 
         while (count < admissableTileCount && x < this.width) {
 
@@ -104,18 +106,42 @@ export class Platform implements ExistingObject {
     }
 
 
+    private setBridgeDecorations() : void {
+        
+        for (let x = 0; x < this.width; ++ x) {
+
+            if (this.tiles[x] == TileType.Bridge) {
+
+                this.decorations[x] = Decoration.Fence;
+            }
+            else if (x > 0 && this.tiles[x - 1] == TileType.Bridge) {
+
+                this.decorations[x] = Decoration.FenceRight;
+            }
+            else if (x < this.width - 1 && this.tiles[x + 1] == TileType.Bridge) {
+
+                this.decorations[x] = Decoration.FenceLeft;
+            }
+        }
+    }
+
+
     private createDecorations() : void {
 
         const DECORATION_WIDTHS : number[] = [2, 1, 1, 1];
         // const DECORATION_WEIGHTS : number[] = [0.25, 0.25, 0.25, 0.25];
 
+        this.setBridgeDecorations();
+
         let x : number = Math.floor(Math.random()*this.width);
-        let type : Decoration = Math.floor(Math.random()*Decoration.Last) + 1; 
+        let type : Decoration = Math.floor(Math.random()*Decoration.LastNonFence) + 1; 
         let width : number = DECORATION_WIDTHS[type - 1];
 
         while (x < this.width) {
 
-            if (this.tiles[x] != TileType.Ground || this.spikes[x]) {
+            if (this.tiles[x] != TileType.Ground || 
+                this.spikes[x] || 
+                this.decorations[x] != Decoration.None) {
 
                 ++ x;
                 continue;
@@ -136,8 +162,8 @@ export class Platform implements ExistingObject {
                 // Do not put decorations in the same places as
                 // fences or spikes (note that the spike check is also
                 // needed here for wide objects)
-                if ((x2 > 0 && this.tiles[x2 - 1] == TileType.Bridge) || 
-                    (x2 < this.width - 1 && this.tiles[x2 + 1] == TileType.Bridge) ||
+                if ((x2 > 0 && this.decorations[x2 - 1] != Decoration.None) || 
+                    (x2 < this.width - 1 && this.decorations[x2 + 1] != Decoration.None) ||
                     this.spikes[x2]) {
 
                     skip = true;
@@ -258,11 +284,11 @@ export class Platform implements ExistingObject {
 
         const OFFSET_Y : number = -1;
 
-        const leftGap : boolean = x > 0 && this.tiles[x - 1] != TileType.Bridge;
-        const rightGap : boolean = x < this.width - 1 && this.tiles[x + 1] != TileType.Bridge;
-
         const dx : number = x*TILE_WIDTH;
         const dy : number = Math.round(this.y);
+/*
+        const leftGap : boolean = x > 0 && this.tiles[x - 1] != TileType.Bridge;
+        const rightGap : boolean = x < this.width - 1 && this.tiles[x + 1] != TileType.Bridge;
 
         // Fence
         canvas.drawBitmap(bmp, Flip.None, 
@@ -283,7 +309,7 @@ export class Platform implements ExistingObject {
                 TILE_WIDTH*6, TILE_HEIGHT, 
                 TILE_WIDTH, TILE_HEIGHT);
         }
-
+*/
         // Base bridge
         canvas.drawBitmap(bmp, Flip.None, dx, dy + OFFSET_Y, TILE_WIDTH*6, 0, TILE_WIDTH, TILE_HEIGHT);
     }
@@ -462,8 +488,11 @@ export class Platform implements ExistingObject {
 
                 const dx : number = x*TILE_WIDTH + (TILE_WIDTH - SPIKE_WIDTH)/2;
                 const dy : number = this.y - SPIKE_HEIGHT;
+                
+                for (let i = -1; i <= 1; ++ i) {
 
-                o.hurtCollision?.(dx, dy, SPIKE_WIDTH, SPIKE_HEIGHT, event);
+                    o.hurtCollision?.(dx + i*event.screenWidth, dy, SPIKE_WIDTH, SPIKE_HEIGHT, event);
+                }
             }
         }
     }
