@@ -165,12 +165,12 @@ export class WebGLCanvas implements Canvas {
 
         if (align == Align.Center) {
 
-            dx -= Math.round(((text.length + 1)*(cw + xoff))*scalex/2.0) ;
+            dx -= (text.length + 1)*(cw + xoff)*scalex/2.0;
             x = dx;
         }
         else if (align == Align.Right) {
             
-            dx -= Math.round(((text.length + 1)*(cw + xoff))*scalex);
+            dx -= ((text.length + 1)*(cw + xoff))*scalex;
             x = dx;
         }
 

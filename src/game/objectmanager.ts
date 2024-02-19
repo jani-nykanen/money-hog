@@ -6,6 +6,7 @@ import { Stage } from "./stage.js";
 import { Vector } from "../math/vector.js";
 import { ObjectGenerator } from "./objectgenerator.js";
 import { Collectible, CollectibleType } from "./collectible.js";
+import { Stats } from "./stats.js";
 
 
 export class ObjectManager {
@@ -15,9 +16,9 @@ export class ObjectManager {
     private collectibleGenerator : ObjectGenerator<CollectibleType, Collectible>;
 
 
-    constructor(stage : Stage, event : ProgramEvent) {
+    constructor(stage : Stage, stats : Stats, event : ProgramEvent) {
 
-        this.player = new Player(event.screenWidth/2, event.screenHeight/2);
+        this.player = new Player(event.screenWidth/2, event.screenHeight/2, stats);
 
         this.collectibleGenerator = new ObjectGenerator<CollectibleType, Collectible> (Collectible);
 

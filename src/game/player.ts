@@ -8,6 +8,7 @@ import { Vector } from "../math/vector.js";
 import { GameObject } from "./gameobject.js";
 import { ParticleGenerator } from "./particlegenerator.js";
 import { DustParticle } from "./dustparticle.js";
+import { Stats } from "./stats.js";
 
 
 export class Player extends GameObject {
@@ -30,9 +31,12 @@ export class Player extends GameObject {
     private dustTimer : number = 0.0;
 
     private hurtTimer : number = 0;
+    private shakeTimer : number = 0;
+
+    public readonly stats : Stats;
 
 
-    constructor(x : number, y : number) {
+    constructor(x : number, y : number, stats : Stats) {
 
         super(x, y, true);
 
@@ -44,6 +48,8 @@ export class Player extends GameObject {
         this.sprBashEffect = new Sprite(32, 32);
     
         this.dust = new ParticleGenerator<DustParticle> ();
+
+        this.stats = stats;
     }
 
 
@@ -179,6 +185,11 @@ export class Player extends GameObject {
         if (this.hurtTimer > 0) {
 
             this.hurtTimer -= event.tick;
+        }
+    
+        if (this.shakeTimer > 0) {
+
+            this.shakeTimer -= event.tick;
         }
     }
 
@@ -360,6 +371,9 @@ export class Player extends GameObject {
             return false;
 
         this.hurtTimer = HURT_TIME;
+        this.shakeTimer = HURT_TIME/2;
+
+        this.stats.changeLives(-1);
 
         return true;
     }
@@ -369,7 +383,7 @@ export class Player extends GameObject {
 
         const SHAKE_MAX : number = 4;
 
-        if (this.hurtTimer <= 0.0 || !this.exist)
+        if (this.shakeTimer <= 0.0 || !this.exist)
             return;
 
         const shakex : number = Math.floor((Math.random()*2.0 - 1.0)*SHAKE_MAX);

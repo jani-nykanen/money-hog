@@ -5,7 +5,7 @@ import { Align, Bitmap, Canvas, Flip, Grid, TransformTarget } from "../gfx/inter
 import { ObjectManager } from "./objectmanager.js";
 import { Stage } from "./stage.js";
 import { Background } from "./background.js";
-import { GameState } from "./state.js";
+import { Stats } from "./stats.js";
 
 
 export class Game implements Scene {
@@ -16,12 +16,24 @@ export class Game implements Scene {
 
     private background : Background | undefined = undefined;
 
-    private state : GameState;
+    private stats : Stats;
 
 
     constructor() {
 
-        this.state = new GameState(3);
+        this.stats = new Stats(3);
+    }
+
+
+    private drawBreakingHeart(canvas : Canvas, bmp : Bitmap | undefined,
+        dx : number, dy : number, t : number) : void {
+
+        if (t <= 0)
+            return;
+
+        const frame : number = Math.floor(2 + (1.0 - t)*4);
+
+        canvas.drawBitmap(bmp, Flip.None, dx, dy, frame*16, 0, 16, 16);
     }
 
 
@@ -32,7 +44,6 @@ export class Game implements Scene {
         const TINY_TEXT_OFFSET : number = 1;
 
         const bmpHUD : Bitmap | undefined = canvas.getBitmap("hud");
-        const bmpFont : Bitmap | undefined = canvas.getBitmap("font");
         const bmpFontOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
 
         // canvas.drawText(bmpFont, "Hello world?", 2, 2, 0, 0);
@@ -43,14 +54,18 @@ export class Game implements Scene {
         canvas.setColor();
 
         // Player lives
-        for (let i = 0; i < this.state.maxHealth; ++ i) {
+        for (let i = 0; i < this.stats.maxHealth; ++ i) {
 
-            const sx : number = this.state.getHealth() >= i + 1 ? 0 : 16;
+            const sx : number = this.stats.getHealth() >= i + 1 ? 0 : 16;
 
             canvas.drawBitmap(bmpHUD, Flip.None, 
                 HEART_EDGE_OFFSET + i*(16 + HEART_OFFSET_X), HEART_EDGE_OFFSET, 
                 sx, 0, 16, 16);
         }
+        this.drawBreakingHeart(canvas, bmpHUD, 
+            HEART_EDGE_OFFSET + this.stats.getHealth()*(16 + HEART_OFFSET_X), 
+            HEART_EDGE_OFFSET, 
+            this.stats.getHealthUpdateTimer());
 
         // Score & bonus titles
         canvas.drawBitmap(bmpHUD, Flip.None, 
@@ -62,13 +77,17 @@ export class Game implements Scene {
 
         // Actual score
         canvas.setColor(255, 255, 182);
-        canvas.drawText(bmpFontOutlines, "12345678", 
+        canvas.drawText(bmpFontOutlines, this.stats.scoreToString(8), 
             canvas.width/2, TINY_TEXT_OFFSET + 5, -8, 0, Align.Center);
 
         // Actual bonus
         canvas.setColor(182, 255, 146);
-        canvas.drawText(bmpFontOutlines, "*" + this.state.bonusToNumber(), 
-            canvas.width - 28, TINY_TEXT_OFFSET + 5, -8, 0, Align.Center);
+
+        const scale : number = 1.0 + this.stats.getBonusUpdateTimer()*0.5;
+
+        canvas.drawText(bmpFontOutlines, "*" + this.stats.bonusToString(), 
+            canvas.width - 28, TINY_TEXT_OFFSET + 5 - 8*(scale - 1.0) , -8, 0, Align.Center,
+            scale, scale);
 
         canvas.setColor();
     }
@@ -76,10 +95,10 @@ export class Game implements Scene {
     
     public init(param : SceneParameter, event : ProgramEvent) : void {
 
-        this.state.reset();
+        this.stats.reset();
 
         this.stage = new Stage(event);
-        this.objects = new ObjectManager(this.stage, event);
+        this.objects = new ObjectManager(this.stage, this.stats, event);
         this.background = new Background();
     }
 
@@ -91,13 +110,14 @@ export class Game implements Scene {
         if (event.transition.isActive())
             return;
 
+        this.background?.update(event);
         this.stage?.update(globalSpeedFactor, event);
         if (this.stage !== undefined) {
 
             this.objects?.update(globalSpeedFactor, this.stage, event);
         }
 
-        this.background?.update(event);
+        this.stats.update(globalSpeedFactor, event);
     }
 
 

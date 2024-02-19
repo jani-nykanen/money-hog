@@ -75,10 +75,12 @@ export class Collectible extends Spawnable<CollectibleType> {
         case CollectibleType.Coin:
         case CollectibleType.Gem:
 
+            player.stats.increaseBonus(this.type == CollectibleType.Coin ? 1 : 5);
             break;
 
         case CollectibleType.Heart:
 
+            player.stats.changeLives(1);
             break;
 
         default:
