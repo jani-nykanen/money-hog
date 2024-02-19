@@ -180,7 +180,7 @@ export class Platform implements ExistingObject {
             this.decorations[x] = type;
 
             x += 1 + width + Math.floor(Math.random()*this.width);
-            type = Math.floor(Math.random()*Decoration.Last) + 1
+            type = Math.floor(Math.random()*Decoration.LastNonFence) + 1
             width = DECORATION_WIDTHS[type - 1];
         }
     }
@@ -459,7 +459,7 @@ export class Platform implements ExistingObject {
 
     public objectCollision(o : GameObject, event : ProgramEvent) : void {
 
-        const SPIKE_WIDTH : number = 12;
+        const SPIKE_WIDTH : number = 10;
         const SPIKE_HEIGHT : number = 6;
 
         if (!this.exist || !o.doesExist() || o.isDying())

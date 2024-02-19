@@ -8,6 +8,7 @@ import { TILE_HEIGHT, TILE_WIDTH } from "./tilesize.js";
 import { next } from "./existingobject.js";
 import { ObjectGenerator } from "./objectgenerator.js";
 import { Collectible, CollectibleType } from "./collectible.js";
+import { sampleWeightedUniform } from "../math/random.js";
 
 
 
@@ -34,10 +35,31 @@ export class Stage {
 
     private spawnCoins(platform : Platform) : void {
 
-        const dx : number = Math.floor(Math.random()*platform.getWidth())*TILE_WIDTH + TILE_WIDTH/2;
+        const COIN_COUNT_WEIGHTS : number[] = [0.20, 0.60, 0.30];
+
+        const count : number = sampleWeightedUniform(COIN_COUNT_WEIGHTS);
+        if (count == 0)
+            return;
+
+        const w : number = platform.getWidth()/count;
+        
+        let x : number = Math.floor(Math.random()*w);
         const dy : number = platform.getY() - (PLATFORM_OFFSET - 1)/2*TILE_HEIGHT;
 
-        this.collectibleGenerator?.spawn(CollectibleType.Coin, dx, dy);
+        for (let i = 0; i < count; ++ i) {
+
+            const dx : number = x*TILE_WIDTH + TILE_WIDTH/2;
+            this.collectibleGenerator?.spawn(CollectibleType.Coin, dx, dy);
+
+            if (count == 2) {
+
+                x = w + Math.floor(Math.random()*w);
+                if (x >= w*2) {
+
+                    x = w*2 - 1;
+                }
+            }
+        }
     }
 
 

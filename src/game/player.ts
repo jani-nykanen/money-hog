@@ -41,7 +41,7 @@ export class Player extends GameObject {
         super(x, y, true);
 
         this.friction = new Vector(0.25, 0.10);
-        this.collisionBox = new Rectangle(0, 4, 12, 16);
+        this.collisionBox = new Rectangle(0, 6, 10, 12);
         this.hitbox = new Rectangle(0, 0, 16, 14);
 
         this.sprBody = new Sprite(24, 24);
