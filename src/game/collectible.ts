@@ -12,8 +12,8 @@ export const enum CollectibleType {
 
     Unknown = 0,
     Coin = 1,
-    Gem = 2,
-    Heart = 3
+    Heart = 2,
+    Gem = 3
 }
 
 

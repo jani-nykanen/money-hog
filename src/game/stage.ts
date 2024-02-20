@@ -9,6 +9,7 @@ import { next } from "./existingobject.js";
 import { ObjectGenerator } from "./objectgenerator.js";
 import { Collectible, CollectibleType } from "./collectible.js";
 import { sampleWeightedUniform } from "../math/random.js";
+import { Stats } from "./stats.js";
 
 
 
@@ -25,31 +26,44 @@ export class Stage {
     private collectibleGenerator : ObjectGenerator<CollectibleType, Collectible> | undefined = undefined;
 
 
-    constructor( event : ProgramEvent) {
+    constructor(stats : Stats, event : ProgramEvent) {
 
         this.platforms = new Array<Platform> ();
 
-        this.createInitialPlatforms(event);
+        this.createInitialPlatforms(stats, event);
     }   
 
 
-    private spawnCoins(platform : Platform) : void {
+    private spawnCoins(platform : Platform, stats : Stats) : void {
 
         const COIN_COUNT_WEIGHTS : number[] = [0.20, 0.60, 0.30];
+        const HEART_PROB_FACTOR : number = 0.33;
+        const GEM_PROB : number = 0.05;
 
         const count : number = sampleWeightedUniform(COIN_COUNT_WEIGHTS);
         if (count == 0)
             return;
+
+        const heartProb : number = (1.0 - stats.getHealth()/stats.maxHealth)*HEART_PROB_FACTOR;
+        const typeWeights : number[] = [(1.0 - GEM_PROB)*(1.0 - heartProb), (1.0 - GEM_PROB)*heartProb, GEM_PROB];
 
         const w : number = platform.getWidth()/count;
         
         let x : number = Math.floor(Math.random()*w);
         const dy : number = platform.getY() - (PLATFORM_OFFSET - 1)/2*TILE_HEIGHT;
 
+        let specialItemCreated : boolean = false;
         for (let i = 0; i < count; ++ i) {
 
             const dx : number = x*TILE_WIDTH + TILE_WIDTH/2;
-            this.collectibleGenerator?.spawn(CollectibleType.Coin, dx, dy);
+            const type : CollectibleType = specialItemCreated ? 
+                CollectibleType.Coin : 
+                (sampleWeightedUniform(typeWeights) + 1) as CollectibleType;
+            
+            // We want to create only one "non-coin" per platform
+            specialItemCreated ||= type != CollectibleType.Coin;
+
+            this.collectibleGenerator?.spawn(type, dx, dy);
 
             if (count == 2) {
 
@@ -63,7 +77,7 @@ export class Stage {
     }
 
 
-    private spawnPlatform(yoff : number, event : ProgramEvent, initial : boolean = false) : void {
+    private spawnPlatform(yoff : number, stats : Stats, event : ProgramEvent, initial : boolean = false) : void {
 
         const BOTTOM_OFFSET : number = 2;
 
@@ -74,23 +88,23 @@ export class Stage {
 
         if (!initial) {
 
-            this.spawnCoins(p);
+            this.spawnCoins(p, stats);
         }
     }
 
 
-    private createInitialPlatforms(event : ProgramEvent) : void {
+    private createInitialPlatforms(stats : Stats, event : ProgramEvent) : void {
 
         const COUNT : number = 3;
 
         for (let i = 0; i < COUNT; ++ i) {
 
-            this.spawnPlatform(-PLATFORM_OFFSET*TILE_HEIGHT*i, event, i == COUNT - 1);
+            this.spawnPlatform(-PLATFORM_OFFSET*TILE_HEIGHT*i, stats, event, i == COUNT - 1);
         }
     }
 
 
-    private updatePlatforms(globalSpeedFactor : number, event : ProgramEvent) : void {
+    private updatePlatforms(globalSpeedFactor : number, stats : Stats, event : ProgramEvent) : void {
 
         // Update existing platforms
         for (let p of this.platforms) {
@@ -102,7 +116,7 @@ export class Stage {
         this.platformTimer += globalSpeedFactor*event.tick;
         if (this.platformTimer >= PLATFORM_OFFSET*TILE_HEIGHT) {
 
-            this.spawnPlatform(0.0, event);
+            this.spawnPlatform(0.0, stats, event);
             this.platformTimer -= PLATFORM_OFFSET*TILE_HEIGHT;
         }
     } 
@@ -116,10 +130,10 @@ export class Stage {
     }
 
 
-    public update(globalSpeedFactor : number, event : ProgramEvent) : void {
+    public update(globalSpeedFactor : number, stats : Stats, event : ProgramEvent) : void {
 
         this.updateTimers(event);
-        this.updatePlatforms(globalSpeedFactor, event);
+        this.updatePlatforms(globalSpeedFactor, stats, event);
     }
 
 

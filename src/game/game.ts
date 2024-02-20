@@ -97,7 +97,7 @@ export class Game implements Scene {
 
         this.stats.reset();
 
-        this.stage = new Stage(event);
+        this.stage = new Stage(this.stats, event);
         this.objects = new ObjectManager(this.stage, this.stats, event);
         this.background = new Background();
     }
@@ -111,7 +111,7 @@ export class Game implements Scene {
             return;
 
         this.background?.update(event);
-        this.stage?.update(globalSpeedFactor, event);
+        this.stage?.update(globalSpeedFactor, this.stats, event);
         if (this.stage !== undefined) {
 
             this.objects?.update(globalSpeedFactor, this.stage, event);
