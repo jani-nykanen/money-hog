@@ -24,11 +24,13 @@ export class ObjectGenerator<T, S extends Spawnable<T>> {
 
     public spawn(type : T, x : number, y : number, 
         speedx : number = 0.0, speedy : number = 0.0,
-        dynamic : boolean = false) : void {
+        dynamic : boolean = false) : S {
 
         const o : S = next<S> (this.objects, this.baseType);
         
         o.spawn(type, x, y, speedx, speedy, dynamic);
+
+        return o;
     }
 
 

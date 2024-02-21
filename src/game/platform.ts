@@ -4,6 +4,8 @@ import { GameObject } from "./gameobject.js";
 import { Canvas, Bitmap, Flip, Effect } from "../gfx/interface.js";
 import { TILE_HEIGHT, TILE_WIDTH } from "./tilesize.js";
 import { sampleWeightedUniform } from "../math/random.js";
+import { ObjectGenerator } from "./objectgenerator.js";
+import { Enemy, EnemyType } from "./enemy.js";
 
 
 const enum TileType {
@@ -493,6 +495,32 @@ export class Platform implements ExistingObject {
 
                     o.hurtCollision?.(dx + i*event.screenWidth, dy, SPIKE_WIDTH, SPIKE_HEIGHT, event);
                 }
+            }
+        }
+    }
+
+
+    public spawnEnemies(enemyGenerator : ObjectGenerator<EnemyType, Enemy>, count : number) : void {
+
+        if (count == 0)
+            return;
+
+        const w : number = this.width/count;
+        const segmentLength : number = Math.floor(w/count);
+
+        for (let i = 0; i < count; ++ i) {
+
+            let x : number = segmentLength*i + Math.floor(Math.random()*segmentLength);
+
+            for (; x < segmentLength*(i + 1); ++ x) {
+
+                if (this.tiles[x] == TileType.Gap || this.spikes[x])
+                    continue;
+
+                const enemy : Enemy = enemyGenerator.spawn(EnemyType.Slime, x*TILE_WIDTH + TILE_WIDTH/2, this.y - 12);
+                enemy.setReferencePlatform(this);
+
+                break;
             }
         }
     }

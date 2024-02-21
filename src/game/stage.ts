@@ -10,7 +10,7 @@ import { ObjectGenerator } from "./objectgenerator.js";
 import { Collectible, CollectibleType } from "./collectible.js";
 import { sampleWeightedUniform } from "../math/random.js";
 import { Stats } from "./stats.js";
-
+import { EnemyType, Enemy } from "./enemy.js";
 
 
 const PLATFORM_OFFSET : number = 4;
@@ -24,13 +24,12 @@ export class Stage {
     private flickerTimer : number = 0.0;
 
     private collectibleGenerator : ObjectGenerator<CollectibleType, Collectible> | undefined = undefined;
+    private enemyGenerator : ObjectGenerator<EnemyType, Enemy> | undefined = undefined;
 
 
     constructor(stats : Stats, event : ProgramEvent) {
 
         this.platforms = new Array<Platform> ();
-
-        this.createInitialPlatforms(stats, event);
     }   
 
 
@@ -77,6 +76,18 @@ export class Stage {
     }
 
 
+    private spawnEnemies(platform : Platform) : void {
+
+        const ENEMY_COUNT_WEIGHTS : number[] = [0.30, 0.50, 0.20];
+
+        const count : number = sampleWeightedUniform(ENEMY_COUNT_WEIGHTS);
+        if (count == 0)
+            return;
+
+        platform.spawnEnemies(this.enemyGenerator, count);
+    }
+
+
     private spawnPlatform(yoff : number, stats : Stats, event : ProgramEvent, initial : boolean = false) : void {
 
         const BOTTOM_OFFSET : number = 2;
@@ -89,17 +100,7 @@ export class Stage {
         if (!initial) {
 
             this.spawnCoins(p, stats);
-        }
-    }
-
-
-    private createInitialPlatforms(stats : Stats, event : ProgramEvent) : void {
-
-        const COUNT : number = 3;
-
-        for (let i = 0; i < COUNT; ++ i) {
-
-            this.spawnPlatform(-PLATFORM_OFFSET*TILE_HEIGHT*i, stats, event, i == COUNT - 1);
+            this.spawnEnemies(p);
         }
     }
 
@@ -160,8 +161,22 @@ export class Stage {
     }
 
 
-    public passGenerators(collectibleGenerator : ObjectGenerator<CollectibleType, Collectible>) : void {
+    public createInitialPlatforms(stats : Stats, event : ProgramEvent) : void {
+
+        const COUNT : number = 3;
+
+        for (let i = 0; i < COUNT; ++ i) {
+
+            this.spawnPlatform(-PLATFORM_OFFSET*TILE_HEIGHT*i, stats, event, i == COUNT - 1);
+        }
+    }
+
+
+    public passGenerators(
+        collectibleGenerator : ObjectGenerator<CollectibleType, Collectible>,
+        enemyGenerator : ObjectGenerator<EnemyType, Enemy>) : void {
 
         this.collectibleGenerator = collectibleGenerator;
+        this.enemyGenerator = enemyGenerator;
     }
 }

@@ -9,6 +9,7 @@
         {"name": "collectibles", "path": "collectibles.png"},
         {"name": "bash_effect", "path": "bash_effect.png"},
         {"name": "hud", "path": "hud.png"},
+        {"name": "enemies", "path": "enemies.png"},
 
         {"name": "font", "path": "font.png"},
         {"name": "font_outlines", "path": "font_outlines.png"}
