@@ -1,7 +1,7 @@
 import { ProgramEvent } from "../core/event.js";
 import { Canvas, Bitmap, Flip } from "../gfx/interface.js";
 import { Sprite } from "../gfx/sprite.js";
-import { Rectangle } from "../math/rectangle.js";
+import { Rectangle, overlayRect } from "../math/rectangle.js";
 import { Vector } from "../math/vector.js";
 import { GameObject } from "./gameobject.js";
 import { Player } from "./player.js";
@@ -58,14 +58,7 @@ export class Collectible extends Spawnable<CollectibleType> {
     }
 
 
-    protected spawnEvent() : void {
-
-        if (this.type != CollectibleType.Unknown)
-            this.spr.setFrame(0, this.type - 1);
-    }
-
-
-    protected playerCollisionEvent(player : Player, event : ProgramEvent) : void {
+    private handleCollision(player : Player, event : ProgramEvent) : void {
 
         this.dying = true;
         this.spr.setFrame(4, this.spr.getRow());
@@ -86,6 +79,13 @@ export class Collectible extends Spawnable<CollectibleType> {
         default:
             break;
         }
+    }
+
+
+    protected spawnEvent() : void {
+
+        if (this.type != CollectibleType.Unknown)
+            this.spr.setFrame(0, this.type - 1);
     }
 
 
@@ -110,6 +110,26 @@ export class Collectible extends Spawnable<CollectibleType> {
         }
         this.updateDynamicLogic(event);
  
+    }
+
+
+    public playerCollision(player : Player, event : ProgramEvent) : void {
+
+        if (!this.exist || this.dying || !player.doesExist() || player.isDying())
+            return;
+
+        const ppos : Vector = player.getPosition();
+
+        ppos.x -= event.screenWidth;
+        // Handle "looping"
+        for (let i = -1; i <= 1; ++ i) {
+
+            if (overlayRect(this.pos, this.hitbox, ppos, player.getHitbox())) {
+
+                this.handleCollision(player, event);
+            }
+            ppos.x += event.screenWidth;
+        }
     }
 
 

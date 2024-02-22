@@ -129,6 +129,8 @@ export class GameObject implements ExistingObject {
 
 
     public getPosition = () : Vector => this.pos.clone();
+    public getSpeed = () : Vector => this.speed.clone();
+    public getHitbox = () : Rectangle => this.hitbox.clone();
 
 
     public isActive = () : boolean => this.exist && !this.dying;

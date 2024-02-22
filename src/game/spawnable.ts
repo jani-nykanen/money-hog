@@ -12,21 +12,8 @@ export class Spawnable<T> extends GameObject {
     protected dynamic : boolean = false;
 
 
-    protected playerCollisionEvent?(player : Player, event : ProgramEvent) : void
     protected spawnEvent?() : void;
 
-
-    public playerCollision(player : Player, event : ProgramEvent) : void {
-
-        if (!this.exist || this.dying || !player.doesExist() || player.isDying())
-            return;
-
-        if (this.overlay(player)) {
-
-            this.playerCollisionEvent?.(player, event);
-        }
-    }
-    
 
     public spawn(type : T, x : number, y : number, 
         speedx : number = 0.0, speedy : number = 0.0,
@@ -45,4 +32,7 @@ export class Spawnable<T> extends GameObject {
 
         this.exist = true;
     }
+
+
+    public playerCollision?(player : Player, event : ProgramEvent) : void
 }

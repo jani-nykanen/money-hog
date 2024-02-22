@@ -505,8 +505,7 @@ export class Platform implements ExistingObject {
         if (count == 0)
             return;
 
-        const w : number = this.width/count;
-        const segmentLength : number = Math.floor(w/count);
+        const segmentLength : number = Math.floor( this.width/count);
 
         for (let i = 0; i < count; ++ i) {
 

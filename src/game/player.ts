@@ -142,10 +142,10 @@ export class Player extends GameObject {
 
         const stick : Vector = event.input.stick;
 
-        if (!this.headButting &&
-            Math.abs(stick.x) > EPS) {
+        if (!this.headButting && Math.abs(stick.x) > EPS) {
 
             this.faceDirection = stick.x > 0 ? 1 : -1;
+            this.flip = stick.x > 0 ? Flip.Horizontal : Flip.None;
         }
 
         this.handleHeadButting(globalSpeedFactor, event);
@@ -158,11 +158,6 @@ export class Player extends GameObject {
         this.target.y = BASE_GRAVITY;
 
         this.handleJumping(event);
-
-        if (Math.abs(stick.x) > EPS) {
-
-            this.flip = stick.x > 0 ? Flip.Horizontal : Flip.None;
-        }
     }
 
 
@@ -392,5 +387,15 @@ export class Player extends GameObject {
         canvas.transform.setTarget(TransformTarget.Model);
         canvas.transform.translate(shakex, shakey);
         canvas.applyTransform();
+    }
+
+
+    public bump(amount : number, event : ProgramEvent) : void {
+
+        this.speed.y = amount;
+        
+        this.canHeadButt = true;
+        this.headButting = false;
+        this.headButtTimer = 0;
     }
 }

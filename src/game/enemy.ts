@@ -1,7 +1,10 @@
 import { ProgramEvent } from "../core/event.js";
 import { Canvas, Bitmap, Flip } from "../gfx/interface.js";
 import { Sprite } from "../gfx/sprite.js";
+import { Rectangle } from "../math/rectangle.js";
+import { Vector } from "../math/vector.js";
 import { Platform } from "./platform.js";
+import { Player } from "./player.js";
 import { Spawnable } from "./spawnable.js";
 
 
@@ -16,6 +19,9 @@ const START_FRAME : number[] = [0];
 const END_FRAME : number[] = [3];
 const ANIMATION_SPEED : number[] = [9];
 
+const FLATTEN_ANIMATION_TIME : number = 10;
+const FLATTEN_WAIT : number = 30;
+
 
 export class Enemy extends Spawnable<EnemyType> {
 
@@ -25,12 +31,16 @@ export class Enemy extends Spawnable<EnemyType> {
 
     private referencePlatform : Platform | undefined = undefined;
 
+    private flattenedTimer : number = 0;
+
 
     constructor() {
 
         super();
 
         this.spr = new Sprite(24, 24);
+
+        this.hitbox = new Rectangle(0, 4, 12, 16);
     }
 
 
@@ -44,12 +54,60 @@ export class Enemy extends Spawnable<EnemyType> {
     }
 
 
+    private stompCollision(player : Player, offsetx : number, event : ProgramEvent) : boolean {
+
+        const STOMP_WIDTH : number = 20; // TODO: Use hitbox/collisionbox?
+        const STOMP_HEIGHT : number = 8;
+        const STOMP_OFFSET_Y : number = -2;
+        const STOMP_MIN_SPEED : number = -1.0;
+
+        if (player.getSpeed().y < STOMP_MIN_SPEED) {
+
+            return false;;
+        }
+
+        const stompx : number = this.pos.x + this.hitbox.x - STOMP_WIDTH/2;
+        const stompy : number = this.pos.y + this.hitbox.y - this.hitbox.h/2 + STOMP_OFFSET_Y;
+
+        const phitbox : Rectangle = player.getHitbox();
+        const ppos : Vector = player.getPosition();
+
+        const bottom : number = ppos.y + phitbox.y + phitbox.h/2;
+        const left : number = ppos.x + offsetx + phitbox.x - phitbox.w/2;
+
+        if (left + phitbox.w >= stompx && left <= stompx + STOMP_WIDTH &&
+            bottom >= stompy && bottom <= stompy + STOMP_HEIGHT*event.tick) {
+
+            this.dying = true;
+            this.flattenedTimer = FLATTEN_ANIMATION_TIME + FLATTEN_WAIT;
+
+            player.bump(-3.0, event);
+            return true;
+        }
+
+        return false;
+    }
+
+
     private drawBase(canvas : Canvas, bmpBody : Bitmap | undefined, xoff : number = 0): void {
 
-        const dx : number = Math.round(this.pos.x) - 12 + xoff;
-        const dy : number = Math.round(this.pos.y) - 12 + 1;
+        const FLATTEN_HEIGHT : number = 4;
 
-        this.spr.draw(canvas, bmpBody, dx, dy, this.flip);
+        let dw : number = this.spr.width;
+        let dh : number = this.spr.height;
+
+        if (this.flattenedTimer > 0) {
+
+            const t : number = 1.0 - Math.max(0.0, (this.flattenedTimer - FLATTEN_WAIT)/FLATTEN_ANIMATION_TIME);
+
+            dw = Math.round(this.spr.width*(1.0 + 0.5*t));
+            dh = Math.round(this.spr.height*(1.0 - t) + t*FLATTEN_HEIGHT);
+        }
+
+        const dx : number = Math.round(this.pos.x) - dw/2 + xoff;
+        const dy : number = Math.round(this.pos.y) + this.spr.height/2 - dh + 1;
+
+        this.spr.draw(canvas, bmpBody, dx, dy, this.flip, dw, dh);
     }
 
 
@@ -64,6 +122,29 @@ export class Enemy extends Spawnable<EnemyType> {
 
             this.spr.setFrame(initialFrame, this.type - 1);
         }
+
+        this.flattenedTimer = 0;
+    }
+
+
+    protected die(globalSpeedFactor : number, event : ProgramEvent) : boolean {
+        
+        if (this.flattenedTimer > 0) {
+
+            if (this.referencePlatform !== undefined) {
+
+                this.pos.y = this.referencePlatform.getY() - this.spr.height/2
+            }
+
+            this.flattenedTimer -= event.tick;
+            if (this.flattenedTimer <= 0) {
+
+                return true;
+            }
+            return false;
+        }
+        
+        return this.pos.y >= event.screenHeight + this.spr.height/2;
     }
 
 
@@ -84,6 +165,30 @@ export class Enemy extends Spawnable<EnemyType> {
             (this.speed.y > 0 && this.pos.y > event.screenHeight + this.spr.height)) {
 
             this.exist = false;
+        }
+    }
+
+
+    public playerCollision(player : Player, event : ProgramEvent) : void {
+        
+        if (this.dying || !this.exist || player.isDying() || !player.doesExist())
+            return;
+
+        // TODO: Check headbutt
+
+        if (this.stompCollision(player, 0, event) ||
+            this.stompCollision(player, event.screenWidth, event) ||
+            this.stompCollision(player, -event.screenWidth, event)) {
+
+            return;
+        }
+
+        for (let i = -1; i <= 1; ++ i) {
+
+            player.hurtCollision(
+                this.pos.x + this.hitbox.x - this.hitbox.w/2 + event.screenWidth*i, 
+                this.pos.y + this.hitbox.y - this.hitbox.h/2, 
+                this.hitbox.w, this.hitbox.h, event);
         }
     }
 
@@ -109,4 +214,5 @@ export class Enemy extends Spawnable<EnemyType> {
 
         this.referencePlatform = p;
     }
+    
 }

@@ -39,7 +39,7 @@ export class ObjectGenerator<T, S extends Spawnable<T>> {
         for (let o of this.objects) {
 
             o.update(globalSpeedFactor, event);
-            o.playerCollision(player, event);
+            o.playerCollision?.(player, event);
             stage.objectCollision(o, event);
         }
     }
