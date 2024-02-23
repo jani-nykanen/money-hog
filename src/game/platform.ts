@@ -65,6 +65,7 @@ export class Platform implements ExistingObject {
     private createSpikes() : void {
 
         const SPIKE_MIN_DISTANCE : number = 1;
+        const SPIKE_WEIGHTS : number[] = [0.30, 0.50, 0.20];
 
         let admissableTileCount : number = 0;
         let admissablePositions : boolean[] = (new Array<boolean> (this.width)).fill(false);
@@ -85,7 +86,10 @@ export class Platform implements ExistingObject {
             admissablePositions[i] = true;
         }
 
-        const maxSpikeCount : number = Math.floor(Math.random()*(admissableTileCount - 1));
+        const maxSpikeCount : number = Math.min(
+            sampleWeightedUniform(SPIKE_WEIGHTS),
+            Math.floor(Math.random()*(admissableTileCount - 1))
+        );
         if (maxSpikeCount <= 0)
             return;
 

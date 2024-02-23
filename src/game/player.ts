@@ -26,6 +26,7 @@ export class Player extends GameObject {
     private headButting : boolean = false;
     private headButtTimer : number = 0.0;
     private gravityFreeHeadbutt : boolean = false;
+    private headbuttHitbox : Rectangle;
 
     private dust : ParticleGenerator<DustParticle>;
     private dustTimer : number = 0.0;
@@ -49,7 +50,25 @@ export class Player extends GameObject {
     
         this.dust = new ParticleGenerator<DustParticle> ();
 
+        this.headbuttHitbox = new Rectangle();
+
         this.stats = stats;
+    }
+
+
+    private computeHeadbuttHitbox() : void {
+
+        const WIDTH : number = 8;
+        const HEIGHT : number = 24;
+
+        const OFFSET_X : number = 12;
+        const OFFSET_Y : number = 0;
+
+        this.headbuttHitbox.x = this.pos.x + this.faceDirection*OFFSET_X;
+        this.headbuttHitbox.y = this.pos.y + OFFSET_Y;
+        
+        this.headbuttHitbox.w = WIDTH;
+        this.headbuttHitbox.h = HEIGHT;
     }
 
 
@@ -277,6 +296,15 @@ export class Player extends GameObject {
 
         if (this.headButting) {
 
+            /*
+            canvas.setColor(255, 0, 0);
+            canvas.fillRect(
+                this.headbuttHitbox.x - this.headbuttHitbox.w/2, 
+                this.headbuttHitbox.y - this.headbuttHitbox.h/2,
+                this.headbuttHitbox.w, this.headbuttHitbox.h);
+            canvas.setColor();
+            */
+
             this.sprBashEffect.draw(canvas, bmpBashEffect, 
                 dx + BASH_EFFECT_OFFSET_X[this.flip as number],
                 dy + BASH_EFFECT_OFFSET_Y, this.flip);
@@ -307,6 +335,15 @@ export class Player extends GameObject {
         else if (this.pos.x > event.screenWidth) {
 
             this.pos.x -= event.screenWidth;
+        }
+    }
+
+
+    protected postMovementEvent(globalSpeedFactor : number, event : ProgramEvent) : void {
+        
+        if (this.headButting) {
+
+            this.computeHeadbuttHitbox();
         }
     }
 
@@ -398,4 +435,17 @@ export class Player extends GameObject {
         this.headButting = false;
         this.headButtTimer = 0;
     }
+
+
+    public stopHorizontalMovement() : void {
+
+        this.speed.x = 0.0;
+        this.speed.y = Math.min(0.0, this.speed.y);
+        this.headButting = false;
+        this.headButtTimer = 0.0;
+    }
+
+
+    public isHeadbutting = () : boolean => this.headButting;
+    public getHeadbuttHitbox = () : Rectangle => this.headbuttHitbox.clone();
 }

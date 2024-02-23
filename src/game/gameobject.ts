@@ -46,6 +46,7 @@ export class GameObject implements ExistingObject {
 
 
     protected updateEvent?(globalSpeedFactor : number, event : ProgramEvent) : void;
+    protected postMovementEvent?(globalSpeedFactor : number, event : ProgramEvent) : void;
     protected floorCollisionEvent?(event : ProgramEvent) : void;
     protected die?(globalSpeedFactor : number, event : ProgramEvent) : boolean;
     
@@ -82,6 +83,7 @@ export class GameObject implements ExistingObject {
 
         this.updateEvent?.(globalSpeedFactor, event);
         this.updateMovement(event);
+        this.postMovementEvent?.(globalSpeedFactor, event);
 
         this.touchFloor = false;
     }

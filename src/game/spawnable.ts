@@ -35,4 +35,5 @@ export class Spawnable<T> extends GameObject {
 
 
     public playerCollision?(player : Player, event : ProgramEvent) : void
+    public objectToObjectCollision?(o : Spawnable<T>, event : ProgramEvent) : void;
 }
