@@ -258,6 +258,7 @@ export class Enemy extends Spawnable<EnemyType> {
         if (!this.exist)
             return;
 
+        /*
         if (!this.dying || this.flattenedTimer > 0) {
 
             if (this.pos.x < this.spr.width/2) {
@@ -269,6 +270,7 @@ export class Enemy extends Spawnable<EnemyType> {
                 this.drawBase(canvas, bmp, -canvas.width);
             }
         }
+        */
         this.drawBase(canvas, bmp);
     }
 
