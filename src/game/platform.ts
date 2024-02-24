@@ -107,6 +107,9 @@ export class Platform implements ExistingObject {
             this.spikes[x] = true;
 
             ++ count;
+            if (count > maxSpikeCount)
+                break;
+            
             x += SPIKE_MIN_DISTANCE + (1 + Math.floor(Math.random()*this.width));
         }
     }

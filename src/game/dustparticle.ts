@@ -1,15 +1,7 @@
 import { ProgramEvent } from "../core/event.js";
-import { InputState } from "../core/inputstate.js";
-import { Canvas, Bitmap, Flip, Effect } from "../gfx/interface.js";
+import { Canvas, Bitmap, Flip } from "../gfx/interface.js";
 import { Sprite } from "../gfx/sprite.js";
-import { Rectangle } from "../math/rectangle.js";
-import { negMod } from "../math/utility.js";
-import { Vector } from "../math/vector.js";
-import { ExistingObject } from "./existingobject.js";
-import { GameObject } from "./gameobject.js";
 import { Particle } from "./particle.js";
-
-
 
 
 export class DustParticle extends Particle {

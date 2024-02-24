@@ -45,7 +45,7 @@ export class ObjectManager {
         const bmpCollectibles : Bitmap | undefined = canvas.getBitmap("collectibles");
         const bmpEnemies : Bitmap | undefined = canvas.getBitmap("enemies");
 
-        this.player.drawDust(canvas);
+        this.player.drawParticles(canvas);
 
         this.enemyGenerator.draw(canvas, bmpEnemies);
         this.collectibleGenerator.draw(canvas, bmpCollectibles);

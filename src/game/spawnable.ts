@@ -34,5 +34,5 @@ export class Spawnable<T> extends GameObject {
     }
 
 
-    public playerCollision?(player : Player, event : ProgramEvent) : void
+    public playerCollision?(player : Player, event : ProgramEvent, globalSpeedFactor? : number) : void
 }

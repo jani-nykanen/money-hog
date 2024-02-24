@@ -9,6 +9,7 @@ import { GameObject } from "./gameobject.js";
 import { ParticleGenerator } from "./particlegenerator.js";
 import { DustParticle } from "./dustparticle.js";
 import { Stats } from "./stats.js";
+import { StarParticle } from "./starparticle.js";
 
 
 export class Player extends GameObject {
@@ -29,6 +30,7 @@ export class Player extends GameObject {
     private headbuttHitbox : Rectangle;
 
     private dust : ParticleGenerator<DustParticle>;
+    private stars : ParticleGenerator<StarParticle>;
     private dustTimer : number = 0.0;
 
     private hurtTimer : number = 0;
@@ -49,6 +51,7 @@ export class Player extends GameObject {
         this.sprBashEffect = new Sprite(32, 32);
     
         this.dust = new ParticleGenerator<DustParticle> ();
+        this.stars = new ParticleGenerator<StarParticle> ();
 
         this.headbuttHitbox = new Rectangle();
 
@@ -282,6 +285,27 @@ export class Player extends GameObject {
     }
 
 
+    private spawnStars(xoff : number, yoff : number,
+        count : number, startAngle : number,
+        baseSpeed : number, existTime : number,
+        speedFactorX : number, speedFactorY : number) : void {
+
+        const angleStep : number = Math.PI*2/count;
+
+        for (let i = 0; i < count; ++ i) {
+
+            const angle : number = startAngle + angleStep*i;
+
+            const speedx : number = Math.cos(angle)*baseSpeed*speedFactorX;
+            const speedy : number = Math.sin(angle)*baseSpeed*speedFactorY;
+
+            this.stars.spawn(StarParticle, 
+                this.pos.x + xoff, this.pos.y + yoff,
+                speedx, speedy, existTime);
+        }
+    }
+
+
     private drawBase(canvas : Canvas, 
         bmpBody : Bitmap | undefined, bmpBashEffect : Bitmap | undefined, 
         xoff : number): void {
@@ -336,6 +360,8 @@ export class Player extends GameObject {
 
             this.pos.x -= event.screenWidth;
         }
+
+        this.stars.update(globalSpeedFactor, event);
     }
 
 
@@ -348,12 +374,13 @@ export class Player extends GameObject {
     }
 
 
-    public drawDust(canvas : Canvas) : void {
+    public drawParticles(canvas : Canvas) : void {
 
         if (!this.exist)
             return;
 
         const bmp : Bitmap | undefined = canvas.getBitmap("player");
+        const bmpStarParticles : Bitmap | undefined = canvas.getBitmap("star_particles");
 
         canvas.toggleSilhouetteRendering(true);
 
@@ -366,6 +393,8 @@ export class Player extends GameObject {
         canvas.setColor();
 
         canvas.toggleSilhouetteRendering(false);
+
+        this.stars.draw(canvas, bmpStarParticles);
     }
 
 
@@ -427,22 +456,44 @@ export class Player extends GameObject {
     }
 
 
-    public bump(amount : number, event : ProgramEvent) : void {
+    public bump(amount : number, event : ProgramEvent, createStars : boolean = true) : void {
+
+        const STAR_COUNT : number = 6;
+        const STAR_SPEED : number = 3.0;
+        const STAR_EXIST_TIME : number = 1.0/20.0;
+        const STAR_SPEED_FACTOR_Y : number = 0.67; 
 
         this.speed.y = amount;
         
         this.canHeadButt = true;
         this.headButting = false;
         this.headButtTimer = 0;
+
+        if (createStars) {
+
+            this.spawnStars(0.0, this.hitbox.y + this.hitbox.h/2, 
+                STAR_COUNT, 0.0, STAR_SPEED, STAR_EXIST_TIME, 
+                1.0, STAR_SPEED_FACTOR_Y);
+        }
     }
 
 
-    public stopHorizontalMovement() : void {
+    public stopHorizontalMovement(globalSpeedFactor : number, createStars : boolean = true) : void {
+
+        const STAR_COUNT : number = 4;
+        const STAR_SPEED : number = 3.0;
+        const STAR_EXIST_TIME : number = 1.0/20.0;
 
         this.speed.x = 0.0;
-        this.speed.y = Math.min(0.0, this.speed.y);
+        this.speed.y = Math.min(-globalSpeedFactor, this.speed.y);
         this.headButting = false;
         this.headButtTimer = 0.0;
+
+        if (createStars) {
+            
+            this.spawnStars(this.faceDirection*20, 0.0,
+                STAR_COUNT, Math.PI/4, STAR_SPEED, STAR_EXIST_TIME, 1.0, 1.0);
+        }
     }
 
 

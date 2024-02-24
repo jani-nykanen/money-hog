@@ -84,7 +84,7 @@ export class Enemy extends Spawnable<EnemyType> {
             this.dying = true;
             this.flattenedTimer = FLATTEN_ANIMATION_TIME + FLATTEN_WAIT;
 
-            player.bump(-3.0, event);
+            player.bump(-3.0, event, true);
             return true;
         }
 
@@ -92,7 +92,7 @@ export class Enemy extends Spawnable<EnemyType> {
     }
 
 
-    private headbuttCollision(player : Player, offsetx : number, event : ProgramEvent) : boolean {
+    private headbuttCollision(globalSpeedFactor : number, player : Player, offsetx : number, event : ProgramEvent) : boolean {
 
         const FLY_SPEED : number = 4.0;
         const BASE_JUMP : number = -3.0;
@@ -118,7 +118,7 @@ export class Enemy extends Spawnable<EnemyType> {
             this.flip |= Flip.Vertical;
             this.spr.setFrame(0, this.spr.getRow());
 
-            player.stopHorizontalMovement();
+            player.stopHorizontalMovement(globalSpeedFactor);
 
             return true;
         }
@@ -224,14 +224,14 @@ export class Enemy extends Spawnable<EnemyType> {
     }
 
 
-    public playerCollision(player : Player, event : ProgramEvent) : void {
+    public playerCollision(player : Player, event : ProgramEvent, globalSpeedFactor : number = 0.0) : void {
         
         if (this.dying || !this.exist || player.isDying() || !player.doesExist())
             return;
 
-        if (this.headbuttCollision(player, 0, event) ||
-            this.headbuttCollision(player, event.screenWidth, event) ||
-            this.headbuttCollision(player, -event.screenWidth, event)) {
+        if (this.headbuttCollision(globalSpeedFactor, player, 0, event) ||
+            this.headbuttCollision(globalSpeedFactor, player, event.screenWidth, event) ||
+            this.headbuttCollision(globalSpeedFactor, player, -event.screenWidth, event)) {
 
             return;
         }
