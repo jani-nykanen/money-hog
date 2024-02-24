@@ -1,15 +1,15 @@
 import { ProgramEvent } from "../core/event.js";
 import { InputState } from "../core/inputstate.js";
-import { Canvas, Bitmap, Flip, Effect, TransformTarget } from "../gfx/interface.js";
+import { Canvas, Bitmap, Flip, Effect, TransformTarget, Align } from "../gfx/interface.js";
 import { Sprite } from "../gfx/sprite.js";
 import { Rectangle, overlayRect } from "../math/rectangle.js";
-import { negMod } from "../math/utility.js";
 import { Vector } from "../math/vector.js";
 import { GameObject } from "./gameobject.js";
 import { ParticleGenerator } from "./particlegenerator.js";
 import { DustParticle } from "./dustparticle.js";
 import { Stats } from "./stats.js";
 import { StarParticle } from "./starparticle.js";
+import { FlyingText } from  "./flyingtext.js";
 
 
 export class Player extends GameObject {
@@ -31,6 +31,7 @@ export class Player extends GameObject {
 
     private dust : ParticleGenerator<DustParticle>;
     private stars : ParticleGenerator<StarParticle>;
+    private flyingText : ParticleGenerator<FlyingText>;
     private dustTimer : number = 0.0;
 
     private hurtTimer : number = 0;
@@ -52,6 +53,7 @@ export class Player extends GameObject {
     
         this.dust = new ParticleGenerator<DustParticle> ();
         this.stars = new ParticleGenerator<StarParticle> ();
+        this.flyingText = new ParticleGenerator<FlyingText> ();
 
         this.headbuttHitbox = new Rectangle();
 
@@ -342,6 +344,8 @@ export class Player extends GameObject {
 
         this.ledgeTimer = LEDGE_TIME;
         this.canHeadButt = true;
+
+        this.stats.resetBonus();
     }
 
 
@@ -362,6 +366,7 @@ export class Player extends GameObject {
         }
 
         this.stars.update(globalSpeedFactor, event);
+        this.flyingText.update(globalSpeedFactor, event);
     }
 
 
@@ -421,6 +426,32 @@ export class Player extends GameObject {
     }
 
 
+    public postDraw(canvas : Canvas) : void {
+        
+        const bmpSmallNumbers : Bitmap | undefined = canvas.getBitmap("small_numbers");
+
+        canvas.setColor(255, 255, 173);
+        this.flyingText.draw(canvas, bmpSmallNumbers);
+        canvas.setColor();
+
+        if (this.stats.getBonus() == 0)
+            return;
+
+        const bmpFontOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
+
+        const dx : number = Math.round(this.pos.x);
+        const dy : number = Math.round(this.pos.y) - 24;
+
+        canvas.setColor(182, 255, 146, 0.67);
+
+        const scale : number = 1.0 + this.stats.getBonusUpdateTimer()*0.5;
+        canvas.drawText(bmpFontOutlines, "*" + String(this.stats.getBonus() + 1), 
+            dx, dy - 8*(scale - 1.0) , -8, 0, Align.Center, scale, scale);
+
+        canvas.setColor();
+    }
+
+
     public hurtCollision(x : number, y : number, w : number, h : number, event : ProgramEvent) : boolean {
 
         const HURT_TIME : number = 60;
@@ -435,6 +466,7 @@ export class Player extends GameObject {
         this.shakeTimer = HURT_TIME/2;
 
         this.stats.changeLives(-1);
+        this.stats.resetBonus();
 
         return true;
     }
@@ -483,9 +515,13 @@ export class Player extends GameObject {
         const STAR_COUNT : number = 4;
         const STAR_SPEED : number = 3.0;
         const STAR_EXIST_TIME : number = 1.0/20.0;
+        const JUMP_FACTOR : number = 2.0;
 
         this.speed.x = 0.0;
-        this.speed.y = Math.min(-globalSpeedFactor, this.speed.y);
+        if (this.gravityFreeHeadbutt) {
+            
+            this.speed.y = -globalSpeedFactor*JUMP_FACTOR;
+        }
         this.headButting = false;
         this.headButtTimer = 0.0;
 
@@ -494,6 +530,18 @@ export class Player extends GameObject {
             this.spawnStars(this.faceDirection*20, 0.0,
                 STAR_COUNT, Math.PI/4, STAR_SPEED, STAR_EXIST_TIME, 1.0, 1.0);
         }
+    }
+
+
+    public addPoints(dx : number, dy : number, base : number) : void {
+
+        const TEXT_SPEED : number = -3.0;
+
+        const points : number = this.stats.addPoints(base);
+
+        const o : FlyingText = this.flyingText.spawn(
+            FlyingText, dx, dy, 0, TEXT_SPEED, 1.0/30.0);
+        o.setValue(points);
     }
 
 

@@ -126,6 +126,15 @@ export class Enemy extends Spawnable<EnemyType> {
     }
 
 
+    private dieEvent(player : Player) : void {
+
+        const BASE_SCORE : number = 10;
+
+        player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, BASE_SCORE);
+        player.stats.increaseBonus(1);
+    }
+
+
     private drawBase(canvas : Canvas, bmpBody : Bitmap | undefined, xoff : number = 0): void {
 
         const FLATTEN_HEIGHT : number = 4;
@@ -229,10 +238,12 @@ export class Enemy extends Spawnable<EnemyType> {
         if (this.dying || !this.exist || player.isDying() || !player.doesExist())
             return;
 
+        // TODO: For loop, please...
         if (this.headbuttCollision(globalSpeedFactor, player, 0, event) ||
             this.headbuttCollision(globalSpeedFactor, player, event.screenWidth, event) ||
             this.headbuttCollision(globalSpeedFactor, player, -event.screenWidth, event)) {
 
+            this.dieEvent(player);
             return;
         }
 
@@ -240,6 +251,7 @@ export class Enemy extends Spawnable<EnemyType> {
             this.stompCollision(player, event.screenWidth, event) ||
             this.stompCollision(player, -event.screenWidth, event)) {
 
+            this.dieEvent(player);
             return;
         }
 

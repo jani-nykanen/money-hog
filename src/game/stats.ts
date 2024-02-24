@@ -6,6 +6,7 @@ export class Stats {
 
 
     private health : number;
+    private coins : number = 0;
     private bonus : number = 0;
     private score : number = 0;
 
@@ -43,9 +44,24 @@ export class Stats {
     }
 
 
-    public addPoints(amount : number) : void {
+    public resetBonus() : void {
 
-        this.score += Math.floor(amount*(1.0 + this.bonus/10.0));
+        this.bonus = 0;
+    }
+
+
+    public addPoints(base : number) : number {
+
+        const v : number =  Math.floor(base*(10 + this.coins)*(1 + this.bonus));
+        this.score += v;
+
+        return v;
+    }
+
+
+    public addCoins(count : number) : void {
+
+        this.coins += count;
     }
 
 
@@ -59,17 +75,7 @@ export class Stats {
 
     public update(globalSpeedFactor : number, event : ProgramEvent) : void {
 
-        const SCORE_TIME : number = 10;
-        const BASE_SCORE : number = 10;
-        
         const UPDATE_TIMER_SPEED : number = 1.0/20.0;
-
-        this.scoreTimer += globalSpeedFactor*event.tick;
-        if (this.scoreTimer >= SCORE_TIME) {
-
-            this.scoreTimer %= SCORE_TIME;
-            this.addPoints(BASE_SCORE);
-        }
 
         if (this.healthUpdateTimer > 0.0) {
 
@@ -86,6 +92,7 @@ export class Stats {
     public getHealth = () : number => this.health;
     public getBonus = () : number => this.bonus;
     public getScore = () : number => this.score;
+    public getCoins = () : number => this.coins;
 
     public getHealthUpdateTimer = () : number => Math.max(0.0, this.healthUpdateTimer);
     public getBonusUpdateTimer = () : number => Math.max(0.0, this.bonusUpdateTimer);

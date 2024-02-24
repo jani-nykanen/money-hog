@@ -67,29 +67,22 @@ export class Game implements Scene {
             HEART_EDGE_OFFSET, 
             this.stats.getHealthUpdateTimer());
 
-        // Score & bonus titles
+        // Score
         canvas.drawBitmap(bmpHUD, Flip.None, 
             canvas.width/2 - 16, TINY_TEXT_OFFSET, 
             0, 16, 32, 8);
-        canvas.drawBitmap(bmpHUD, Flip.None, 
-            canvas.width - 40, TINY_TEXT_OFFSET, 
-            0, 24, 32, 8);
-
-        // Actual score
         canvas.setColor(255, 255, 182);
         canvas.drawText(bmpFontOutlines, this.stats.scoreToString(8), 
             canvas.width/2, TINY_TEXT_OFFSET + 5, -8, 0, Align.Center);
-
-        // Actual bonus
-        canvas.setColor(182, 255, 146);
-
-        const scale : number = 1.0 + this.stats.getBonusUpdateTimer()*0.5;
-
-        canvas.drawText(bmpFontOutlines, "*" + this.stats.bonusToString(), 
-            canvas.width - 28, TINY_TEXT_OFFSET + 5 - 8*(scale - 1.0) , -8, 0, Align.Center,
-            scale, scale);
-
         canvas.setColor();
+
+        // Coins
+        const coinStr : string = String(this.stats.getCoins());
+        const coinX : number = canvas.width - 28 - coinStr.length*8;
+        canvas.drawBitmap(bmpHUD, Flip.None, coinX, 2, 32, 16, 16, 16);
+        canvas.drawText(bmpFontOutlines, "*", coinX + 12, 2, -8, 0, Align.Left);
+        canvas.drawText(bmpFontOutlines, coinStr, 
+            coinX + 21, 2, -8, 0, Align.Left);
     }
 
     

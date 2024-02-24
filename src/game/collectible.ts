@@ -66,9 +66,14 @@ export class Collectible extends Spawnable<CollectibleType> {
         switch (this.type) {
 
         case CollectibleType.Coin:
+
+            player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, 1);
+            player.stats.addCoins(1);
+            break;
+
         case CollectibleType.Gem:
 
-            player.stats.increaseBonus(this.type == CollectibleType.Coin ? 1 : 5);
+            player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, 50);
             break;
 
         case CollectibleType.Heart:
