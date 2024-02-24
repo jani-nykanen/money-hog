@@ -37,7 +37,6 @@ export class ObjectManager {
 
         this.collectibleGenerator.update(globalSpeedFactor, this.player, stage, event);
         this.enemyGenerator.update(globalSpeedFactor, this.player, stage, event);
-        this.enemyGenerator.objectToObjectCollision(event);
     }
 
 

@@ -45,25 +45,6 @@ export class ObjectGenerator<T, S extends Spawnable<T>> {
     }
 
 
-    public objectToObjectCollision(event : ProgramEvent) : void {
-
-        for (let i = 0; i < this.objects.length; ++ i) {
-
-            if (!this.objects[i].doesExist())
-                continue;
-
-            for (let j = i; j < this.objects.length; ++ j) {
-
-                // Since we need collisions in both directions, we do (temporarily?)
-                // it this way. Probably could iterate over all pairs to get the same
-                // effect.
-                this.objects[i].objectToObjectCollision(this.objects[j], event);
-                this.objects[j].objectToObjectCollision(this.objects[i], event);
-            }
-        }
-    }
-
-
     public draw(canvas : Canvas, bmp : Bitmap | undefined) : void {
 
         for (let o of this.objects) {

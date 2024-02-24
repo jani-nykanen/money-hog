@@ -94,7 +94,7 @@ export class Enemy extends Spawnable<EnemyType> {
 
     private headbuttCollision(player : Player, offsetx : number, event : ProgramEvent) : boolean {
 
-        const FLY_SPEED : number = 3.0;
+        const FLY_SPEED : number = 4.0;
         const BASE_JUMP : number = -3.0;
         const JUMP_FACTOR : number = 8.0;
 
@@ -116,6 +116,7 @@ export class Enemy extends Spawnable<EnemyType> {
             this.flattenedTimer = 0.0;
 
             this.flip |= Flip.Vertical;
+            this.spr.setFrame(0, this.spr.getRow());
 
             player.stopHorizontalMovement();
 
@@ -185,7 +186,7 @@ export class Enemy extends Spawnable<EnemyType> {
 
         this.target.y = BASE_GRAVITY;
         this.updateMovement(event);
-
+/*
         if (this.pos.x < -this.spr.width/2) {
 
             this.pos.x += event.screenWidth;
@@ -194,8 +195,11 @@ export class Enemy extends Spawnable<EnemyType> {
 
             this.pos.x -= event.screenWidth;
         }
+        */
 
-        return this.pos.y >= event.screenHeight + this.spr.height/2;
+        return this.pos.y >= event.screenHeight + this.spr.height/2 ||
+            this.pos.x < - this.spr.width/2 ||
+            this.pos.x > event.screenWidth + this.spr.width/2;
     }
 
 
@@ -249,45 +253,21 @@ export class Enemy extends Spawnable<EnemyType> {
     }
 
 
-    public objectToObjectCollision(o : Spawnable<EnemyType>, event : ProgramEvent) : void {
-        
-        const HIT_RADIUS : number = 12; // Hitbox is too big...
-
-        const target : Enemy = o as Enemy;
-
-        if (!this.exist || !target.exist || 
-            !this.dying || target.dying ||
-            this.flattenedTimer > 0) {
-
-            return;
-        }
-
-        // TODO: Might need to also check "looping" objects
-
-        if (Vector.distance(this.pos, target.pos) < HIT_RADIUS) {
-
-            target.dying = true;
-            target.flattenedTimer = 0.0;
-
-            target.flip |= Flip.Vertical;
-
-            target.speed = Vector.scalarMultiply(Vector.direction(this.pos, target.pos), this.speed.length);
-        }
-    }
-
-
     public draw(canvas : Canvas, bmp : Bitmap | undefined) : void {
         
         if (!this.exist)
             return;
 
-        if (this.pos.x < this.spr.width/2) {
+        if (!this.dying || this.flattenedTimer > 0) {
 
-            this.drawBase(canvas, bmp, canvas.width);
-        }
-        else if (this.pos.x > canvas.width - this.spr.width/2) {
+            if (this.pos.x < this.spr.width/2) {
 
-            this.drawBase(canvas, bmp, -canvas.width);
+                this.drawBase(canvas, bmp, canvas.width);
+            }
+            else if (this.pos.x > canvas.width - this.spr.width/2) {
+
+                this.drawBase(canvas, bmp, -canvas.width);
+            }
         }
         this.drawBase(canvas, bmp);
     }
