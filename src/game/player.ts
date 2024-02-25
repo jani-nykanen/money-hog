@@ -22,6 +22,8 @@ export class Player extends GameObject {
 
     private ledgeTimer : number = 0.0;
     private jumpTimer : number = 0.0;
+    private canDoubleJump : boolean = false;
+    private doubleJumping : boolean = false;
 
     private canHeadButt : boolean = false;
     private headButting : boolean = false;
@@ -127,6 +129,7 @@ export class Player extends GameObject {
     private handleJumping(event : ProgramEvent) : void {
 
         const JUMP_TIME : number = 16.0;
+        const DOUBLE_JUMP_TIME : number = 10.0;
         const DOWN_JUMP_EPS : number = 0.25;
         const DOWN_JUMP_SHIFT : number = 4.0;
         const DOWN_JUMP_INITIAL_SPEED : number = 0.0;
@@ -145,10 +148,16 @@ export class Player extends GameObject {
                 return;
             }
 
-            if (this.ledgeTimer > 0) {
+            if (this.ledgeTimer > 0 || this.canDoubleJump) {
 
-                this.jumpTimer = JUMP_TIME;
-                this.ledgeTimer = 0.0;
+                this.jumpTimer = this.ledgeTimer > 0 ? JUMP_TIME : DOUBLE_JUMP_TIME;
+                if (this.ledgeTimer <= 0) {
+
+                    this.canDoubleJump = false;
+                    this.doubleJumping = true;
+                }
+
+                this.ledgeTimer = 0.0;   
             }
         }
         else if ((jumpButton & InputState.DownOrPressed) == 0) {
@@ -251,6 +260,7 @@ export class Player extends GameObject {
         const RUN_EPS : number = 0.1;
         const JUMP_FRAME_DELTA : number = 0.25;
         const BASH_EFFECT_FLICKER_SPEED : number = 3;
+        const DOUBLE_JUMP_ANIM_EPS : number = 0.5; 
 
         if (this.headButting) {
 
@@ -271,6 +281,12 @@ export class Player extends GameObject {
 
                 this.sprBody.setFrame(0, 0);
             }
+            return;
+        }
+
+        if (this.doubleJumping && this.speed.y < DOUBLE_JUMP_ANIM_EPS) {
+
+            this.sprBody.animate(2, 0, 3, 3, event.tick);
             return;
         }
 
@@ -344,6 +360,9 @@ export class Player extends GameObject {
 
         this.ledgeTimer = LEDGE_TIME;
         this.canHeadButt = true;
+
+        this.canDoubleJump = true;
+        this.doubleJumping = false;
 
         this.stats.resetBonus();
     }
@@ -434,7 +453,7 @@ export class Player extends GameObject {
         this.flyingText.draw(canvas, bmpSmallNumbers);
         canvas.setColor();
 
-        if (this.stats.getBonus() == 0)
+        if (this.stats.getBonus() < 2)
             return;
 
         const bmpFontOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
@@ -445,7 +464,7 @@ export class Player extends GameObject {
         canvas.setColor(182, 255, 146, 0.67);
 
         const scale : number = 1.0 + this.stats.getBonusUpdateTimer()*0.5;
-        canvas.drawText(bmpFontOutlines, "*" + String(this.stats.getBonus() + 1), 
+        canvas.drawText(bmpFontOutlines, "*" + String(this.stats.getBonus()), 
             dx, dy - 8*(scale - 1.0) , -8, 0, Align.Center, scale, scale);
 
         canvas.setColor();
@@ -500,6 +519,8 @@ export class Player extends GameObject {
         this.canHeadButt = true;
         this.headButting = false;
         this.headButtTimer = 0;
+        this.canDoubleJump = true;
+        this.doubleJumping = false;
 
         if (createStars) {
 
@@ -510,6 +531,7 @@ export class Player extends GameObject {
     }
 
 
+    // TODO: Rename, usage changed
     public stopHorizontalMovement(globalSpeedFactor : number, createStars : boolean = true) : void {
 
         const STAR_COUNT : number = 4;
@@ -524,6 +546,8 @@ export class Player extends GameObject {
         }
         this.headButting = false;
         this.headButtTimer = 0.0;
+        this.canDoubleJump = true;
+        this.doubleJumping = false;
 
         if (createStars) {
             

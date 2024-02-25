@@ -13,8 +13,6 @@ export class Stats {
     private healthUpdateTimer : number = 0.0;
     private bonusUpdateTimer : number = 0.0;
 
-    private scoreTimer : number = 0;
-
     public readonly maxHealth : number;
 
 
@@ -28,7 +26,6 @@ export class Stats {
     public changeLives(change : number) : void {
 
         this.health = clamp(this.health + change, 0, this.maxHealth);
-
         if (change < 0) {
 
             this.healthUpdateTimer = 1.0;
@@ -39,7 +36,6 @@ export class Stats {
     public increaseBonus(count : number = 1) : void {
 
         this.bonus += count;
-
         this.bonusUpdateTimer = 1.0;
     }
 
@@ -52,7 +48,7 @@ export class Stats {
 
     public addPoints(base : number) : number {
 
-        const v : number =  Math.floor(base*(10 + this.coins)*(1 + this.bonus));
+        const v : number =  Math.floor(base*(10 + this.coins)*(1 + Math.max(0, this.bonus - 1)));
         this.score += v;
 
         return v;

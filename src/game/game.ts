@@ -78,11 +78,11 @@ export class Game implements Scene {
 
         // Coins
         const coinStr : string = String(this.stats.getCoins());
-        const coinX : number = canvas.width - 28 - coinStr.length*8;
+        const coinX : number = canvas.width - 29 - coinStr.length*8;
         canvas.drawBitmap(bmpHUD, Flip.None, coinX, 2, 32, 16, 16, 16);
-        canvas.drawText(bmpFontOutlines, "*", coinX + 12, 2, -8, 0, Align.Left);
+        canvas.drawText(bmpFontOutlines, "*", coinX + 13, 2, -8, 0, Align.Left);
         canvas.drawText(bmpFontOutlines, coinStr, 
-            coinX + 21, 2, -8, 0, Align.Left);
+            coinX + 22, 2, -8, 0, Align.Left);
     }
 
     
