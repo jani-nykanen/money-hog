@@ -4,8 +4,9 @@ import { GameObject } from "./gameobject.js";
 import { Canvas, Bitmap, Flip, Effect } from "../gfx/interface.js";
 import { TILE_HEIGHT, TILE_WIDTH } from "./tilesize.js";
 import { sampleWeightedUniform } from "../math/random.js";
-import { ObjectGenerator } from "./objectgenerator.js";
-import { Enemy, EnemyType } from "./enemy.js";
+import { Enemy } from "./enemy.js";
+import { ENEMY_TYPE_COUNT, EnemyType } from "./enemytypes.js";
+import { EnemyGenerator } from "./enemygenerator.js";
 
 
 const enum TileType {
@@ -492,6 +493,16 @@ export class Platform implements ExistingObject {
                 o.floorCollision(-TILE_WIDTH, this.y, TILE_WIDTH, event);
             }
 
+            // Platform edge collisions (for enemies)
+            if (x > 0 && this.tiles[x - 1] == TileType.Gap) {
+
+                o.edgeCollision?.(x*TILE_WIDTH, this.y - TILE_HEIGHT, TILE_HEIGHT, -1, event);
+            }
+            if (x < this.width - 1 && this.tiles[x + 1] == TileType.Gap) {
+
+                o.edgeCollision?.((x + 1)*TILE_WIDTH, this.y - TILE_HEIGHT, TILE_HEIGHT, 1, event);
+            }
+
             // Spikes
             if (this.spikes[x]) {
 
@@ -507,12 +518,13 @@ export class Platform implements ExistingObject {
     }
 
 
-    public spawnEnemies(enemyGenerator : ObjectGenerator<EnemyType, Enemy>, count : number) : void {
+    public spawnEnemies(enemyGenerator : EnemyGenerator, count : number) : void {
 
         if (count == 0)
             return;
 
-        const segmentLength : number = Math.floor( this.width/count);
+        const segmentLength : number = Math.floor(this.width/count);
+        const oldEnemyTypes : EnemyType[] = [];
 
         for (let i = 0; i < count; ++ i) {
 
@@ -523,11 +535,25 @@ export class Platform implements ExistingObject {
                 if (this.tiles[x] == TileType.Gap || this.spikes[x])
                     continue;
 
-                const type : EnemyType = Math.floor(Math.random()*EnemyType.Apple) + 1;
+                let type : EnemyType = Math.floor(Math.random()*ENEMY_TYPE_COUNT);
 
-                const enemy : Enemy = enemyGenerator.spawn(type, x*TILE_WIDTH + TILE_WIDTH/2, this.y - 12);
-                enemy.setReferencePlatform(this);
+                // Avoid duplicate enemies on a same platform
+                const startType : EnemyType = type;
+                if (oldEnemyTypes.includes(type)) {
 
+                    do {
+
+                        type = (type + 1) % ENEMY_TYPE_COUNT;
+                        if (!oldEnemyTypes.includes(type)) {
+
+                            break;
+                        }
+                    }
+                    while (type != startType);
+                }
+                oldEnemyTypes.push(type);
+
+                enemyGenerator.spawn(type, x*TILE_WIDTH + TILE_WIDTH/2, this.y - 12, this);
                 break;
             }
         }

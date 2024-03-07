@@ -7,7 +7,8 @@ import { Vector } from "../math/vector.js";
 import { ObjectGenerator } from "./objectgenerator.js";
 import { Collectible, CollectibleType } from "./collectible.js";
 import { Stats } from "./stats.js";
-import { Enemy, EnemyType } from "./enemy.js";
+import { Enemy } from "./enemy.js";
+import { EnemyGenerator } from "./enemygenerator.js";
 
 
 export class ObjectManager {
@@ -15,7 +16,7 @@ export class ObjectManager {
 
     private player : Player;
     private collectibleGenerator : ObjectGenerator<CollectibleType, Collectible>;
-    private enemyGenerator : ObjectGenerator<EnemyType, Enemy>;
+    private enemyGenerator : EnemyGenerator;
 
 
     constructor(stage : Stage, stats : Stats, event : ProgramEvent) {
@@ -23,7 +24,7 @@ export class ObjectManager {
         this.player = new Player(event.screenWidth/2, event.screenHeight/2, stats);
 
         this.collectibleGenerator = new ObjectGenerator<CollectibleType, Collectible> (Collectible);
-        this.enemyGenerator = new ObjectGenerator<EnemyType, Enemy> (Enemy);
+        this.enemyGenerator = new EnemyGenerator();
 
         stage.passGenerators(this.collectibleGenerator, this.enemyGenerator);
         stage.createInitialPlatforms(stats, event);
@@ -36,18 +37,17 @@ export class ObjectManager {
         stage.objectCollision(this.player, event);
 
         this.collectibleGenerator.update(globalSpeedFactor, this.player, stage, event);
-        this.enemyGenerator.update(globalSpeedFactor, this.player, stage, event);
+        this.enemyGenerator.update(globalSpeedFactor, stage, this.player, event);
     }
 
 
     public draw(canvas : Canvas) : void {
 
         const bmpCollectibles : Bitmap | undefined = canvas.getBitmap("collectibles");
-        const bmpEnemies : Bitmap | undefined = canvas.getBitmap("enemies");
 
         this.player.drawParticles(canvas);
 
-        this.enemyGenerator.draw(canvas, bmpEnemies);
+        this.enemyGenerator.draw(canvas);
         this.collectibleGenerator.draw(canvas, bmpCollectibles);
         this.player.draw(canvas);
 

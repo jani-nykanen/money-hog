@@ -10,7 +10,8 @@ import { ObjectGenerator } from "./objectgenerator.js";
 import { Collectible, CollectibleType } from "./collectible.js";
 import { sampleWeightedUniform } from "../math/random.js";
 import { Stats } from "./stats.js";
-import { EnemyType, Enemy } from "./enemy.js";
+import { Enemy } from "./enemy.js";
+import { EnemyGenerator } from "./enemygenerator.js";
 
 
 const PLATFORM_OFFSET : number = 4;
@@ -24,7 +25,7 @@ export class Stage {
     private flickerTimer : number = 0.0;
 
     private collectibleGenerator : ObjectGenerator<CollectibleType, Collectible> | undefined = undefined;
-    private enemyGenerator : ObjectGenerator<EnemyType, Enemy> | undefined = undefined;
+    private enemyGenerator : EnemyGenerator | undefined = undefined;
 
 
     constructor(stats : Stats, event : ProgramEvent) {
@@ -174,7 +175,7 @@ export class Stage {
 
     public passGenerators(
         collectibleGenerator : ObjectGenerator<CollectibleType, Collectible>,
-        enemyGenerator : ObjectGenerator<EnemyType, Enemy>) : void {
+        enemyGenerator : EnemyGenerator) : void {
 
         this.collectibleGenerator = collectibleGenerator;
         this.enemyGenerator = enemyGenerator;

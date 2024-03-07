@@ -3,43 +3,37 @@ import { Canvas, Bitmap, Flip } from "../gfx/interface.js";
 import { Sprite } from "../gfx/sprite.js";
 import { Rectangle, overlayRect } from "../math/rectangle.js";
 import { Vector } from "../math/vector.js";
+import { GameObject } from "./gameobject.js";
 import { Platform } from "./platform.js";
 import { Player } from "./player.js";
-import { Spawnable } from "./spawnable.js";
-import { TILE_HEIGHT } from "./tilesize.js";
 
-
-export const enum EnemyType {
-
-    Unknown = 0,
-    Slime = 1,
-    Apple = 2,
-}
-
-
-const START_FRAME : number[] = [0, 0];
-const END_FRAME : number[] = [3, 3];
-const ANIMATION_SPEED : number[] = [9, 4];
-const PLATFORM_OFFSET : number[] = [0, TILE_HEIGHT];
 
 const FLATTEN_ANIMATION_TIME : number = 10;
 const FLATTEN_WAIT : number = 30;
 
 
-export class Enemy extends Spawnable<EnemyType> {
+export class Enemy extends GameObject {
 
 
-    private spr : Sprite;
-    private flip : Flip = Flip.None;
+    protected spr : Sprite;
+    protected flip : Flip = Flip.None;
 
-    private referencePlatform : Platform | undefined = undefined;
+    protected referencePlatform : Platform;
 
-    private flattenedTimer : number = 0;
+    protected flattenedTimer : number = 0;
+
+    protected basePlatformOffset : number = 0;
+    protected baseY : number = 0;
+    protected fixedY : boolean = true;
+    
+    protected checkEdgeCollision : boolean = false;
 
 
-    constructor() {
+    constructor(x : number, y : number, referencePlatform : Platform) {
 
-        super();
+        super(x, y, true);
+
+        this.referencePlatform
 
         this.spr = new Sprite(24, 24);
 
@@ -47,16 +41,10 @@ export class Enemy extends Spawnable<EnemyType> {
 
         this.friction.x = 0.10;
         this.friction.y = 0.15;
-    }
 
+        this.referencePlatform = referencePlatform;
 
-    private animate(event : ProgramEvent) : void {
-
-        const start : number = START_FRAME[this.type - 1] ?? 0;
-        const end : number = END_FRAME[this.type - 1] ?? 3;
-        const speed : number = ANIMATION_SPEED[this.type - 1] ?? 6;
-
-        this.spr.animate(this.spr.getRow(), start, end, speed, event.tick);
+        this.spawnEvent?.(x, y);
     }
 
 
@@ -69,7 +57,7 @@ export class Enemy extends Spawnable<EnemyType> {
 
         if (player.getSpeed().y < STOMP_MIN_SPEED) {
 
-            return false;;
+            return false;
         }
 
         const stompx : number = this.pos.x + this.hitbox.x - STOMP_WIDTH/2;
@@ -160,21 +148,9 @@ export class Enemy extends Spawnable<EnemyType> {
     }
 
 
-    protected spawnEvent() : void {
-        
-        if (this.type != EnemyType.Unknown) {
-
-            const start : number = START_FRAME[this.type - 1] ?? 0;
-            const end : number = END_FRAME[this.type - 1] ?? 3;
-
-            const initialFrame : number = start + Math.floor(Math.random()*(end - start));
-
-            this.spr.setFrame(initialFrame, this.type - 1);
-        }
-
-        this.flip = Flip.None;
-        this.flattenedTimer = 0;
-    }
+    protected edgeEvent?(event : ProgramEvent) : void;
+    protected spawnEvent?(x : number, y : number) : void;
+    protected updateAI?(globalSpeedFactor : number, event : ProgramEvent) : void;
 
 
     protected die(globalSpeedFactor : number, event : ProgramEvent) : boolean {
@@ -185,7 +161,7 @@ export class Enemy extends Spawnable<EnemyType> {
 
             if (this.referencePlatform !== undefined) {
 
-                this.pos.y = this.referencePlatform.getY() - this.spr.height/2
+                this.pos.y = this.referencePlatform.getY() - this.spr.height/2 + this.basePlatformOffset;
             }
 
             this.flattenedTimer -= event.tick;
@@ -198,16 +174,6 @@ export class Enemy extends Spawnable<EnemyType> {
 
         this.target.y = BASE_GRAVITY;
         this.updateMovement(event);
-/*
-        if (this.pos.x < -this.spr.width/2) {
-
-            this.pos.x += event.screenWidth;
-        }
-        else if (this.pos.x > event.screenWidth + this.spr.width/2) {
-
-            this.pos.x -= event.screenWidth;
-        }
-        */
 
         return this.pos.y >= event.screenHeight + this.spr.height/2 ||
             this.pos.x < - this.spr.width/2 ||
@@ -217,18 +183,19 @@ export class Enemy extends Spawnable<EnemyType> {
 
     protected updateEvent(globalSpeedFactor : number, event : ProgramEvent): void {
         
-        this.animate(event);
-
         if (this.referencePlatform !== undefined) {
 
-            this.pos.y = this.referencePlatform.getY() - this.spr.height/2 - (PLATFORM_OFFSET[this.type - 1] ?? 0)
-        }
-        else {
-
-            this.pos.y -= globalSpeedFactor*event.tick;
+            this.baseY = this.referencePlatform.getY() - this.spr.height/2 + this.basePlatformOffset;
         }
 
-        if (this.pos.y < 0 ||
+        if (this.fixedY) {
+
+            this.pos.y = this.baseY;
+        }
+
+        this.updateAI?.(globalSpeedFactor, event);
+        
+        if (this.pos.y < -this.spr.height/2 ||
             (this.speed.y > 0 && this.pos.y > event.screenHeight + this.spr.height)) {
 
             this.exist = false;
@@ -241,7 +208,7 @@ export class Enemy extends Spawnable<EnemyType> {
         if (this.dying || !this.exist || player.isDying() || !player.doesExist())
             return;
 
-        // TODO: For loop, please...
+        // TODO: Use for loop, please...
         if (this.headbuttCollision(globalSpeedFactor, player, 0, event) ||
             this.headbuttCollision(globalSpeedFactor, player, event.screenWidth, event) ||
             this.headbuttCollision(globalSpeedFactor, player, -event.screenWidth, event)) {
@@ -268,31 +235,41 @@ export class Enemy extends Spawnable<EnemyType> {
     }
 
 
+    public edgeCollision(x : number, y : number, h : number, dir : 1 | -1, event : ProgramEvent) : boolean {
+
+        const NEAR_MARGIN : number = 1;
+        const FAR_MARGIN : number = 4;
+
+        if (!this.exist || this.dying || !this.checkEdgeCollision)
+            return false;
+
+        const bottom : number = this.pos.y + this.hitbox.y + this.hitbox.h/2;
+        const top : number = bottom - this.hitbox.h;
+
+        if (bottom < y || top >= y + h ||
+            (dir < 0 && this.speed.x > 0) || (dir > 0 && this.speed.x < 0))
+            return false;
+
+        const edge : number = this.pos.x + this.hitbox.x + this.hitbox.w/2*dir;
+
+        if ((dir > 0 && edge >= x - NEAR_MARGIN*event.tick && edge <= x + (this.speed.x + FAR_MARGIN)*event.tick) ||
+            (dir < 0 && edge <= x + NEAR_MARGIN*event.tick && edge >= x + (this.speed.x - FAR_MARGIN)*event.tick) ){
+
+            this.pos.x = x + this.hitbox.x - this.hitbox.w/2*dir;
+            this.edgeEvent?.(event);
+                
+            return true;
+        }
+
+        return false;
+    }
+
+
     public draw(canvas : Canvas, bmp : Bitmap | undefined) : void {
         
         if (!this.exist)
             return;
 
-        /*
-        if (!this.dying || this.flattenedTimer > 0) {
-
-            if (this.pos.x < this.spr.width/2) {
-
-                this.drawBase(canvas, bmp, canvas.width);
-            }
-            else if (this.pos.x > canvas.width - this.spr.width/2) {
-
-                this.drawBase(canvas, bmp, -canvas.width);
-            }
-        }
-        */
         this.drawBase(canvas, bmp);
     }
-
-
-    public setReferencePlatform(p : Platform | undefined) : void {
-
-        this.referencePlatform = p;
-    }
-    
 }

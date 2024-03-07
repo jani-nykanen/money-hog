@@ -8,6 +8,8 @@ export class Stats {
     private health : number;
     private coins : number = 0;
     private bonus : number = 0;
+    private shownPoints : number = 0;
+    private pointsAddSpeed : number = 0;
     private score : number = 0;
 
     private healthUpdateTimer : number = 0.0;
@@ -48,8 +50,12 @@ export class Stats {
 
     public addPoints(base : number) : number {
 
+        const ADDITION_FACTOR : number = 50;
+
         const v : number =  Math.floor(base*(10 + this.coins)*(1 + Math.max(0, this.bonus - 1)));
         this.score += v;
+
+        this.pointsAddSpeed = Math.ceil((this.score - this.shownPoints) / ADDITION_FACTOR);
 
         return v;
     }
@@ -82,12 +88,24 @@ export class Stats {
 
             this.bonusUpdateTimer -= UPDATE_TIMER_SPEED*event.tick;
         }
+
+        if (this.shownPoints < this.score) {
+
+            this.shownPoints += this.pointsAddSpeed*event.tick;
+            this.shownPoints |= 0;
+
+            if (this.shownPoints >= this.score) {
+
+                this.shownPoints = this.score;
+            }
+        }
     }
 
 
     public getHealth = () : number => this.health;
     public getBonus = () : number => this.bonus;
     public getScore = () : number => this.score;
+    public getShownScore = () : number => Math.round(this.shownPoints);
     public getCoins = () : number => this.coins;
 
     public getHealthUpdateTimer = () : number => Math.max(0.0, this.healthUpdateTimer);
@@ -108,6 +126,15 @@ export class Stats {
     public scoreToString(maxLength : number) : string {
 
         const base : string = String(this.score);
+
+        return "0".repeat(maxLength - base.length) + base;
+    }
+
+
+    public shownScoreToString(maxLength : number) : string {
+
+        // TODO: Generic method for this and above?
+        const base : string = String(this.shownPoints);
 
         return "0".repeat(maxLength - base.length) + base;
     }

@@ -63,6 +63,7 @@ export class GameObject implements ExistingObject {
 
     public draw?(canvas : Canvas, bmp? : Bitmap) : void;
     public hurtCollision?(x : number, y : number, w : number, h : number, event : ProgramEvent) : boolean;
+    public edgeCollision?(x : number, y : number, h : number, dir : -1 | 1, event : ProgramEvent) : boolean;
 
 
     public update(globalSpeedFactor : number, event : ProgramEvent) : void {
