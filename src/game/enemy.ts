@@ -6,18 +6,21 @@ import { Vector } from "../math/vector.js";
 import { Platform } from "./platform.js";
 import { Player } from "./player.js";
 import { Spawnable } from "./spawnable.js";
+import { TILE_HEIGHT } from "./tilesize.js";
 
 
 export const enum EnemyType {
 
     Unknown = 0,
     Slime = 1,
+    Apple = 2,
 }
 
 
-const START_FRAME : number[] = [0];
-const END_FRAME : number[] = [3];
-const ANIMATION_SPEED : number[] = [9];
+const START_FRAME : number[] = [0, 0];
+const END_FRAME : number[] = [3, 3];
+const ANIMATION_SPEED : number[] = [9, 4];
+const PLATFORM_OFFSET : number[] = [0, TILE_HEIGHT];
 
 const FLATTEN_ANIMATION_TIME : number = 10;
 const FLATTEN_WAIT : number = 30;
@@ -218,7 +221,7 @@ export class Enemy extends Spawnable<EnemyType> {
 
         if (this.referencePlatform !== undefined) {
 
-            this.pos.y = this.referencePlatform.getY() - this.spr.height/2
+            this.pos.y = this.referencePlatform.getY() - this.spr.height/2 - (PLATFORM_OFFSET[this.type - 1] ?? 0)
         }
         else {
 

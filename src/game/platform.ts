@@ -523,7 +523,9 @@ export class Platform implements ExistingObject {
                 if (this.tiles[x] == TileType.Gap || this.spikes[x])
                     continue;
 
-                const enemy : Enemy = enemyGenerator.spawn(EnemyType.Slime, x*TILE_WIDTH + TILE_WIDTH/2, this.y - 12);
+                const type : EnemyType = Math.floor(Math.random()*EnemyType.Apple) + 1;
+
+                const enemy : Enemy = enemyGenerator.spawn(type, x*TILE_WIDTH + TILE_WIDTH/2, this.y - 12);
                 enemy.setReferencePlatform(this);
 
                 break;
