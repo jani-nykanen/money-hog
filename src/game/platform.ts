@@ -513,6 +513,9 @@ export class Platform implements ExistingObject {
 
                     o.hurtCollision?.(dx + i*event.screenWidth, dy, SPIKE_WIDTH, SPIKE_HEIGHT, event);
                 }
+
+                o.edgeCollision?.(x*TILE_WIDTH, this.y - TILE_HEIGHT, TILE_HEIGHT, 1, event);
+                o.edgeCollision?.((x + 1)*TILE_WIDTH, this.y - TILE_HEIGHT, TILE_HEIGHT, -1, event);
             }
         }
     }
@@ -524,7 +527,6 @@ export class Platform implements ExistingObject {
             return;
 
         const segmentLength : number = Math.floor(this.width/count);
-        const oldEnemyTypes : EnemyType[] = [];
 
         for (let i = 0; i < count; ++ i) {
 
@@ -535,23 +537,7 @@ export class Platform implements ExistingObject {
                 if (this.tiles[x] == TileType.Gap || this.spikes[x])
                     continue;
 
-                let type : EnemyType = Math.floor(Math.random()*ENEMY_TYPE_COUNT);
-
-                // Avoid duplicate enemies on a same platform
-                const startType : EnemyType = type;
-                if (oldEnemyTypes.includes(type)) {
-
-                    do {
-
-                        type = (type + 1) % ENEMY_TYPE_COUNT;
-                        if (!oldEnemyTypes.includes(type)) {
-
-                            break;
-                        }
-                    }
-                    while (type != startType);
-                }
-                oldEnemyTypes.push(type);
+                const type : EnemyType = Math.floor(Math.random()*ENEMY_TYPE_COUNT);
 
                 enemyGenerator.spawn(type, x*TILE_WIDTH + TILE_WIDTH/2, this.y - 12, this);
                 break;

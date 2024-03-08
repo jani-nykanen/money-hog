@@ -11,6 +11,8 @@ export class Slime extends Enemy {
         this.spr.setFrame(initialFrame, 0);
 
         this.basePlatformOffset = 0;
+
+        this.canBeMoved = false;
     }
 
 

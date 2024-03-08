@@ -30,24 +30,10 @@ export class Dog extends Enemy {
 
     protected updateAI(globalSpeedFactor : number, event : ProgramEvent): void {
         
-        const BORDER_COLLISION_OFFSET : number = 8;
         const BASE_SPEED : number = 0.33;
 
         this.target.x = this.dir*globalSpeedFactor*BASE_SPEED;
         this.speed.x = this.target.x;
-
-        if (this.speed.x < 0 && this.pos.x < BORDER_COLLISION_OFFSET) {
-
-            this.pos.x = BORDER_COLLISION_OFFSET;
-            this.speed.x = -this.target.x;
-            this.dir = 1;
-        }
-        else if (this.speed.x > 0 && this.pos.x > event.screenWidth - BORDER_COLLISION_OFFSET) {
-
-            this.pos.x = event.screenWidth - BORDER_COLLISION_OFFSET;
-            this.speed.x = -this.target.x;
-            this.dir = -1;
-        }
 
         this.spr.animate(this.spr.getRow(), 0, 3, 6, event.tick);
 

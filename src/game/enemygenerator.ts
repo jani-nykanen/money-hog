@@ -34,6 +34,16 @@ export class EnemyGenerator {
                 this.enemies.splice(i, 1);
                 // console.log("Enemy in index " + String(i) + " removed");
             }
+            else {
+
+                for (let j = i + 1; j < this.enemies.length; ++ j) {
+
+                    const o2 : Enemy = this.enemies[j];
+
+                    o.enemyToEnemyCollision(o2, event);
+                    o2.enemyToEnemyCollision(o, event);
+                }
+            }
         }
     }
 

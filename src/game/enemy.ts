@@ -28,6 +28,8 @@ export class Enemy extends GameObject {
     
     protected checkEdgeCollision : boolean = false;
 
+    protected canBeMoved : boolean = true;
+
 
     constructor(x : number, y : number, referencePlatform : Platform) {
 
@@ -38,6 +40,7 @@ export class Enemy extends GameObject {
         this.spr = new Sprite(24, 24);
 
         this.hitbox = new Rectangle(0, 4, 12, 16);
+        this.collisionBox = new Rectangle(0, 8, 8, 8);
 
         this.friction.x = 0.10;
         this.friction.y = 0.15;
@@ -194,6 +197,9 @@ export class Enemy extends GameObject {
         }
 
         this.updateAI?.(globalSpeedFactor, event);
+
+        this.edgeCollision(0, -64, event.screenHeight + 128, -1, event, true);
+        this.edgeCollision(event.screenWidth, -64, event.screenHeight + 128, 1, event, true);
         
         if (this.pos.y < -this.spr.height/2 ||
             (this.speed.y > 0 && this.pos.y > event.screenHeight + this.spr.height)) {
@@ -235,33 +241,47 @@ export class Enemy extends GameObject {
     }
 
 
-    public edgeCollision(x : number, y : number, h : number, dir : 1 | -1, event : ProgramEvent) : boolean {
+    public edgeCollision(x : number, y : number, h : number, dir : 1 | -1, 
+        event : ProgramEvent, force : boolean = false) : boolean {
 
         const NEAR_MARGIN : number = 1;
         const FAR_MARGIN : number = 4;
 
-        if (!this.exist || this.dying || !this.checkEdgeCollision)
+        if (!this.exist || this.dying || (!force && !this.checkEdgeCollision) || !this.canBeMoved)
             return false;
 
-        const bottom : number = this.pos.y + this.hitbox.y + this.hitbox.h/2;
-        const top : number = bottom - this.hitbox.h;
+        const bottom : number = this.pos.y + this.collisionBox.y + this.collisionBox.h/2;
+        const top : number = bottom - this.collisionBox.h;
 
         if (bottom < y || top >= y + h ||
             (dir < 0 && this.speed.x > 0) || (dir > 0 && this.speed.x < 0))
             return false;
 
-        const edge : number = this.pos.x + this.hitbox.x + this.hitbox.w/2*dir;
+        const edge : number = this.pos.x + this.collisionBox.x + this.collisionBox.w/2*dir;
 
         if ((dir > 0 && edge >= x - NEAR_MARGIN*event.tick && edge <= x + (this.speed.x + FAR_MARGIN)*event.tick) ||
             (dir < 0 && edge <= x + NEAR_MARGIN*event.tick && edge >= x + (this.speed.x - FAR_MARGIN)*event.tick) ){
 
-            this.pos.x = x + this.hitbox.x - this.hitbox.w/2*dir;
+            this.pos.x = x + this.collisionBox.x - this.collisionBox.w/2*dir;
             this.edgeEvent?.(event);
                 
             return true;
         }
 
         return false;
+    }
+
+
+    public enemyToEnemyCollision(o : Enemy, event : ProgramEvent) : void {
+
+        if (!this.exist || !o.exist || this.dying || o.dying)
+            return;
+
+        const ox : number = o.pos.x + o.collisionBox.x - o.collisionBox.w/2;
+        const oy : number = o.pos.y + o.collisionBox.y - o.collisionBox.h/2;
+
+        this.edgeCollision(ox, oy, o.collisionBox.h, 1, event, true);
+        this.edgeCollision(ox + o.collisionBox.w, oy, o.collisionBox.h, -1, event, true);
     }
 
 
