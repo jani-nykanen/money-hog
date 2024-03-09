@@ -14,7 +14,7 @@ import { Enemy } from "./enemy.js";
 import { EnemyGenerator } from "./enemygenerator.js";
 
 
-const PLATFORM_OFFSET : number = 4;
+export const PLATFORM_OFFSET : number = 4;
 
 
 export class Stage {

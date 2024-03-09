@@ -45,7 +45,7 @@ export class Apple extends Enemy {
         this.target.x = this.dir*globalSpeedFactor*BASE_SPEED;
         this.speed.x = this.target.x;
 
-        this.waveTimer = (this.waveTimer + WAVE_SPEED*event.tick) % (Math.PI*2);
+        this.waveTimer = (this.waveTimer + WAVE_SPEED*globalSpeedFactor*event.tick) % (Math.PI*2);
         this.pos.y = this.baseY + Math.sin(this.waveTimer)*AMPLITUDE;
 
         this.spr.animate(this.spr.getRow(), 0, 3, 4, event.tick);

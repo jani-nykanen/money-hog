@@ -78,6 +78,8 @@ export class Enemy extends GameObject {
             this.dying = true;
             this.flattenedTimer = FLATTEN_ANIMATION_TIME + FLATTEN_WAIT;
 
+            this.basePlatformOffset += (this.pos.y - this.baseY);
+
             player.bump(-3.0, event, true);
             return true;
         }
