@@ -471,21 +471,25 @@ export class Player extends GameObject {
     }
 
 
-    public hurtCollision(x : number, y : number, w : number, h : number, event : ProgramEvent) : boolean {
+    public hurt(event : ProgramEvent) : void {
 
         const HURT_TIME : number = 60;
-
-        if (!this.exist || this.dying || this.hurtTimer > 0)
-            return false;
-
-        if (!overlayRect(this.pos, this.collisionBox, new Vector(x + w/2, y + h/2), new Rectangle(0, 0, w, h)))
-            return false;
 
         this.hurtTimer = HURT_TIME;
         this.shakeTimer = HURT_TIME/2;
 
         this.stats.changeLives(-1);
         this.stats.resetBonus();
+    }
+
+
+    public hurtCollision(x : number, y : number, w : number, h : number, event : ProgramEvent) : boolean {
+
+        if (!this.exist || this.dying || this.hurtTimer > 0 ||
+            !overlayRect(this.pos, this.collisionBox, new Vector(x + w/2, y + h/2), new Rectangle(0, 0, w, h)))
+            return false;
+
+        this.hurt(event);
 
         return true;
     }

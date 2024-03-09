@@ -30,6 +30,8 @@ export class GameObject implements ExistingObject {
     protected collisionBox : Rectangle;
     protected hitbox : Rectangle;
 
+    protected forceDeathCollision : boolean = false;
+
 
     constructor(x : number = 0, y : number = 0, exist : boolean = false) {
 
@@ -95,7 +97,7 @@ export class GameObject implements ExistingObject {
         const BOTTOM_MARGIN : number = 4.0;
         const TOP_MARGIN : number = 1.0;
 
-        if (!this.exist || this.dying ||
+        if (!this.exist || (!this.forceDeathCollision && this.dying) ||
             this.pos.x + this.collisionBox.x + this.collisionBox.w/2 < x ||
             this.pos.x + this.collisionBox.x - this.collisionBox.w/2 > x + w ||
             this.speed.y < 0.0)
@@ -137,7 +139,7 @@ export class GameObject implements ExistingObject {
 
 
     public isActive = () : boolean => this.exist && !this.dying;
-    
+    public doesForceDeathCollision = () : boolean => this.forceDeathCollision;
 
 
     public overlay = (o : GameObject) : boolean => overlayRect(this.pos, this.hitbox, o.pos, o.hitbox);

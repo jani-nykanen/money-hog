@@ -25,6 +25,7 @@ export class Apple extends Enemy {
         this.waveTimer = Math.random()*Math.PI*2;
 
         this.fixedY = false;
+        this.canBeMoved = true;
     }
 
 

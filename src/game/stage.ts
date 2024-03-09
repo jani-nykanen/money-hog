@@ -152,7 +152,7 @@ export class Stage {
 
     public objectCollision(o : GameObject, event : ProgramEvent) : void {
 
-        if (!o.doesExist() || o.isDying())
+        if (!o.doesExist() || (!o.doesForceDeathCollision() && o.isDying()))
             return;
 
         for (let p of this.platforms) {

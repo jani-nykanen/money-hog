@@ -29,6 +29,7 @@ export class Enemy extends GameObject {
     protected checkEdgeCollision : boolean = false;
 
     protected canBeMoved : boolean = true;
+    protected canBeStomped : boolean = true;
 
 
     constructor(x : number, y : number, referencePlatform : Platform) {
@@ -40,7 +41,7 @@ export class Enemy extends GameObject {
         this.spr = new Sprite(24, 24);
 
         this.hitbox = new Rectangle(0, 4, 12, 16);
-        this.collisionBox = new Rectangle(0, 8, 8, 8);
+        this.collisionBox = new Rectangle(0, 0, 8, 20);
 
         this.friction.x = 0.10;
         this.friction.y = 0.15;
@@ -75,12 +76,18 @@ export class Enemy extends GameObject {
         if (left + phitbox.w >= stompx && left <= stompx + STOMP_WIDTH &&
             bottom >= stompy && bottom <= stompy + STOMP_HEIGHT*event.tick) {
 
+            player.bump(-3.0, event, true);
+            if (!this.canBeStomped) {
+
+                player.hurt(event);
+                return false;
+            }
+
             this.dying = true;
             this.flattenedTimer = FLATTEN_ANIMATION_TIME + FLATTEN_WAIT;
 
             this.basePlatformOffset += (this.pos.y - this.baseY);
 
-            player.bump(-3.0, event, true);
             return true;
         }
 
@@ -164,9 +171,19 @@ export class Enemy extends GameObject {
 
         if (this.flattenedTimer > 0) {
 
-            if (this.referencePlatform !== undefined) {
+            if (this.fixedY &&
+                this.referencePlatform !== undefined) {
 
                 this.pos.y = this.referencePlatform.getY() - this.spr.height/2 + this.basePlatformOffset;
+            }
+            else {
+
+                this.target.x = 0.0;
+                this.speed.x = 0.0;
+                this.target.y = BASE_GRAVITY;
+                this.forceDeathCollision = true;
+
+                this.updateMovement(event);
             }
 
             this.flattenedTimer -= event.tick;

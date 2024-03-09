@@ -19,8 +19,10 @@ export class Bat extends Enemy {
 
         this.basePlatformOffset = -TILE_HEIGHT;
 
-        this.waveTimer = Math.random()*Math.PI*2;
+        // Note: Math.PI*2 can make the enemy appear too high
+        this.waveTimer = Math.random()*Math.PI;
 
+        this.canBeMoved = false;
         this.fixedY = false;
     }
 

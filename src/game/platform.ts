@@ -472,7 +472,7 @@ export class Platform implements ExistingObject {
         const SPIKE_WIDTH : number = 10;
         const SPIKE_HEIGHT : number = 6;
 
-        if (!this.exist || !o.doesExist() || o.isDying())
+        if (!this.exist || !o.doesExist() || (!o.doesForceDeathCollision() && o.isDying()))
             return;
 
         for (let x = 0; x < this.width; ++ x) {
