@@ -30,6 +30,7 @@ export class Enemy extends GameObject {
 
     protected canBeMoved : boolean = true;
     protected canBeStomped : boolean = true;
+    protected canBeHeadbutted : boolean = true;
 
 
     constructor(x : number, y : number, referencePlatform : Platform) {
@@ -110,18 +111,25 @@ export class Enemy extends GameObject {
 
         if (overlayRect(this.pos, this.hitbox, new Vector(offsetx, 0), hitbox)) {
 
-            this.dying = true;
+            if (this.canBeHeadbutted) {
 
-            this.speed.x = FLY_SPEED*Math.sign(this.pos.x - player.getPosition().x);
-            this.target.x = this.speed.x;
-            this.speed.y = BASE_JUMP + (this.pos.y - player.getPosition().y)/JUMP_FACTOR;
+                this.dying = true;
 
-            this.flattenedTimer = 0.0;
+                this.speed.x = FLY_SPEED*Math.sign(this.pos.x - player.getPosition().x);
+                this.target.x = this.speed.x;
+                this.speed.y = BASE_JUMP + (this.pos.y - player.getPosition().y)/JUMP_FACTOR;
 
-            this.flip |= Flip.Vertical;
-            this.spr.setFrame(0, this.spr.getRow());
+                this.flattenedTimer = 0.0;
 
-            player.stopHorizontalMovement(globalSpeedFactor);
+                this.flip |= Flip.Vertical;
+                this.spr.setFrame(0, this.spr.getRow());
+            }
+            else {
+
+                player.hurt(event);
+            }
+
+            player.stopHeadbutt(globalSpeedFactor, this.canBeHeadbutted, !this.canBeHeadbutted);
 
             return true;
         }

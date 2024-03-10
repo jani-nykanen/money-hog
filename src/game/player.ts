@@ -536,12 +536,13 @@ export class Player extends GameObject {
 
 
     // TODO: Rename, usage changed
-    public stopHorizontalMovement(globalSpeedFactor : number, createStars : boolean = true) : void {
+    public stopHeadbutt(globalSpeedFactor : number, createStars : boolean = true, knockback : boolean = false) : void {
 
         const STAR_COUNT : number = 4;
         const STAR_SPEED : number = 3.0;
         const STAR_EXIST_TIME : number = 1.0/20.0;
         const JUMP_FACTOR : number = 2.0;
+        const HURT_KNOCKBACK : number = 4.0;
 
         this.speed.x = 0.0;
         if (this.gravityFreeHeadbutt) {
@@ -557,6 +558,11 @@ export class Player extends GameObject {
             
             this.spawnStars(this.faceDirection*20, 0.0,
                 STAR_COUNT, Math.PI/4, STAR_SPEED, STAR_EXIST_TIME, 1.0, 1.0);
+        }
+
+        if (knockback) {
+
+            this.speed.x = -this.faceDirection*HURT_KNOCKBACK;
         }
     }
 
