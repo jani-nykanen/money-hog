@@ -1,10 +1,9 @@
 import { ExistingObject } from "./existingobject.js";
 import { ProgramEvent } from "../core/event.js";
 import { GameObject } from "./gameobject.js";
-import { Canvas, Bitmap, Flip, Effect } from "../gfx/interface.js";
+import { Canvas, Bitmap, Flip } from "../gfx/interface.js";
 import { TILE_HEIGHT, TILE_WIDTH } from "./tilesize.js";
 import { sampleWeightedUniform } from "../math/random.js";
-import { Enemy } from "./enemy.js";
 import { ENEMY_TYPE_COUNT, EnemyType } from "./enemytypes.js";
 import { EnemyGenerator } from "./enemygenerator.js";
 

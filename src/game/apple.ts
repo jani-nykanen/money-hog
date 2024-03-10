@@ -1,6 +1,7 @@
 import { ProgramEvent } from "../core/event.js";
 import { Flip } from "../gfx/interface.js";
 import { Enemy } from "./enemy.js";
+import { Platform } from "./platform.js";
 import { TILE_HEIGHT } from "./tilesize.js";
 
 
@@ -13,7 +14,9 @@ export class Apple extends Enemy {
     private waveTimer : number = 0.0;
 
 
-    protected spawnEvent() : void {
+    constructor(x : number, y : number, referencePlatform : Platform) {
+
+        super(x, y, referencePlatform);
 
         const initialFrame : number = Math.floor(Math.random()*3);
         this.spr.setFrame(initialFrame, 1);

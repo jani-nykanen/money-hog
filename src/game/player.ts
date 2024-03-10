@@ -453,7 +453,7 @@ export class Player extends GameObject {
         this.flyingText.draw(canvas, bmpSmallNumbers);
         canvas.setColor();
 
-        if (this.stats.getBonus() < 2)
+        if (this.stats.getBonus() <= 10)
             return;
 
         const bmpFontOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
@@ -464,7 +464,7 @@ export class Player extends GameObject {
         canvas.setColor(182, 255, 146, 0.67);
 
         const scale : number = 1.0 + this.stats.getBonusUpdateTimer()*0.5;
-        canvas.drawText(bmpFontOutlines, "*" + String(this.stats.getBonus()), 
+        canvas.drawText(bmpFontOutlines, "*" + this.stats.bonusToString(), 
             dx, dy - 8*(scale - 1.0) , -8, 0, Align.Center, scale, scale);
 
         canvas.setColor();

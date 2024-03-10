@@ -1,6 +1,7 @@
 import { ProgramEvent } from "../core/event.js";
 import { Flip } from "../gfx/interface.js";
 import { Enemy } from "./enemy.js";
+import { Platform } from "./platform.js";
 
 
 export class Dog extends Enemy {
@@ -9,7 +10,9 @@ export class Dog extends Enemy {
     private dir : -1 | 1 = 1;
 
 
-    protected spawnEvent() : void {
+    constructor(x : number, y : number, referencePlatform : Platform) {
+
+        super(x, y, referencePlatform);
 
         const initialFrame : number = Math.floor(Math.random()*3);
         this.spr.setFrame(initialFrame, 2);

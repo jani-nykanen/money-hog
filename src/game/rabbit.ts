@@ -1,6 +1,7 @@
 import { ProgramEvent } from "../core/event.js";
 import { Bitmap, Canvas, Flip } from "../gfx/interface.js";
 import { Enemy } from "./enemy.js";
+import { Platform } from "./platform.js";
 import { TILE_HEIGHT, TILE_WIDTH } from "./tilesize.js";
 
 
@@ -12,13 +13,13 @@ export class Rabbit extends Enemy {
 
 
     private dir : -1 | 1 = 1;
-
     private angle : number = 0.0;
-
     private baseX : number;
 
 
-    protected spawnEvent() : void {
+    constructor(x : number, y : number, referencePlatform : Platform) {
+
+        super(x, y, referencePlatform);
 
         const initialFrame : number = Math.floor(Math.random()*3);
         this.spr.setFrame(initialFrame, 6);
@@ -31,7 +32,7 @@ export class Rabbit extends Enemy {
         this.canBeMoved = false;
         this.checkEdgeCollision = false;
 
-        this.basePlatformOffset = this.spr.height/2;
+        this.basePlatformOffset = this.spr.height/2 + TILE_HEIGHT/2;
 
         this.baseX = this.pos.x;
     }

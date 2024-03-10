@@ -1,12 +1,15 @@
 import { ProgramEvent } from "../core/event.js";
 import { Enemy } from "./enemy.js";
+import { Platform } from "./platform.js";
 
 
 export class Slime extends Enemy {
 
 
-    protected spawnEvent() : void {
+    constructor(x : number, y : number, referencePlatform : Platform) {
         
+        super(x, y, referencePlatform);
+
         const initialFrame : number = Math.floor(Math.random()*3);
         this.spr.setFrame(initialFrame, 0);
 

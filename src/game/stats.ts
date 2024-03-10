@@ -35,9 +35,25 @@ export class Stats {
     }
 
 
-    public increaseBonus(count : number = 1) : void {
+    public increaseBonus() : void {
 
-        this.bonus += count;
+        if (this.bonus == 0) {
+
+            this.bonus = 10;
+        }
+        else if (this.bonus >= 10 && this.bonus < 20) {
+
+            this.bonus += 5;
+        }
+        else if (this.bonus >= 20 && this.bonus < 30) {
+
+            this.bonus += 2;
+        }
+        else {
+
+            this.bonus += 1;
+        }
+
         this.bonusUpdateTimer = 1.0;
     }
 
@@ -52,7 +68,9 @@ export class Stats {
 
         const ADDITION_FACTOR : number = 50;
 
-        const v : number =  Math.floor(base*(10 + this.coins)*(1 + Math.max(0, this.bonus - 1)));
+        const v : number =  Math.floor(
+            base*(10 + this.coins)*(1 + Math.max(0, (this.bonus - 10)/10.0 ))
+        );
         this.score += v;
 
         this.pointsAddSpeed = Math.ceil((this.score - this.shownPoints) / ADDITION_FACTOR);
@@ -116,7 +134,7 @@ export class Stats {
 
         // Converting a float to string never plays nicely
 
-        const base : string = String(this.bonus + 10);
+        const base : string = String(this.bonus);
         const len : number = base.length;
 
         return base.slice(0, len - 1) + "." + base.slice(len - 1, len);

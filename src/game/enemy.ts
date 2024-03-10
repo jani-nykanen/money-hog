@@ -51,7 +51,7 @@ export class Enemy extends GameObject {
 
         this.omitFloorCollision = true;
 
-        this.spawnEvent?.(x, y);
+        this.baseY = this.pos.y;
     }
 
 
@@ -144,12 +144,11 @@ export class Enemy extends GameObject {
         const BASE_SCORE : number = 10;
 
         player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, BASE_SCORE);
-        player.stats.increaseBonus(1);
+        player.stats.increaseBonus();
     }
 
 
     protected edgeEvent?(event : ProgramEvent) : void;
-    protected spawnEvent?(x : number, y : number) : void;
     protected updateAI?(globalSpeedFactor : number, event : ProgramEvent) : void;
 
 
