@@ -131,7 +131,7 @@ export class Enemy extends GameObject {
 
             player.stopHeadbutt(globalSpeedFactor, this.canBeHeadbutted, !this.canBeHeadbutted);
 
-            return true;
+            return this.canBeHeadbutted;
         }
         return false;
     }

@@ -91,7 +91,7 @@ export class Stage {
 
     private spawnPlatform(yoff : number, stats : Stats, event : ProgramEvent, initial : boolean = false) : void {
 
-        const BOTTOM_OFFSET : number = 2;
+        const BOTTOM_OFFSET : number = PLATFORM_OFFSET // 2;
 
         const p : Platform = next<Platform>(this.platforms, Platform);
 
