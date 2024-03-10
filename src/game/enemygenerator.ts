@@ -48,6 +48,17 @@ export class EnemyGenerator {
     }
 
 
+    public preDraw(canvas : Canvas) : void {
+
+        const bmpEnemies : Bitmap | undefined = canvas.getBitmap("enemies");
+
+        for (let o of this.enemies) {
+
+            o.preDraw?.(canvas, bmpEnemies);
+        }
+    }
+
+
     public draw(canvas : Canvas) : void {
 
         const bmpEnemies : Bitmap | undefined = canvas.getBitmap("enemies");

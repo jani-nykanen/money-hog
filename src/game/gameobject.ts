@@ -31,6 +31,7 @@ export class GameObject implements ExistingObject {
     protected hitbox : Rectangle;
 
     protected forceDeathCollision : boolean = false;
+    protected omitFloorCollision : boolean = false;
 
 
     constructor(x : number = 0, y : number = 0, exist : boolean = false) {
@@ -98,6 +99,7 @@ export class GameObject implements ExistingObject {
         const TOP_MARGIN : number = 1.0;
 
         if (!this.exist || (!this.forceDeathCollision && this.dying) ||
+            (this.omitFloorCollision && !this.dying) ||
             this.pos.x + this.collisionBox.x + this.collisionBox.w/2 < x ||
             this.pos.x + this.collisionBox.x - this.collisionBox.w/2 > x + w ||
             this.speed.y < 0.0)

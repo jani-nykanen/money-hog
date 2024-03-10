@@ -49,6 +49,8 @@ export class Enemy extends GameObject {
 
         this.referencePlatform = referencePlatform;
 
+        this.omitFloorCollision = true;
+
         this.spawnEvent?.(x, y);
     }
 
@@ -146,28 +148,6 @@ export class Enemy extends GameObject {
     }
 
 
-    private drawBase(canvas : Canvas, bmpBody : Bitmap | undefined, xoff : number = 0): void {
-
-        const FLATTEN_HEIGHT : number = 4;
-
-        let dw : number = this.spr.width;
-        let dh : number = this.spr.height;
-
-        if (this.flattenedTimer > 0) {
-
-            const t : number = 1.0 - Math.max(0.0, (this.flattenedTimer - FLATTEN_WAIT)/FLATTEN_ANIMATION_TIME);
-
-            dw = Math.round(this.spr.width*(1.0 + 0.5*t));
-            dh = Math.round(this.spr.height*(1.0 - t) + t*FLATTEN_HEIGHT);
-        }
-
-        const dx : number = Math.round(this.pos.x) - dw/2 + xoff;
-        const dy : number = Math.round(this.pos.y) + this.spr.height/2 - dh + 1;
-
-        this.spr.draw(canvas, bmpBody, dx, dy, this.flip, dw, dh);
-    }
-
-
     protected edgeEvent?(event : ProgramEvent) : void;
     protected spawnEvent?(x : number, y : number) : void;
     protected updateAI?(globalSpeedFactor : number, event : ProgramEvent) : void;
@@ -190,6 +170,7 @@ export class Enemy extends GameObject {
                 this.speed.x = 0.0;
                 this.target.y = BASE_GRAVITY;
                 this.forceDeathCollision = true;
+                // this.omitFloorCollision = false;
 
                 this.updateMovement(event);
             }
@@ -234,6 +215,9 @@ export class Enemy extends GameObject {
             this.exist = false;
         }
     }
+
+
+    public preDraw?(canvas : Canvas, bmp : Bitmap | undefined) : void;
 
 
     public playerCollision(player : Player, event : ProgramEvent, globalSpeedFactor : number = 0.0) : void {
@@ -314,9 +298,25 @@ export class Enemy extends GameObject {
 
     public draw(canvas : Canvas, bmp : Bitmap | undefined) : void {
         
+        const FLATTEN_HEIGHT : number = 4;
+
         if (!this.exist)
             return;
 
-        this.drawBase(canvas, bmp);
+        let dw : number = this.spr.width;
+        let dh : number = this.spr.height;
+
+        if (this.flattenedTimer > 0) {
+
+            const t : number = 1.0 - Math.max(0.0, (this.flattenedTimer - FLATTEN_WAIT)/FLATTEN_ANIMATION_TIME);
+
+            dw = Math.round(this.spr.width*(1.0 + 0.5*t));
+            dh = Math.round(this.spr.height*(1.0 - t) + t*FLATTEN_HEIGHT);
+        }
+
+        const dx : number = Math.round(this.pos.x) - dw/2;
+        const dy : number = Math.round(this.pos.y) + this.spr.height/2 - dh + 1;
+
+        this.spr.draw(canvas, bmp, dx, dy, this.flip, dw, dh);
     }
 }
