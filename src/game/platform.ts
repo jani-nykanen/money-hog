@@ -6,6 +6,7 @@ import { TILE_HEIGHT, TILE_WIDTH } from "./tilesize.js";
 import { sampleWeightedUniform } from "../math/random.js";
 import { ENEMY_TYPE_COUNT, EnemyType } from "./enemytypes.js";
 import { EnemyGenerator } from "./enemygenerator.js";
+import { clamp } from "../math/utility.js";
 
 
 const enum TileType {
@@ -361,9 +362,9 @@ export class Platform implements ExistingObject {
 
     private drawBridge(canvas : Canvas, bmp : Bitmap | undefined) : void {
 
-        for (let x = 0; x < this.width; ++ x) {
+        for (let x = -1; x < this.width + 1; ++ x) {
 
-            if (this.tiles[x] != TileType.Bridge)
+            if (this.tiles[clamp(x, 0, this.width - 1)] != TileType.Bridge)
                 continue;
 
             this.drawBridgeTile(canvas, bmp, x);
@@ -373,9 +374,9 @@ export class Platform implements ExistingObject {
 
     private drawGround(canvas : Canvas, bmp : Bitmap | undefined) : void {
 
-        for (let x = 0; x < this.width; ++ x) {
+        for (let x = -1; x < this.width + 1; ++ x) {
 
-            if (this.tiles[x] != TileType.Ground)
+            if (this.tiles[clamp(x, 0, this.width - 1)] != TileType.Ground)
                 continue;
 
             this.drawGroundTile(canvas, bmp, x);
@@ -479,7 +480,7 @@ export class Platform implements ExistingObject {
             if (this.tiles[x] == TileType.Gap)
                 continue;
 
-            o.floorCollision(x*TILE_WIDTH, this.y, TILE_WIDTH, event);
+            o.floorCollision(x*TILE_WIDTH, this.y, TILE_WIDTH, event, this.tiles[x] == TileType.Bridge);
 
             // Special case 1: edge on left
             if (x == 0 && this.tiles[this.width - 1] == TileType.Gap) {

@@ -23,6 +23,8 @@ export const enum StompType {
 export class Enemy extends GameObject {
 
 
+    protected scale : Vector;
+
     protected spr : Sprite;
     protected flip : Flip = Flip.None;
 
@@ -40,13 +42,14 @@ export class Enemy extends GameObject {
     protected canBeHeadbutted : boolean = true;
 
     protected stompType : StompType = StompType.Stomp;
+    protected bounceRecoverTimer : number = 0.0;
 
 
     constructor(x : number, y : number, referencePlatform : Platform) {
 
         super(x, y, true);
 
-        this.referencePlatform
+        this.scale = new Vector(1, 1);
 
         this.spr = new Sprite(24, 24);
 
@@ -94,6 +97,7 @@ export class Enemy extends GameObject {
                 if (this.stompType == StompType.Bounce) {
 
                     this.bounceEvent?.(event);
+                    this.addPoints(player);
                 }
                 else {
 
@@ -104,6 +108,9 @@ export class Enemy extends GameObject {
 
             this.dying = true;
             this.flattenedTimer = FLATTEN_ANIMATION_TIME + FLATTEN_WAIT;
+
+            this.scale.x = 1.0;
+            this.scale.y = 1.0;
 
             this.basePlatformOffset += (this.pos.y - this.baseY);
 
@@ -155,7 +162,7 @@ export class Enemy extends GameObject {
     }
 
 
-    private dieEvent(player : Player) : void {
+    private addPoints(player : Player) : void {
 
         const BASE_SCORE : number = 10;
 
@@ -167,6 +174,7 @@ export class Enemy extends GameObject {
     protected edgeEvent?(event : ProgramEvent) : void;
     protected updateAI?(globalSpeedFactor : number, event : ProgramEvent) : void;
     protected bounceEvent?(event : ProgramEvent) : void;
+    protected playerEvent?(globalSpeedFactor : number, player : Player, event : ProgramEvent) : boolean;
 
 
     protected die(globalSpeedFactor : number, event : ProgramEvent) : boolean {
@@ -220,6 +228,11 @@ export class Enemy extends GameObject {
             this.pos.y = this.baseY;
         }
 
+        if (this.bounceRecoverTimer > 0.0) {
+
+            this.bounceRecoverTimer -= event.tick;
+        }
+
         this.updateAI?.(globalSpeedFactor, event);
 
         this.edgeCollision(0, -64, event.screenHeight + 128, -1, event, true);
@@ -241,12 +254,17 @@ export class Enemy extends GameObject {
         if (this.dying || !this.exist || player.isDying() || !player.doesExist())
             return;
 
+        if (this.playerEvent?.(globalSpeedFactor, player, event)) {
+
+            return;
+        }
+
         // TODO: Use for loop, please...
         if (this.headbuttCollision(globalSpeedFactor, player, 0, event) ||
             this.headbuttCollision(globalSpeedFactor, player, event.screenWidth, event) ||
             this.headbuttCollision(globalSpeedFactor, player, -event.screenWidth, event)) {
 
-            this.dieEvent(player);
+            this.addPoints(player);
             return;
         }
 
@@ -254,9 +272,12 @@ export class Enemy extends GameObject {
             this.stompCollision(player, event.screenWidth, event) ||
             this.stompCollision(player, -event.screenWidth, event)) {
 
-            this.dieEvent(player);
+            this.addPoints(player);
             return;
         }
+
+        if (this.bounceRecoverTimer > 0)
+            return;
 
         for (let i = -1; i <= 1; ++ i) {
 
@@ -319,8 +340,8 @@ export class Enemy extends GameObject {
         if (!this.exist)
             return;
 
-        let dw : number = this.spr.width;
-        let dh : number = this.spr.height;
+        let dw : number = this.spr.width*this.scale.x;
+        let dh : number = this.spr.height*this.scale.y;
 
         if (this.flattenedTimer > 0) {
 

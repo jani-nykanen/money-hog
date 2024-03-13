@@ -29,6 +29,7 @@ export class Player extends GameObject {
     private headButting : boolean = false;
     private headButtTimer : number = 0.0;
     private gravityFreeHeadbutt : boolean = false;
+    private touchBridge : boolean = false;
     private headbuttHitbox : Rectangle;
 
     private dust : ParticleGenerator<DustParticle>;
@@ -38,6 +39,7 @@ export class Player extends GameObject {
 
     private hurtTimer : number = 0;
     private shakeTimer : number = 0;
+    private downJumpIconTimer : number = 0;
 
     public readonly stats : Stats;
 
@@ -111,6 +113,8 @@ export class Player extends GameObject {
 
                 this.headButtTimer = 0;
                 this.headButting = false;
+                this.doubleJumping = false;
+
                 return;
             }
 
@@ -138,12 +142,19 @@ export class Player extends GameObject {
 
         if (jumpButton == InputState.Pressed) {
 
-            if (this.touchFloor && 
-                event.input.stick.y > DOWN_JUMP_EPS) {
+            if (event.input.stick.y > DOWN_JUMP_EPS) {
 
-                this.pos.y += DOWN_JUMP_SHIFT;
-                this.touchFloor = false;
-                this.speed.y = DOWN_JUMP_INITIAL_SPEED;
+                if (this.touchBridge) {
+
+                    this.pos.y += DOWN_JUMP_SHIFT;
+                    this.touchFloor = false;
+                    this.touchBridge = false;
+                    this.speed.y = DOWN_JUMP_INITIAL_SPEED;
+                }
+                else {
+
+                    // TODO: Play error sound
+                }
 
                 return;
             }
@@ -197,6 +208,7 @@ export class Player extends GameObject {
     private updateTimers(event : ProgramEvent) : void {
 
         const JUMP_SPEED : number = -2.5;
+        const DOWN_ICON_ANIMATION_SPEED : number = 1.0/30.0;
 
         if (this.jumpTimer > 0.0) {
 
@@ -218,6 +230,11 @@ export class Player extends GameObject {
         if (this.shakeTimer > 0) {
 
             this.shakeTimer -= event.tick;
+        }
+        
+        if (this.touchBridge) {
+
+            this.downJumpIconTimer = (this.downJumpIconTimer + DOWN_ICON_ANIMATION_SPEED*event.tick) % 1.0;
         }
     }
 
@@ -354,7 +371,7 @@ export class Player extends GameObject {
     }
 
 
-    protected floorCollisionEvent(event : ProgramEvent): void {
+    protected floorCollisionEvent(event : ProgramEvent, touchBridge : boolean = false): void {
         
         const LEDGE_TIME : number = 8.0;
 
@@ -363,6 +380,8 @@ export class Player extends GameObject {
 
         this.canDoubleJump = true;
         this.doubleJumping = false;
+        
+        this.touchBridge ||= touchBridge;
 
         this.stats.resetBonus();
     }
@@ -386,6 +405,8 @@ export class Player extends GameObject {
 
         this.stars.update(globalSpeedFactor, event);
         this.flyingText.update(globalSpeedFactor, event);
+
+        this.touchBridge = false;
     }
 
 
@@ -453,17 +474,25 @@ export class Player extends GameObject {
         this.flyingText.draw(canvas, bmpSmallNumbers);
         canvas.setColor();
 
-        if (this.stats.getBonus() <= 10)
-            return;
-
-        const bmpFontOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
-
         const dx : number = Math.round(this.pos.x);
         const dy : number = Math.round(this.pos.y) - 24;
+
+        if (this.touchBridge) {
+
+            const frame : number = Math.floor(this.downJumpIconTimer*2);
+            const bmpPlayer : Bitmap | undefined = canvas.getBitmap("player");
+
+            canvas.drawBitmap(bmpPlayer, Flip.None, dx - 12, dy - 4, frame*24, 72, 24, 24);
+        }
+
+        if (this.stats.getBonus() <= 10)
+            return;
 
         canvas.setColor(182, 255, 146, 0.67);
 
         const scale : number = 1.0 + this.stats.getBonusUpdateTimer()*0.5;
+        const bmpFontOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
+
         canvas.drawText(bmpFontOutlines, "*" + this.stats.bonusToString(), 
             dx, dy - 8*(scale - 1.0) , -8, 0, Align.Center, scale, scale);
 
@@ -535,7 +564,6 @@ export class Player extends GameObject {
     }
 
 
-    // TODO: Rename, usage changed
     public stopHeadbutt(globalSpeedFactor : number, createStars : boolean = true, knockback : boolean = false) : void {
 
         const STAR_COUNT : number = 4;

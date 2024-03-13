@@ -50,7 +50,7 @@ export class GameObject implements ExistingObject {
 
     protected updateEvent?(globalSpeedFactor : number, event : ProgramEvent) : void;
     protected postMovementEvent?(globalSpeedFactor : number, event : ProgramEvent) : void;
-    protected floorCollisionEvent?(event : ProgramEvent) : void;
+    protected floorCollisionEvent?(event : ProgramEvent, isBridge? : boolean) : void;
     protected die?(globalSpeedFactor : number, event : ProgramEvent) : boolean;
     
 
@@ -93,7 +93,7 @@ export class GameObject implements ExistingObject {
     }
 
 
-    public floorCollision(x : number, y : number, w : number, event : ProgramEvent) : boolean {
+    public floorCollision(x : number, y : number, w : number, event : ProgramEvent, isBridge : boolean = false) : boolean {
 
         const BOTTOM_MARGIN : number = 4.0;
         const TOP_MARGIN : number = 1.0;
@@ -116,7 +116,7 @@ export class GameObject implements ExistingObject {
 
             this.touchFloor = true;
 
-            this.floorCollisionEvent?.(event);
+            this.floorCollisionEvent?.(event, isBridge);
 
             return true;
         }
