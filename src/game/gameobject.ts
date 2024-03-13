@@ -3,6 +3,7 @@ import { Vector } from "../math/vector.js";
 import { ProgramEvent } from "../core/event.js";
 import { Bitmap, Canvas } from "../gfx/interface.js";
 import { ExistingObject } from "./existingobject.js";
+import { Platform } from "./platform.js";
 
 
 export const updateSpeedAxis = (speed : number, target : number, step : number) : number => {
@@ -50,7 +51,7 @@ export class GameObject implements ExistingObject {
 
     protected updateEvent?(globalSpeedFactor : number, event : ProgramEvent) : void;
     protected postMovementEvent?(globalSpeedFactor : number, event : ProgramEvent) : void;
-    protected floorCollisionEvent?(event : ProgramEvent, isBridge? : boolean) : void;
+    protected floorCollisionEvent?(event : ProgramEvent, isBridge? : boolean, platformRef? : Platform) : void;
     protected die?(globalSpeedFactor : number, event : ProgramEvent) : boolean;
     
 
@@ -93,7 +94,8 @@ export class GameObject implements ExistingObject {
     }
 
 
-    public floorCollision(x : number, y : number, w : number, event : ProgramEvent, isBridge : boolean = false) : boolean {
+    public floorCollision(x : number, y : number, w : number, event : ProgramEvent, 
+        isBridge : boolean = false, platformRef : Platform | undefined = undefined) : boolean {
 
         const BOTTOM_MARGIN : number = 4.0;
         const TOP_MARGIN : number = 1.0;
@@ -116,7 +118,7 @@ export class GameObject implements ExistingObject {
 
             this.touchFloor = true;
 
-            this.floorCollisionEvent?.(event, isBridge);
+            this.floorCollisionEvent?.(event, isBridge, platformRef);
 
             return true;
         }

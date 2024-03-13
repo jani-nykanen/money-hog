@@ -480,17 +480,17 @@ export class Platform implements ExistingObject {
             if (this.tiles[x] == TileType.Gap)
                 continue;
 
-            o.floorCollision(x*TILE_WIDTH, this.y, TILE_WIDTH, event, this.tiles[x] == TileType.Bridge);
+            o.floorCollision(x*TILE_WIDTH, this.y, TILE_WIDTH, event, this.tiles[x] == TileType.Bridge, this);
 
             // Special case 1: edge on left
             if (x == 0 && this.tiles[this.width - 1] == TileType.Gap) {
 
-                o.floorCollision(this.width*TILE_WIDTH, this.y, TILE_WIDTH, event);
+                o.floorCollision(this.width*TILE_WIDTH, this.y, TILE_WIDTH, event, this.tiles[0] == TileType.Bridge, this);
             }
             // Special case 2: edge on right
             else if (x == this.width - 1 && this.tiles[0] == TileType.Gap) {
 
-                o.floorCollision(-TILE_WIDTH, this.y, TILE_WIDTH, event);
+                o.floorCollision(-TILE_WIDTH, this.y, TILE_WIDTH, event, this.tiles[this.width - 1] == TileType.Bridge, this);
             }
 
             // Platform edge collisions (for enemies)

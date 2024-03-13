@@ -39,6 +39,7 @@ export class Enemy extends GameObject {
     protected checkEdgeCollision : boolean = false;
 
     protected canBeMoved : boolean = true;
+    protected canMoveOthers : boolean = true;
     protected canBeHeadbutted : boolean = true;
 
     protected stompType : StompType = StompType.Stomp;
@@ -196,6 +197,8 @@ export class Enemy extends GameObject {
                 this.forceDeathCollision = true;
                 // this.omitFloorCollision = false;
 
+                this.collisionBox.y = 2;
+
                 this.updateMovement(event);
             }
 
@@ -322,7 +325,8 @@ export class Enemy extends GameObject {
 
     public enemyToEnemyCollision(o : Enemy, event : ProgramEvent) : void {
 
-        if (!this.exist || !o.exist || this.dying || o.dying)
+        if (!this.canMoveOthers || !o.canMoveOthers || 
+            !this.exist || !o.exist || this.dying || o.dying)
             return;
 
         const ox : number = o.pos.x + o.collisionBox.x - o.collisionBox.w/2;
@@ -355,5 +359,20 @@ export class Enemy extends GameObject {
         const dy : number = Math.round(this.pos.y) + this.spr.height/2 - dh + 1;
 
         this.spr.draw(canvas, bmp, dx, dy, this.flip, dw, dh);
+    }
+
+
+    protected floorCollisionEvent(event : ProgramEvent, isBridge? : boolean, platformRef? : Platform): void {
+
+        if (!this.fixedY && this.flattenedTimer > 0) {
+
+            this.referencePlatform = platformRef;
+            this.fixedY = true;
+
+            this.target.zeros();
+            this.speed.zeros();
+
+            this.basePlatformOffset = 0;
+        }
     }
 }

@@ -32,6 +32,7 @@ export class Bat extends Enemy {
     protected updateAI(globalSpeedFactor : number, event : ProgramEvent): void {
 
         const WAVE_SPEED : number = Math.PI*2/120.0;
+        const PLATFORM_OFFSET_FACTOR : number = 0.90;
 
         this.waveTimer += WAVE_SPEED*globalSpeedFactor*event.tick;
         if (this.waveTimer >= Math.PI*2) {
@@ -40,7 +41,7 @@ export class Bat extends Enemy {
         }
         // this.waveTimer = (this.waveTimer + WAVE_SPEED*globalSpeedFactor*event.tick) % (Math.PI*2);
 
-        this.pos.y = this.baseY + Math.sin(this.waveTimer)*((PLATFORM_OFFSET - 2)*TILE_WIDTH/2);
+        this.pos.y = this.baseY + Math.sin(this.waveTimer)*((PLATFORM_OFFSET - 2)*(TILE_WIDTH*PLATFORM_OFFSET_FACTOR)/2);
 
         this.spr.animate(this.spr.getRow(), 0, 3, 8, event.tick);
     }

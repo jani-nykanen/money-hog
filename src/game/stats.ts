@@ -41,11 +41,11 @@ export class Stats {
 
             this.bonus = 10;
         }
-        else if (this.bonus >= 10 && this.bonus < 20) {
+        else if (this.bonus >= 10 && this.bonus < 30) {
 
             this.bonus += 5;
         }
-        else if (this.bonus >= 20 && this.bonus < 30) {
+        else if (this.bonus >= 30 && this.bonus < 50) {
 
             this.bonus += 2;
         }

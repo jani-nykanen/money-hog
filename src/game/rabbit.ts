@@ -31,6 +31,7 @@ export class Rabbit extends Enemy {
         this.fixedY = false;
         this.canBeMoved = false;
         this.checkEdgeCollision = false;
+        this.canMoveOthers = false;
 
         this.basePlatformOffset = this.spr.height/2 + TILE_HEIGHT/2;
 

@@ -24,7 +24,7 @@ export class Bird extends Enemy {
 
         this.dir = Math.random() > 0.0 ? 1 : -1;
 
-        this.basePlatformOffset = -TILE_HEIGHT;
+        this.basePlatformOffset = -TILE_HEIGHT*0.75;
 
         this.waveTimer = Math.random()*Math.PI*2;
 
@@ -66,9 +66,9 @@ export class Bird extends Enemy {
     protected playerEvent(globalSpeedFactor : number, player : Player, event : ProgramEvent) : boolean {
         
         const COLLISION_WIDTH : number = 32;
-        const COLLISION_HEIGHT : number = 16;
+        const COLLISION_HEIGHT : number = 18;
 
-        const Y_OFFSET : number = 5;
+        const Y_OFFSET : number = 6;
 
         const left : number = this.pos.x - COLLISION_WIDTH/2;
         const top : number = this.pos.y + Y_OFFSET - COLLISION_HEIGHT/2;
