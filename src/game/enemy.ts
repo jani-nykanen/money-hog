@@ -12,6 +12,14 @@ const FLATTEN_ANIMATION_TIME : number = 10;
 const FLATTEN_WAIT : number = 30;
 
 
+export const enum StompType {
+
+    Stomp = 0,
+    Hurt = 1,
+    Bounce = 2
+}
+
+
 export class Enemy extends GameObject {
 
 
@@ -29,8 +37,9 @@ export class Enemy extends GameObject {
     protected checkEdgeCollision : boolean = false;
 
     protected canBeMoved : boolean = true;
-    protected canBeStomped : boolean = true;
     protected canBeHeadbutted : boolean = true;
+
+    protected stompType : StompType = StompType.Stomp;
 
 
     constructor(x : number, y : number, referencePlatform : Platform) {
@@ -80,9 +89,16 @@ export class Enemy extends GameObject {
             bottom >= stompy && bottom <= stompy + STOMP_HEIGHT*event.tick) {
 
             player.bump(-3.0, event, true);
-            if (!this.canBeStomped) {
+            if (this.stompType != StompType.Stomp) {
 
-                player.hurt(event);
+                if (this.stompType == StompType.Bounce) {
+
+                    this.bounceEvent?.(event);
+                }
+                else {
+
+                    player.hurt(event);
+                }
                 return false;
             }
 
@@ -150,6 +166,7 @@ export class Enemy extends GameObject {
 
     protected edgeEvent?(event : ProgramEvent) : void;
     protected updateAI?(globalSpeedFactor : number, event : ProgramEvent) : void;
+    protected bounceEvent?(event : ProgramEvent) : void;
 
 
     protected die(globalSpeedFactor : number, event : ProgramEvent) : boolean {

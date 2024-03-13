@@ -1,5 +1,5 @@
 import { ProgramEvent } from "../core/event.js";
-import { Enemy } from "./enemy.js";
+import { Enemy, StompType } from "./enemy.js";
 import { Platform } from "./platform.js";
 
 
@@ -16,7 +16,7 @@ export class SpikeSlime extends Enemy {
         this.basePlatformOffset = 0;
 
         this.canBeMoved = false;
-        this.canBeStomped = false;
+        this.stompType = StompType.Hurt;
     }
 
 

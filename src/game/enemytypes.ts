@@ -5,6 +5,7 @@ import { Bat } from "./bat.js";
 import { SpikeSlime } from "./spikeslime.js";
 import { Bird } from "./bird.js";
 import { Rabbit } from "./rabbit.js";
+import { Mushroom } from "./mushroom.js";
 
 
 export const enum EnemyType {
@@ -16,10 +17,11 @@ export const enum EnemyType {
     SpikeSlime = 4,
     Bird = 5,
     Rabbit = 6,
+    Mushroom = 7,
 }
 
 
-export const ENEMY_TYPE_COUNT : number = 7;
+export const ENEMY_TYPE_COUNT : number = 8;
 
 
-export const getEnemyConstructor = (t : EnemyType) : Function => ([Slime, Apple, Dog, Bat, SpikeSlime, Bird, Rabbit][t]) ?? Slime;
+export const getEnemyConstructor = (t : EnemyType) : Function => ([Slime, Apple, Dog, Bat, SpikeSlime, Bird, Rabbit, Mushroom][t]) ?? Slime;
