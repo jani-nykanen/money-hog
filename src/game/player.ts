@@ -431,6 +431,13 @@ export class Player extends GameObject {
 
     protected updateEvent(globalSpeedFactor : number, event : ProgramEvent): void {
 
+        if (this.pos.y + this.sprBody.height/2 <= 0 ||
+            this.pos.y - this.sprBody.height/2 >= event.screenHeight) {
+
+            this.hurt(event);
+            this.stats.changeLives(-3);
+        }
+
         if (this.stats.getHealth() <= 0) {
 
             this.dying = true;
@@ -532,6 +539,7 @@ export class Player extends GameObject {
             return;
 
         const bmpSmallNumbers : Bitmap | undefined = canvas.getBitmap("small_numbers");
+        const bmpPlayer : Bitmap | undefined = canvas.getBitmap("player");
 
         canvas.setColor(255, 255, 173);
         this.flyingText.draw(canvas, bmpSmallNumbers);
@@ -543,8 +551,6 @@ export class Player extends GameObject {
         if (this.touchBridge) {
 
             const frame : number = Math.floor(this.downJumpIconTimer*2);
-            const bmpPlayer : Bitmap | undefined = canvas.getBitmap("player");
-
             canvas.drawBitmap(bmpPlayer, Flip.None, dx - 12, dy - 4, frame*24, 72, 24, 24);
         }
 
@@ -560,6 +566,15 @@ export class Player extends GameObject {
             dx, dy - 8*(scale - 1.0) , -8, 0, Align.Center, scale, scale);
 
         canvas.setColor();
+
+        /*
+        if (this.pos.y + this.sprBody.height/2 <= 0) {
+
+            canvas.setColor(255, 255, 255, 0.67);
+            canvas.drawBitmap(bmpPlayer, Flip.None, dx - 12, 0, 48, 72, 24, 24);
+            canvas.setColor();
+        }
+        */
     }
 
 

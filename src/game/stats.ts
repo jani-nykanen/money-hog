@@ -25,10 +25,11 @@ export class Stats {
     }
 
 
-    public changeLives(change : number) : void {
+    // TODO: Rename to "addLives" ?
+    public changeLives(amount : number) : void {
 
-        this.health = clamp(this.health + change, 0, this.maxHealth);
-        if (change < 0) {
+        this.health = clamp(this.health + amount, 0, this.maxHealth);
+        if (amount < 0) {
 
             this.healthUpdateTimer = 1.0;
         }
