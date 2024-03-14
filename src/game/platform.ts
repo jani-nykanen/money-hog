@@ -386,7 +386,7 @@ export class Platform implements ExistingObject {
 
     private drawDecorations(canvas : Canvas, bmp : Bitmap | undefined) : void {
 
-        const dy : number = Math.floor(this.y);
+        const dy : number = Math.round(this.y);
 
         for (let x = 0; x < this.width; ++ x) {
 
@@ -406,7 +406,7 @@ export class Platform implements ExistingObject {
 
     private drawSpikes(canvas : Canvas, bmp : Bitmap | undefined, flickerTime : number = 0.0) : void {
 
-        const dy : number = Math.floor(this.y);
+        const dy : number = Math.round(this.y);
 
         const frame : number = Math.floor(flickerTime*2.0);
 

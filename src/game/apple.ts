@@ -45,11 +45,14 @@ export class Apple extends Enemy {
         const BASE_SPEED : number = 0.5;
         const WAVE_SPEED : number = Math.PI*2/60.0;
         const AMPLITUDE : number = 4.0;
+        const GLOBAL_SPEED_WEIGHT : number = 0.5;
 
-        this.target.x = this.dir*globalSpeedFactor*BASE_SPEED;
+        const weight : number = 1.0 + Math.max(0.0, globalSpeedFactor - 1.0)*GLOBAL_SPEED_WEIGHT;
+
+        this.target.x = this.dir*weight*BASE_SPEED;
         this.speed.x = this.target.x;
 
-        this.waveTimer = (this.waveTimer + WAVE_SPEED*globalSpeedFactor*event.tick) % (Math.PI*2);
+        this.waveTimer = (this.waveTimer + WAVE_SPEED*weight*event.tick) % (Math.PI*2);
         this.pos.y = this.baseY + Math.sin(this.waveTimer)*AMPLITUDE;
 
         this.spr.animate(this.spr.getRow(), 0, 3, 4, event.tick);

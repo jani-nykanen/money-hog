@@ -75,6 +75,9 @@ export class Mushroom extends Enemy {
     protected updateAI(globalSpeedFactor : number, event : ProgramEvent): void {
         
         const BASE_SPEED : number = 0.50;
+        const GLOBAL_SPEED_WEIGHT : number = 0.5;
+
+        const weight : number = 1.0 + Math.max(0.0, globalSpeedFactor - 1.0)*GLOBAL_SPEED_WEIGHT;
 
         if (this.bounceRecoverTimer > 0) {
 
@@ -84,7 +87,7 @@ export class Mushroom extends Enemy {
         else {
 
             this.spr.animate(this.spr.getRow(), 0, 3, 6, event.tick);
-            this.target.x = this.dir*globalSpeedFactor*BASE_SPEED;
+            this.target.x = this.dir*weight*BASE_SPEED;
 
             this.flip = this.target.x < 0 ? Flip.Horizontal : Flip.None;
         }

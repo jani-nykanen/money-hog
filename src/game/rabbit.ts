@@ -41,13 +41,12 @@ export class Rabbit extends Enemy {
 
     protected updateAI(globalSpeedFactor : number, event : ProgramEvent): void {
 
-        const BASE_SPEED : number = 0.5;
         const ROTATION_SPEED : number = Math.PI*2/120.0;
+        const GLOBAL_SPEED_WEIGHT : number = 0.5;
 
-        this.target.x = this.dir*globalSpeedFactor*BASE_SPEED;
-        this.speed.x = this.target.x;
+        const weight : number = 1.0 + Math.max(0.0, globalSpeedFactor - 1.0)*GLOBAL_SPEED_WEIGHT;
 
-        this.angle = (this.angle + ROTATION_SPEED*globalSpeedFactor*event.tick) % (Math.PI*2);
+        this.angle = (this.angle + ROTATION_SPEED*weight*event.tick) % (Math.PI*2);
 
         this.pos.x = this.baseX + this.dir*Math.cos(this.angle)*DISTANCE;
         this.pos.y = this.baseY + Math.sin(this.angle)*DISTANCE;

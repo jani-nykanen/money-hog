@@ -11,6 +11,8 @@ import { Stats } from "./stats.js";
 export class Game implements Scene {
 
 
+    private globalSpeed : number = 0.0;
+
     private objects : ObjectManager | undefined = undefined;
     private stage : Stage | undefined = undefined;
 
@@ -22,6 +24,32 @@ export class Game implements Scene {
     constructor() {
 
         this.stats = new Stats(3);
+    }
+
+
+    private updateGlobalTimer(event : ProgramEvent) : void {
+
+        const TIMER_SPEED_INITIAL : number = 1.0/120.0;
+        const TIMER_SPEED_DEATH : number = 1.0/30.0;
+        const INITIAL_SPEED : number = 1.0;
+
+        if (this.objects?.doesPlayerExist() !== true) // Can also be undef, in theory...
+            return;
+
+        if (this.objects?.isPlayerDying()) {
+
+            this.globalSpeed = Math.max(0.0, this.globalSpeed - TIMER_SPEED_DEATH*event.tick);
+            return;
+        }
+
+        if (this.globalSpeed < INITIAL_SPEED) {
+
+            this.globalSpeed += TIMER_SPEED_INITIAL*event.tick;
+            if (this.globalSpeed >= INITIAL_SPEED) {
+
+                this.globalSpeed = INITIAL_SPEED;
+            }
+        }
     }
 
 
@@ -93,24 +121,25 @@ export class Game implements Scene {
         this.stage = new Stage(this.stats, event);
         this.objects = new ObjectManager(this.stage, this.stats, event);
         this.background = new Background();
+
+        this.globalSpeed = 0.0;
     }
 
 
     public update(event : ProgramEvent) : void {
         
-        const globalSpeedFactor : number = 1.0; // TEMP
-
         if (event.transition.isActive())
             return;
 
+        this.updateGlobalTimer(event);
+
         this.background?.update(event);
-        this.stage?.update(globalSpeedFactor, this.stats, event);
+        this.stage?.update(this.globalSpeed, this.stats, event);
         if (this.stage !== undefined) {
 
-            this.objects?.update(globalSpeedFactor, this.stage, event);
+            this.objects?.update(this.globalSpeed, this.stage, event);
         }
-
-        this.stats.update(globalSpeedFactor, event);
+        this.stats.update(this.globalSpeed, event);
     }
 
 

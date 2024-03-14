@@ -61,4 +61,8 @@ export class ObjectManager {
 
         this.player.applyShake(canvas);
     }
+
+
+    public isPlayerDying = () : boolean => this.player.isDying();
+    public doesPlayerExist = () : boolean => this.player.doesExist();
 }

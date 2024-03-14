@@ -33,8 +33,11 @@ export class Bat extends Enemy {
 
         const WAVE_SPEED : number = Math.PI*2/120.0;
         const PLATFORM_OFFSET_FACTOR : number = 0.90;
+        const GLOBAL_SPEED_WEIGHT : number = 0.5;
 
-        this.waveTimer += WAVE_SPEED*globalSpeedFactor*event.tick;
+        const weight : number = 1.0 + Math.max(0.0, globalSpeedFactor - 1.0)*GLOBAL_SPEED_WEIGHT;
+
+        this.waveTimer += WAVE_SPEED*weight*event.tick;
         if (this.waveTimer >= Math.PI*2) {
 
             this.waveTimer %= Math.PI*2;

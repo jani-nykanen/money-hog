@@ -12,6 +12,10 @@ import { StarParticle } from "./starparticle.js";
 import { FlyingText } from  "./flyingtext.js";
 
 
+
+const DEATH_TIME : number = 120;
+
+
 export class Player extends GameObject {
 
 
@@ -40,6 +44,7 @@ export class Player extends GameObject {
     private hurtTimer : number = 0;
     private shakeTimer : number = 0;
     private downJumpIconTimer : number = 0;
+    private deathTimer : number = 0;
 
     public readonly stats : Stats;
 
@@ -205,16 +210,16 @@ export class Player extends GameObject {
     }
 
 
-    private updateTimers(event : ProgramEvent) : void {
+    private updateTimers(globalSpeedFactor : number, event : ProgramEvent) : void {
 
-        const JUMP_SPEED : number = -2.5;
+        const JUMP_SPEED : number = -1.5;
         const DOWN_ICON_ANIMATION_SPEED : number = 1.0/30.0;
 
         if (this.jumpTimer > 0.0) {
 
             this.jumpTimer -= event.tick;
-            this.speed.y = JUMP_SPEED;
-            this.target.y = JUMP_SPEED;
+            this.speed.y = JUMP_SPEED - globalSpeedFactor;
+            this.target.y = this.speed.y;
         }
 
         if (this.ledgeTimer > 0) {
@@ -341,6 +346,29 @@ export class Player extends GameObject {
     }
 
 
+    // Draw what now?
+    private drawDeathBalls(canvas : Canvas, bmp : Bitmap | undefined) : void {
+
+        const ORB_COUNT : number = 8;
+        const ORB_DISTANCE : number = 96;
+
+        const t : number = this.deathTimer/DEATH_TIME;
+        const step : number = Math.PI*2/ORB_COUNT;
+
+        const dx : number = Math.round(this.pos.x);
+        const dy : number = Math.round(this.pos.y);
+
+        for (let i = 0; i < ORB_COUNT; ++ i) {
+
+            const angle : number = step*i;
+
+            this.sprBody.draw(canvas, bmp,
+                dx + Math.round(Math.cos(angle)*t*ORB_DISTANCE) - 12,
+                dy + Math.round(Math.sin(angle)*t*ORB_DISTANCE) - 12);
+        }
+    }
+
+
     private drawBase(canvas : Canvas, 
         bmpBody : Bitmap | undefined, bmpBashEffect : Bitmap | undefined, 
         xoff : number): void {
@@ -371,6 +399,20 @@ export class Player extends GameObject {
     }
 
 
+    protected die(globalSpeedFactor : number, event : ProgramEvent) : boolean {
+        
+        this.updateTimers(globalSpeedFactor, event);
+
+        this.dust.update(globalSpeedFactor, event);
+        this.flyingText.update(globalSpeedFactor, event);
+
+        this.deathTimer += event.tick;
+        this.sprBody.animate(4, 0, 3, 3, event.tick);
+
+        return this.deathTimer >= DEATH_TIME;
+    }
+
+
     protected floorCollisionEvent(event : ProgramEvent, touchBridge : boolean = false): void {
         
         const LEDGE_TIME : number = 8.0;
@@ -389,8 +431,17 @@ export class Player extends GameObject {
 
     protected updateEvent(globalSpeedFactor : number, event : ProgramEvent): void {
 
+        if (this.stats.getHealth() <= 0) {
+
+            this.dying = true;
+            this.deathTimer = 0;
+            this.hurtTimer = 0;
+
+            return;
+        }
+
         this.control(globalSpeedFactor, event);
-        this.updateTimers(event);
+        this.updateTimers(globalSpeedFactor, event);
         this.updateDust(globalSpeedFactor, event);
         this.animate(event);
 
@@ -445,8 +496,17 @@ export class Player extends GameObject {
 
     public draw(canvas: Canvas): void {
 
-        if (!this.exist || 
-            (this.hurtTimer > 0 && Math.floor(this.hurtTimer/4) % 2 == 0)) {
+        if (!this.exist)
+            return;
+
+        if (this.dying) {
+
+            const bmp : Bitmap | undefined = canvas.getBitmap("player");
+            this.drawDeathBalls(canvas, bmp);
+            return;
+        }
+
+        if (this.hurtTimer > 0 && Math.floor(this.hurtTimer/4) % 2 == 0) {
             
             return;
         }
@@ -468,6 +528,9 @@ export class Player extends GameObject {
 
     public postDraw(canvas : Canvas) : void {
         
+        if (this.dying || !this.exist)
+            return;
+
         const bmpSmallNumbers : Bitmap | undefined = canvas.getBitmap("small_numbers");
 
         canvas.setColor(255, 255, 173);
