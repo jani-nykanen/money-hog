@@ -13,6 +13,9 @@ export class Bat extends Enemy {
     private waveTimer : number = 0.0;
 
 
+    protected speedFactor : number = 1.0;
+
+
     constructor(x : number, y : number, referencePlatform : Platform) {
 
         super(x, y, referencePlatform);
@@ -37,7 +40,7 @@ export class Bat extends Enemy {
 
         const weight : number = 1.0 + Math.max(0.0, globalSpeedFactor - 1.0)*GLOBAL_SPEED_WEIGHT;
 
-        this.waveTimer += WAVE_SPEED*weight*event.tick;
+        this.waveTimer += this.speedFactor*WAVE_SPEED*weight*event.tick;
         if (this.waveTimer >= Math.PI*2) {
 
             this.waveTimer %= Math.PI*2;
@@ -46,6 +49,6 @@ export class Bat extends Enemy {
 
         this.pos.y = this.baseY + Math.sin(this.waveTimer)*((PLATFORM_OFFSET - 2)*(TILE_WIDTH*PLATFORM_OFFSET_FACTOR)/2);
 
-        this.spr.animate(this.spr.getRow(), 0, 3, 8, event.tick);
+        this.spr.animate(this.spr.getRow(), 0, 3, 8/this.speedFactor, event.tick);
     }
 }
