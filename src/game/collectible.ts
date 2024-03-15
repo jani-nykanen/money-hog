@@ -123,17 +123,9 @@ export class Collectible extends Spawnable<CollectibleType> {
         if (!this.exist || this.dying || !player.doesExist() || player.isDying())
             return;
 
-        const ppos : Vector = player.getPosition();
+        if (player.overlay(this)) {
 
-        ppos.x -= event.screenWidth;
-        // Handle "looping"
-        for (let i = -1; i <= 1; ++ i) {
-
-            if (overlayRect(this.pos, this.hitbox, ppos, player.getHitbox())) {
-
-                this.handleCollision(player, event);
-            }
-            ppos.x += event.screenWidth;
+            this.handleCollision(player, event);
         }
     }
 

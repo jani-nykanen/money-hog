@@ -262,18 +262,8 @@ export class Enemy extends GameObject {
             return;
         }
 
-        // TODO: Use for loop, please...
         if (this.headbuttCollision(globalSpeedFactor, player, 0, event) ||
-            this.headbuttCollision(globalSpeedFactor, player, event.screenWidth, event) ||
-            this.headbuttCollision(globalSpeedFactor, player, -event.screenWidth, event)) {
-
-            this.addPoints(player);
-            return;
-        }
-
-        if (this.stompCollision(player, 0, event) ||
-            this.stompCollision(player, event.screenWidth, event) ||
-            this.stompCollision(player, -event.screenWidth, event)) {
+            this.stompCollision(player, 0, event)) {
 
             this.addPoints(player);
             return;
@@ -282,13 +272,13 @@ export class Enemy extends GameObject {
         if (this.bounceRecoverTimer > 0)
             return;
 
-        for (let i = -1; i <= 1; ++ i) {
+        //for (let i = -1; i <= 1; ++ i) {
 
             player.hurtCollision(
-                this.pos.x + this.hitbox.x - this.hitbox.w/2 + event.screenWidth*i, 
+                this.pos.x + this.hitbox.x - this.hitbox.w/2, 
                 this.pos.y + this.hitbox.y - this.hitbox.h/2, 
-                this.hitbox.w, this.hitbox.h, event);
-        }
+                this.hitbox.w, this.hitbox.h, event, true);
+        //}
     }
 
 

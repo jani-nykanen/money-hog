@@ -14,15 +14,23 @@ import { Vector } from "../math/vector.js";
 const APPEAR_TIME : number = 45;
 const GO_TIME : number = 60;
 
+const SPEED_UP_WAIT : number = 90;
+const SPEED_UP_INITIAL : number = 30;
+
 
 export class Game implements Scene {
 
 
     private globalSpeed : number = 0.0;
+
     private goTimer : number = 0.0;
     private appearTimer : number = 0.0;
     private readyGoPhase : number = 0;
+
     private gameTimer : number = 0.0;
+
+    private speedPhase : number = 0;
+    private speedUpTimer : number = 0.0;
 
     private objects : ObjectManager | undefined = undefined;
     private stage : Stage | undefined = undefined;
@@ -40,11 +48,34 @@ export class Game implements Scene {
     }
 
 
+    private computeGlobalSpeedTarget(event : ProgramEvent) : number {
+
+        const SPEED_UP_TIMES : number[] = [30, 60, 90, 120, 150];
+        const BASE_SPEED : number = 0.5;
+        const SPEED_ADD : number = 0.25;
+
+        let i = 0
+        for (let i = 0; i < SPEED_UP_TIMES.length; ++ i) {
+
+            if (this.speedPhase < i + 1 &&
+                this.gameTimer >= SPEED_UP_TIMES[i]*60) {
+
+                this.speedPhase = i + 1;
+                this.speedUpTimer = SPEED_UP_INITIAL + SPEED_UP_WAIT;
+
+                break
+            }
+        }
+
+        return BASE_SPEED + SPEED_ADD*this.speedPhase ;
+    }   
+
+
     private updateGlobalTimer(event : ProgramEvent) : void {
 
-        const TIMER_SPEED_INITIAL : number = 1.0/120.0;
+        const TIMER_SPEED_UP : number = 1.0/120.0;
         const TIMER_SPEED_DEATH : number = 1.0/30.0;
-        const INITIAL_SPEED : number = 1.0;
+        // const INITIAL_SPEED : number = 1.0;
 
         if (!this.objects.canControlPlayer() ||
             this.objects?.doesPlayerExist() !== true) // since "undefined" is not true
@@ -53,16 +84,24 @@ export class Game implements Scene {
         if (this.objects?.isPlayerDying()) {
 
             this.globalSpeed = Math.max(0.0, this.globalSpeed - TIMER_SPEED_DEATH*event.tick);
+            this.speedUpTimer = 0;
             return;
         }
 
-        if (this.globalSpeed < INITIAL_SPEED) {
+        const target : number = this.computeGlobalSpeedTarget(event);
 
-            this.globalSpeed += TIMER_SPEED_INITIAL*event.tick;
-            if (this.globalSpeed >= INITIAL_SPEED) {
+        if (this.globalSpeed < target) {
 
-                this.globalSpeed = INITIAL_SPEED;
+            this.globalSpeed += TIMER_SPEED_UP*event.tick;
+            if (this.globalSpeed >= target) {
+
+                this.globalSpeed = target;
             }
+        }
+
+        if (this.speedUpTimer > 0) {
+
+            this.speedUpTimer -= event.tick;
         }
     }
 
@@ -100,6 +139,9 @@ export class Game implements Scene {
         this.readyGoPhase = 2;
         this.appearTimer = 0.0;
         this.gameTimer = 0.0;
+
+        this.speedUpTimer = 0;
+        this.speedPhase = 0;
 
         event.transition.setCenter(new Vector(event.screenWidth/2, event.screenHeight/2));
     }
@@ -202,6 +244,27 @@ export class Game implements Scene {
         canvas.setColor();
     }
 
+
+    private drawSpeedUpText(canvas : Canvas) : void {
+
+        const YOFF_FACTOR : number = 0.25;
+
+        if (this.speedUpTimer > SPEED_UP_WAIT &&
+            Math.floor(this.speedUpTimer/4) % 2 != 0) {
+            
+            return;
+        }
+
+        const bmpFontOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
+
+        const dx : number = canvas.width/2;
+        const dy : number = Math.round(canvas.height*YOFF_FACTOR) - 8;
+
+        canvas.setColor(219, 255, 0);
+        canvas.drawText(bmpFontOutlines, "SPEED UP!", dx, dy, -8, 0, Align.Center);
+        canvas.setColor();
+    }
+
     
     public init(param : SceneParameter, event : ProgramEvent) : void {
 
@@ -216,6 +279,10 @@ export class Game implements Scene {
         this.readyGoPhase = 2;
         this.goTimer = 0;
         this.gameTimer = 0;
+        this.appearTimer = 0;
+
+        this.speedUpTimer = 0;
+        this.speedPhase = 0;
 
         event.transition.activate(false, TransitionType.Circle, 1.0/30.0, event);
     }
@@ -302,10 +369,13 @@ export class Game implements Scene {
 
             this.drawReadyGoText(canvas);
         }
-
-        if (this.paused) {
+        else if (this.paused) {
 
             this.drawPauseScreen(canvas);
+        }
+        else if (this.speedUpTimer > 0) {
+
+            this.drawSpeedUpText(canvas);
         }
     }
 

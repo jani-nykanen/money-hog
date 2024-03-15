@@ -47,6 +47,8 @@ export class Player extends GameObject {
     private deathTimer : number = 0;
     private canControl : boolean = false;
 
+    private invincibilityTimer : number = 0;
+
     public readonly stats : Stats;
 
 
@@ -222,6 +224,11 @@ export class Player extends GameObject {
         const JUMP_SPEED : number = -1.5;
         const DOWN_ICON_ANIMATION_SPEED : number = 1.0/30.0;
 
+        if (this.invincibilityTimer > 0) {
+
+            this.invincibilityTimer -= event.tick;
+        }
+
         if (this.jumpTimer > 0.0) {
 
             this.jumpTimer -= event.tick;
@@ -353,6 +360,23 @@ export class Player extends GameObject {
     }
 
 
+    private checkBorderCollision(event : ProgramEvent) : void {
+
+        if (this.speed.x < 0 && this.pos.x + this.collisionBox.x - this.collisionBox.w/2 <= 0) {
+
+            this.speed.x = 0;
+            this.pos.x = -this.collisionBox.x + this.collisionBox.w/2;
+            return;
+        }
+
+        if (this.speed.x > 0 && this.pos.x + this.collisionBox.x + this.collisionBox.w/2 >= event.screenWidth) {
+
+            this.speed.x = 0;
+            this.pos.x = event.screenWidth - this.collisionBox.x - this.collisionBox.w/2;
+        }
+    }
+
+
     // Draw what now?
     private drawDeathBalls(canvas : Canvas, bmp : Bitmap | undefined) : void {
 
@@ -372,36 +396,6 @@ export class Player extends GameObject {
             this.sprBody.draw(canvas, bmp,
                 dx + Math.round(Math.cos(angle)*t*ORB_DISTANCE) - 12,
                 dy + Math.round(Math.sin(angle)*t*ORB_DISTANCE) - 12);
-        }
-    }
-
-
-    private drawBase(canvas : Canvas, 
-        bmpBody : Bitmap | undefined, bmpBashEffect : Bitmap | undefined, 
-        xoff : number): void {
-
-        const BASH_EFFECT_OFFSET_X : number[] = [-22, 14];
-        const BASH_EFFECT_OFFSET_Y : number = -4;
-
-        const dx : number = Math.round(this.pos.x) - 12 + xoff;
-        const dy : number = Math.round(this.pos.y) - 12 + 1;
-
-        this.sprBody.draw(canvas, bmpBody, dx, dy, this.flip);
-
-        if (this.headButting) {
-
-            /*
-            canvas.setColor(255, 0, 0);
-            canvas.fillRect(
-                this.headbuttHitbox.x - this.headbuttHitbox.w/2, 
-                this.headbuttHitbox.y - this.headbuttHitbox.h/2,
-                this.headbuttHitbox.w, this.headbuttHitbox.h);
-            canvas.setColor();
-            */
-
-            this.sprBashEffect.draw(canvas, bmpBashEffect, 
-                dx + BASH_EFFECT_OFFSET_X[this.flip as number],
-                dy + BASH_EFFECT_OFFSET_Y, this.flip);
         }
     }
 
@@ -475,6 +469,8 @@ export class Player extends GameObject {
         this.flyingText.update(globalSpeedFactor, event);
 
         this.touchBridge = false;
+
+        this.checkBorderCollision(event);
     }
 
 
@@ -531,15 +527,20 @@ export class Player extends GameObject {
         const bmpBody : Bitmap | undefined = canvas.getBitmap("player");
         const bmpBashEffect : Bitmap | undefined = canvas.getBitmap("bash_effect");
 
-        if (this.pos.x < this.sprBody.width/2) {
+        const BASH_EFFECT_OFFSET_X : number[] = [-22, 14];
+        const BASH_EFFECT_OFFSET_Y : number = -4;
 
-            this.drawBase(canvas, bmpBody, bmpBashEffect, canvas.width);
-        }
-        else if (this.pos.x > canvas.width - this.sprBody.width/2) {
+        const dx : number = Math.round(this.pos.x) - 12;
+        const dy : number = Math.round(this.pos.y) - 12 + 1;
 
-            this.drawBase(canvas, bmpBody, bmpBashEffect, -canvas.width);
+        this.sprBody.draw(canvas, bmpBody, dx, dy, this.flip);
+
+        if (this.headButting) {
+
+            this.sprBashEffect.draw(canvas, bmpBashEffect, 
+                dx + BASH_EFFECT_OFFSET_X[this.flip as number],
+                dy + BASH_EFFECT_OFFSET_Y, this.flip);
         }
-        this.drawBase(canvas, bmpBody, bmpBashEffect, 0);
     }
 
 
@@ -600,9 +601,10 @@ export class Player extends GameObject {
     }
 
 
-    public hurtCollision(x : number, y : number, w : number, h : number, event : ProgramEvent) : boolean {
+    public hurtCollision(x : number, y : number, w : number, h : number, event : ProgramEvent, enemyHurt : boolean = false) : boolean {
 
         if (!this.exist || this.dying || this.hurtTimer > 0 ||
+            (enemyHurt && this.invincibilityTimer > 0) ||
             !overlayRect(this.pos, this.collisionBox, new Vector(x + w/2, y + h/2), new Rectangle(0, 0, w, h)))
             return false;
 
@@ -634,6 +636,7 @@ export class Player extends GameObject {
         const STAR_SPEED : number = 3.0;
         const STAR_EXIST_TIME : number = 1.0/20.0;
         const STAR_SPEED_FACTOR_Y : number = 0.67; 
+        const INVICIBILITY_TIME : number = 6;
 
         this.speed.y = amount;
         
@@ -642,6 +645,8 @@ export class Player extends GameObject {
         this.headButtTimer = 0;
         this.canDoubleJump = true;
         this.doubleJumping = false;
+
+        this.invincibilityTimer = INVICIBILITY_TIME;
 
         if (createStars) {
 

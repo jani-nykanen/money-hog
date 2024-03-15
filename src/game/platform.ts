@@ -63,10 +63,11 @@ export class Platform implements ExistingObject {
     }
 
 
-    private createSpikes() : void {
+    private createSpikes(weight : number) : void {
 
         const SPIKE_MIN_DISTANCE : number = 1;
-        const SPIKE_WEIGHTS : number[] = [0.30, 0.50, 0.20];
+        const SPIKE_WEIGHTS_INITIAL : number[] = [0.30, 0.50, 0.20];
+        const SPIKE_WEIGHTS_LAST : number[] = [0.15, 0.40, 0.40, 0.05];
 
         let admissableTileCount : number = 0;
         let admissablePositions : boolean[] = (new Array<boolean> (this.width)).fill(false);
@@ -88,7 +89,7 @@ export class Platform implements ExistingObject {
         }
 
         const maxSpikeCount : number = Math.min(
-            sampleWeightedUniform(SPIKE_WEIGHTS),
+            sampleInterpolatedWeightedUniform(SPIKE_WEIGHTS_INITIAL, SPIKE_WEIGHTS_LAST, weight),
             Math.floor(Math.random()*(admissableTileCount - 1))
         );
         if (maxSpikeCount <= 0)
@@ -208,7 +209,7 @@ export class Platform implements ExistingObject {
     }
 
 
-    private createPlatform(initial : boolean = false) : void {
+    private createPlatform(weight : number, initial : boolean = false) : void {
 
         const INITIAL_TYPE_WEIGHTS : number[] = [0.40, 0.40, 0.20];
 
@@ -285,7 +286,7 @@ export class Platform implements ExistingObject {
             }
         }
 
-        this.createSpikes();
+        this.createSpikes(weight);
         this.createDecorations();
     }
 
@@ -422,7 +423,7 @@ export class Platform implements ExistingObject {
     }
 
 
-    public spawn(y : number, width : number, initial : boolean = false) : void {
+    public spawn(weight : number, y : number, width : number, initial : boolean = false) : void {
 
         if (this.tiles.length == 0)
             this.tiles = new Array<TileType> (width);
@@ -436,7 +437,7 @@ export class Platform implements ExistingObject {
         this.y = y;
         this.width = width;
 
-        this.createPlatform(initial);
+        this.createPlatform(weight, initial);
 
         this.exist = true;
     }
@@ -482,6 +483,8 @@ export class Platform implements ExistingObject {
 
             o.floorCollision(x*TILE_WIDTH, this.y, TILE_WIDTH, event, this.tiles[x] == TileType.Bridge, this);
 
+            /*
+            // Unused since the player "looping" for removed
             // Special case 1: edge on left
             if (x == 0 && this.tiles[this.width - 1] == TileType.Gap) {
 
@@ -492,6 +495,7 @@ export class Platform implements ExistingObject {
 
                 o.floorCollision(-TILE_WIDTH, this.y, TILE_WIDTH, event, this.tiles[this.width - 1] == TileType.Bridge, this);
             }
+            */
 
             // Platform edge collisions (for enemies)
             if (x > 0 && this.tiles[x - 1] == TileType.Gap) {
@@ -509,10 +513,10 @@ export class Platform implements ExistingObject {
                 const dx : number = x*TILE_WIDTH + (TILE_WIDTH - SPIKE_WIDTH)/2;
                 const dy : number = this.y - SPIKE_HEIGHT;
                 
-                for (let i = -1; i <= 1; ++ i) {
+                // for (let i = -1; i <= 1; ++ i) {
 
-                    o.hurtCollision?.(dx + i*event.screenWidth, dy, SPIKE_WIDTH, SPIKE_HEIGHT, event);
-                }
+                    o.hurtCollision?.(dx, dy, SPIKE_WIDTH, SPIKE_HEIGHT, event);
+                // }
 
                 o.edgeCollision?.(x*TILE_WIDTH, this.y - TILE_HEIGHT, TILE_HEIGHT, 1, event);
                 o.edgeCollision?.((x + 1)*TILE_WIDTH, this.y - TILE_HEIGHT, TILE_HEIGHT, -1, event);

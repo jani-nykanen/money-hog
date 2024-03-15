@@ -100,7 +100,7 @@ export class Stage {
 
         const p : Platform = next<Platform>(this.platforms, Platform);
 
-        p.spawn(yoff + event.screenHeight + BOTTOM_OFFSET*TILE_HEIGHT,
+        p.spawn(weight, yoff + event.screenHeight + BOTTOM_OFFSET*TILE_HEIGHT,
             (event.screenWidth/TILE_WIDTH) | 0, initial);
 
         if (!initial) {
