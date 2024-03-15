@@ -242,17 +242,33 @@ export class WebGLCanvas implements Canvas {
 
 
     public drawVerticallyWavingBitmap(bmp : Bitmap,
-        dx : number, dy : number, period : number, amplitude : number,
-        shift : number) : void {
+        dx : number, dy : number, sx : number, sy : number, sw : number, sh : number,
+        period : number, amplitude : number, shift : number) : void {
 
         // TODO: Same here
 
-        for (let x = 0; x < bmp.width; ++ x) {
+        for (let x = 0; x < sw; ++ x) {
 
-            const t : number = shift + (x / bmp.width)*period;
+            const t : number = shift + (x/sw)*period;
             const y : number = Math.round(Math.sin(t)*amplitude);
 
-            this.drawBitmap(bmp, Flip.None, dx + x, dy + y, x, 0, 1, bmp.height);
+            this.drawBitmap(bmp, Flip.None, dx + x, dy + y, sx + x, sy, 1, sh);
+        }
+    }
+
+
+    public drawFunnilyAppearingBitmap(bmp : Bitmap, flip : Flip,
+        dx : number, dy : number, sx : number, sy : number, sw : number, sh : number,
+        t : number, amplitude : number, latitude : number, maxOffset : number) : void {
+
+        const offset : number = 1 + maxOffset * t;
+
+        for (let y = 0; y < sh; ++ y) {
+
+            this.drawBitmap(bmp, flip,
+                Math.round(dx + Math.sin((Math.PI*2*latitude)/sh*y + t*(Math.PI*latitude))*amplitude*t), 
+                Math.round(dy + y*offset - sh*maxOffset*t/2),
+                sx, sy + y, sw, 1);
         }
     }
 

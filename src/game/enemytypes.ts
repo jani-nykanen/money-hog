@@ -24,4 +24,30 @@ export const enum EnemyType {
 export const ENEMY_TYPE_COUNT : number = 8;
 
 
+export const ENEMY_WEIGHTS_INITIAL : number[] = [
+
+    0.25,
+    0.25,
+    0.20,
+    0.20,
+    0.0,
+    0.0,
+    0.0,
+    0.1
+];
+
+
+export const ENEMY_WEIGHTS_FINAL : number[] = [
+
+    0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.125
+];
+
+
 export const getEnemyConstructor = (t : EnemyType) : Function => ([Slime, Apple, Dog, Bat, SpikeSlime, Bird, Rabbit, Mushroom][t]) ?? Slime;

@@ -3,8 +3,8 @@ import { ProgramEvent } from "../core/event.js";
 import { GameObject } from "./gameobject.js";
 import { Canvas, Bitmap, Flip } from "../gfx/interface.js";
 import { TILE_HEIGHT, TILE_WIDTH } from "./tilesize.js";
-import { sampleWeightedUniform } from "../math/random.js";
-import { ENEMY_TYPE_COUNT, EnemyType } from "./enemytypes.js";
+import { sampleInterpolatedWeightedUniform, sampleWeightedUniform } from "../math/random.js";
+import { ENEMY_TYPE_COUNT, ENEMY_WEIGHTS_FINAL, ENEMY_WEIGHTS_INITIAL, EnemyType } from "./enemytypes.js";
 import { EnemyGenerator } from "./enemygenerator.js";
 import { clamp } from "../math/utility.js";
 
@@ -521,7 +521,7 @@ export class Platform implements ExistingObject {
     }
 
 
-    public spawnEnemies(enemyGenerator : EnemyGenerator, count : number) : void {
+    public spawnEnemies(weight : number, enemyGenerator : EnemyGenerator, count : number) : void {
 
         if (count == 0)
             return;
@@ -537,7 +537,8 @@ export class Platform implements ExistingObject {
                 if (this.tiles[x] == TileType.Gap || this.spikes[x])
                     continue;
 
-                const type : EnemyType = Math.floor(Math.random()*ENEMY_TYPE_COUNT);
+                const type : EnemyType = sampleInterpolatedWeightedUniform(
+                    ENEMY_WEIGHTS_INITIAL, ENEMY_WEIGHTS_FINAL, weight);
 
                 enemyGenerator.spawn(type, x*TILE_WIDTH + TILE_WIDTH/2, this.y - 12, this);
                 break;

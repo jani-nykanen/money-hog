@@ -87,8 +87,13 @@ export interface Canvas {
         amplitude : number, period : number, shift : number,
         dx? : number, dy? : number, flip? : Flip) : void;
     drawVerticallyWavingBitmap(bmp : Bitmap,
-        dx : number, dy : number, period : number, amplitude : number,
+        dx : number, dy : number,
+        sx : number, sy : number, sw : number, sh : number,
+        period : number, amplitude : number,
         shift : number) : void;
+    drawFunnilyAppearingBitmap(bmp : Bitmap, flip : Flip,
+        dx : number, dy : number, sx : number, sy : number, sw : number, sh : number,
+        t : number, amplitude : number, latitude : number, maxOffset : number) : void
 
     drawGrid(grid : Grid, bmp : Bitmap | undefined, flip? : Flip, dx? : number, dy? : number, dw? : number, dh? : number) : void;
 

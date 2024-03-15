@@ -8,7 +8,7 @@ import { TILE_HEIGHT, TILE_WIDTH } from "./tilesize.js";
 import { next } from "./existingobject.js";
 import { ObjectGenerator } from "./objectgenerator.js";
 import { Collectible, CollectibleType } from "./collectible.js";
-import { sampleWeightedUniform } from "../math/random.js";
+import { sampleInterpolatedWeightedUniform, sampleWeightedUniform } from "../math/random.js";
 import { Stats } from "./stats.js";
 import { Enemy } from "./enemy.js";
 import { EnemyGenerator } from "./enemygenerator.js";
@@ -77,19 +77,23 @@ export class Stage {
     }
 
 
-    private spawnEnemies(platform : Platform) : void {
+    private spawnEnemies(weight : number, platform : Platform) : void {
 
-        const ENEMY_COUNT_WEIGHTS : number[] = [0.30, 0.50, 0.20];
+        const ENEMY_COUNT_WEIGHTS_INITIAL : number[] = [0.30, 0.50, 0.20, 0.0];
+        const ENEMY_COUNT_WEIGHTS_FINAL : number[] = [0.1, 0.20, 0.50, 0.20];
 
-        const count : number = sampleWeightedUniform(ENEMY_COUNT_WEIGHTS);
+        const count : number = sampleInterpolatedWeightedUniform(
+            ENEMY_COUNT_WEIGHTS_INITIAL, 
+            ENEMY_COUNT_WEIGHTS_FINAL,
+            weight);
         if (count == 0)
             return;
 
-        platform.spawnEnemies(this.enemyGenerator, count);
+        platform.spawnEnemies(weight, this.enemyGenerator, count);
     }
 
 
-    private spawnPlatform(yoff : number, stats : Stats, event : ProgramEvent, 
+    private spawnPlatform(weight : number, yoff : number, stats : Stats, event : ProgramEvent, 
         initial : boolean = false, noEnemies : boolean = false) : void {
 
         const BOTTOM_OFFSET : number = PLATFORM_OFFSET // 2;
@@ -105,13 +109,13 @@ export class Stage {
 
             if (!noEnemies) {
 
-                this.spawnEnemies(p);
+                this.spawnEnemies(weight, p);
             }
         }
     }
 
 
-    private updatePlatforms(globalSpeedFactor : number, stats : Stats, event : ProgramEvent) : void {
+    private updatePlatforms(weight : number, globalSpeedFactor : number, stats : Stats, event : ProgramEvent) : void {
 
         // Update existing platforms
         for (let p of this.platforms) {
@@ -123,7 +127,7 @@ export class Stage {
         this.platformTimer += globalSpeedFactor*event.tick;
         if (this.platformTimer >= PLATFORM_OFFSET*TILE_HEIGHT) {
 
-            this.spawnPlatform(0.0, stats, event);
+            this.spawnPlatform(weight, 0.0, stats, event);
             this.platformTimer -= PLATFORM_OFFSET*TILE_HEIGHT;
         }
     } 
@@ -137,10 +141,10 @@ export class Stage {
     }
 
 
-    public update(globalSpeedFactor : number, stats : Stats, event : ProgramEvent) : void {
+    public update(weight : number, globalSpeedFactor : number, stats : Stats, event : ProgramEvent) : void {
 
         this.updateTimers(event);
-        this.updatePlatforms(globalSpeedFactor, stats, event);
+        this.updatePlatforms(weight, globalSpeedFactor, stats, event);
     }
 
 
@@ -173,7 +177,7 @@ export class Stage {
 
         for (let i = 0; i < COUNT; ++ i) {
 
-            this.spawnPlatform(-PLATFORM_OFFSET*TILE_HEIGHT*i, stats, event, i == COUNT - 1, true);
+            this.spawnPlatform(0.0, -PLATFORM_OFFSET*TILE_HEIGHT*i, stats, event, i == COUNT - 1, true);
         }
     }
 

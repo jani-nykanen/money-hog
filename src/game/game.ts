@@ -11,12 +11,18 @@ import { RGBA } from "../math/rgba.js";
 import { Vector } from "../math/vector.js";
 
 
+const APPEAR_TIME : number = 45;
+const GO_TIME : number = 60;
+
+
 export class Game implements Scene {
 
 
     private globalSpeed : number = 0.0;
     private goTimer : number = 0.0;
+    private appearTimer : number = 0.0;
     private readyGoPhase : number = 0;
+    private gameTimer : number = 0.0;
 
     private objects : ObjectManager | undefined = undefined;
     private stage : Stage | undefined = undefined;
@@ -62,14 +68,16 @@ export class Game implements Scene {
 
 
     private updateReadyGo(event : ProgramEvent) : void {
-        
-        const GO_TIME : number = 60;
 
-        if (this.readyGoPhase == 2 &&
-            this.objects?.canControlPlayer()) {
+        if (this.readyGoPhase == 2) {
 
-            this.readyGoPhase = 1;
-            this.goTimer = GO_TIME;
+            this.appearTimer = Math.min(APPEAR_TIME, this.appearTimer + event.tick);
+
+            if (this.objects?.canControlPlayer()) {
+
+                this.readyGoPhase = 1;
+                this.goTimer = GO_TIME;
+            }
         }
         else if (this.readyGoPhase == 1) {
 
@@ -88,8 +96,10 @@ export class Game implements Scene {
         this.stage?.reset(this.stats, event);
         this.objects?.reset(this.stats, event);
 
-        this.goTimer = 0;
+        this.goTimer = 0.0;
         this.readyGoPhase = 2;
+        this.appearTimer = 0.0;
+        this.gameTimer = 0.0;
 
         event.transition.setCenter(new Vector(event.screenWidth/2, event.screenHeight/2));
     }
@@ -163,7 +173,20 @@ export class Game implements Scene {
         const dx : number = canvas.width/2 - ((bmp?.width ?? 0)/2);
         const dy : number = canvas.height/2 - ((bmp?.height ?? 0)/4) 
 
-        canvas.drawBitmap(bmp, Flip.None, dx, dy, 0, (2 - this.readyGoPhase)*48, 128, 48);
+        if (this.readyGoPhase == 2) {
+
+            if (this.appearTimer < APPEAR_TIME) {
+
+                const t : number = 1.0 - this.appearTimer/APPEAR_TIME;
+                canvas.drawFunnilyAppearingBitmap(bmp, Flip.None, dx, dy, 0, 0, 128, 48, t, 48, 4, 16);
+                return;
+            }
+            canvas.drawBitmap(bmp, Flip.None, dx, dy, 0, (2 - this.readyGoPhase)*48, 128, 48);
+
+            return;
+        }
+
+        canvas.drawVerticallyWavingBitmap(bmp, dx, dy, 0, 48, 128, 48, Math.PI*4, 2, this.goTimer/GO_TIME*Math.PI*4);
     }
 
 
@@ -192,6 +215,7 @@ export class Game implements Scene {
 
         this.readyGoPhase = 2;
         this.goTimer = 0;
+        this.gameTimer = 0;
 
         event.transition.activate(false, TransitionType.Circle, 1.0/30.0, event);
     }
@@ -199,6 +223,8 @@ export class Game implements Scene {
 
     public update(event : ProgramEvent) : void {
         
+        const MAX_WEIGHT_TIME : number = 60*60*5;
+
         const pauseButton : InputState = event.input.getAction("pause");
 
         if (this.paused) {
@@ -221,11 +247,15 @@ export class Game implements Scene {
             }
         }
 
+        this.gameTimer += event.tick;
+
         this.updateReadyGo(event);
         this.updateGlobalTimer(event);
 
         this.background?.update(event);
-        this.stage?.update(this.globalSpeed, this.stats, event);
+        this.stage?.update( 
+            Math.min(1.0, this.gameTimer/MAX_WEIGHT_TIME), 
+            this.globalSpeed, this.stats, event);
         if (this.stage !== undefined) {
 
             this.objects?.update(this.globalSpeed, this.stage, event);
