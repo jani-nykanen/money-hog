@@ -21,7 +21,7 @@ export class ObjectManager {
 
     constructor(stage : Stage, stats : Stats, event : ProgramEvent) {
 
-        this.player = new Player(event.screenWidth/2, event.screenHeight/2, stats);
+        this.player = new Player(event.screenWidth/2, 0, stats);
 
         this.collectibleGenerator = new ObjectGenerator<CollectibleType, Collectible> (Collectible);
         this.enemyGenerator = new EnemyGenerator();
@@ -63,6 +63,17 @@ export class ObjectManager {
     }
 
 
+    public reset(stats : Stats, event : ProgramEvent) : void {
+
+        this.player = new Player(event.screenWidth/2, 0, stats);
+
+        this.collectibleGenerator.flush();
+        this.enemyGenerator.flush();
+    }
+
+
     public isPlayerDying = () : boolean => this.player.isDying();
     public doesPlayerExist = () : boolean => this.player.doesExist();
+    public canControlPlayer = () : boolean => this.player.canBeControlled();
+    public getPlayerPosition = () : Vector => this.player.getPosition();
 }

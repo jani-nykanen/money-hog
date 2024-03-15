@@ -199,7 +199,7 @@ export class Platform implements ExistingObject {
     private createInitialPlatform() : void {
 
         const middle : number = Math.floor(this.width/2);
-        const w : number = Math.floor(this.width/4);
+        const w : number = Math.floor(this.width/6);
 
         for (let x = middle - w; x < middle + w; ++ x) {
 

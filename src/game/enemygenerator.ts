@@ -76,4 +76,10 @@ export class EnemyGenerator {
 
         this.enemies.push(new otype.prototype.constructor(x, y, refPlatform));
     }
+
+
+    public flush() : void {
+
+        this.enemies.length = 0;
+    }
 }

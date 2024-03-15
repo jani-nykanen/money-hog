@@ -13,7 +13,7 @@ import { FlyingText } from  "./flyingtext.js";
 
 
 
-const DEATH_TIME : number = 120;
+const DEATH_TIME : number = 60;
 
 
 export class Player extends GameObject {
@@ -21,8 +21,8 @@ export class Player extends GameObject {
 
     private sprBody : Sprite;
     private sprBashEffect : Sprite;
-    private flip : Flip = Flip.None;
-    private faceDirection : -1 | 1 = -1;
+    private flip : Flip = Flip.Horizontal;
+    private faceDirection : -1 | 1 = 1;
 
     private ledgeTimer : number = 0.0;
     private jumpTimer : number = 0.0;
@@ -45,6 +45,7 @@ export class Player extends GameObject {
     private shakeTimer : number = 0;
     private downJumpIconTimer : number = 0;
     private deathTimer : number = 0;
+    private canControl : boolean = false;
 
     public readonly stats : Stats;
 
@@ -188,6 +189,12 @@ export class Player extends GameObject {
         const EPS : number = 0.1;
         const WALK_SPEED : number = 1.5;
         const BASE_GRAVITY : number = 4.0;
+
+        if (!this.canControl) {
+
+            this.target.y = BASE_GRAVITY;
+            return;
+        }
 
         const stick : Vector = event.input.stick;
 
@@ -350,7 +357,7 @@ export class Player extends GameObject {
     private drawDeathBalls(canvas : Canvas, bmp : Bitmap | undefined) : void {
 
         const ORB_COUNT : number = 8;
-        const ORB_DISTANCE : number = 96;
+        const ORB_DISTANCE : number = 64;
 
         const t : number = this.deathTimer/DEATH_TIME;
         const step : number = Math.PI*2/ORB_COUNT;
@@ -405,6 +412,7 @@ export class Player extends GameObject {
 
         this.dust.update(globalSpeedFactor, event);
         this.flyingText.update(globalSpeedFactor, event);
+        this.stars.update(globalSpeedFactor, event);
 
         this.deathTimer += event.tick;
         this.sprBody.animate(4, 0, 3, 3, event.tick);
@@ -416,6 +424,8 @@ export class Player extends GameObject {
     protected floorCollisionEvent(event : ProgramEvent, touchBridge : boolean = false): void {
         
         const LEDGE_TIME : number = 8.0;
+
+        this.canControl = true;
 
         this.ledgeTimer = LEDGE_TIME;
         this.canHeadButt = true;
@@ -687,4 +697,5 @@ export class Player extends GameObject {
 
     public isHeadbutting = () : boolean => this.headButting;
     public getHeadbuttHitbox = () : Rectangle => this.headbuttHitbox.clone();
+    public canBeControlled = () : boolean => this.canControl;
 }

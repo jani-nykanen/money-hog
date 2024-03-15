@@ -52,4 +52,13 @@ export class ObjectGenerator<T, S extends Spawnable<T>> {
             o.draw?.(canvas, bmp);
         }
     }
+
+
+    public flush() : void {
+
+        for (let o of this.objects) {
+
+            o.forceKill();
+        }
+    }
 }

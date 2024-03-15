@@ -6,12 +6,17 @@ import { ObjectManager } from "./objectmanager.js";
 import { Stage } from "./stage.js";
 import { Background } from "./background.js";
 import { Stats } from "./stats.js";
+import { TransitionType } from "../core/transition.js";
+import { RGBA } from "../math/rgba.js";
+import { Vector } from "../math/vector.js";
 
 
 export class Game implements Scene {
 
 
     private globalSpeed : number = 0.0;
+    private goTimer : number = 0.0;
+    private readyGoPhase : number = 0;
 
     private objects : ObjectManager | undefined = undefined;
     private stage : Stage | undefined = undefined;
@@ -19,6 +24,8 @@ export class Game implements Scene {
     private background : Background | undefined = undefined;
 
     private stats : Stats;
+
+    private paused : boolean = false;
 
 
     constructor() {
@@ -33,7 +40,8 @@ export class Game implements Scene {
         const TIMER_SPEED_DEATH : number = 1.0/30.0;
         const INITIAL_SPEED : number = 1.0;
 
-        if (this.objects?.doesPlayerExist() !== true) // Can also be undef, in theory...
+        if (!this.objects.canControlPlayer() ||
+            this.objects?.doesPlayerExist() !== true) // since "undefined" is not true
             return;
 
         if (this.objects?.isPlayerDying()) {
@@ -50,6 +58,40 @@ export class Game implements Scene {
                 this.globalSpeed = INITIAL_SPEED;
             }
         }
+    }
+
+
+    private updateReadyGo(event : ProgramEvent) : void {
+        
+        const GO_TIME : number = 60;
+
+        if (this.readyGoPhase == 2 &&
+            this.objects?.canControlPlayer()) {
+
+            this.readyGoPhase = 1;
+            this.goTimer = GO_TIME;
+        }
+        else if (this.readyGoPhase == 1) {
+
+            this.goTimer -= event.tick;
+            if (this.goTimer <= 0.0) {
+
+                this.readyGoPhase = 0;
+            }
+        }
+    }
+
+
+    private reset(event : ProgramEvent) : void {
+
+        this.stats.reset();
+        this.stage?.reset(this.stats, event);
+        this.objects?.reset(this.stats, event);
+
+        this.goTimer = 0;
+        this.readyGoPhase = 2;
+
+        event.transition.setCenter(new Vector(event.screenWidth/2, event.screenHeight/2));
     }
 
 
@@ -113,6 +155,30 @@ export class Game implements Scene {
             coinX + 22, 2, -8, 0, Align.Left);
     }
 
+
+    private drawReadyGoText(canvas : Canvas) : void {
+
+        const bmp : Bitmap | undefined = canvas.getBitmap("readygo");
+
+        const dx : number = canvas.width/2 - ((bmp?.width ?? 0)/2);
+        const dy : number = canvas.height/2 - ((bmp?.height ?? 0)/4) 
+
+        canvas.drawBitmap(bmp, Flip.None, dx, dy, 0, (2 - this.readyGoPhase)*48, 128, 48);
+    }
+
+
+    private drawPauseScreen(canvas : Canvas) : void {
+
+        canvas.setColor(0, 0, 0, 0.33);
+        canvas.fillRect();
+
+        const bmpFontOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
+
+        canvas.setColor(255, 255, 73);
+        canvas.drawText(bmpFontOutlines, "PAUSED", canvas.width/2, canvas.height/2 - 8, -7, 0, Align.Center);
+        canvas.setColor();
+    }
+
     
     public init(param : SceneParameter, event : ProgramEvent) : void {
 
@@ -123,14 +189,39 @@ export class Game implements Scene {
         this.background = new Background();
 
         this.globalSpeed = 0.0;
+
+        this.readyGoPhase = 2;
+        this.goTimer = 0;
+
+        event.transition.activate(false, TransitionType.Circle, 1.0/30.0, event);
     }
 
 
     public update(event : ProgramEvent) : void {
         
-        if (event.transition.isActive())
-            return;
+        const pauseButton : InputState = event.input.getAction("pause");
 
+        if (this.paused) {
+
+            if (pauseButton == InputState.Pressed) {
+
+                this.paused = false;
+            }
+            return;
+        }
+
+        if (!event.transition.isActive()) {
+
+            if (this.readyGoPhase == 0 && 
+                !this.objects.isPlayerDying() &&
+                pauseButton == InputState.Pressed) {
+
+                this.paused = true;
+                return;
+            }
+        }
+
+        this.updateReadyGo(event);
         this.updateGlobalTimer(event);
 
         this.background?.update(event);
@@ -140,6 +231,13 @@ export class Game implements Scene {
             this.objects?.update(this.globalSpeed, this.stage, event);
         }
         this.stats.update(this.globalSpeed, event);
+
+        if (!this.objects.doesPlayerExist() && !event.transition.isActive()) {
+
+            event.transition.activate(true, TransitionType.Circle, 1.0/30.0, event,
+                (event : ProgramEvent) => this.reset(event), new RGBA(0, 0, 0),
+                this.objects.getPlayerPosition());
+        }
     }
 
 
@@ -156,7 +254,10 @@ export class Game implements Scene {
         canvas.applyTransform();    
         this.background?.draw(canvas);
 
-        this.objects.applyShake(canvas);
+        if (!this.paused) {
+
+            this.objects.applyShake(canvas);
+        }
         this.stage?.draw(canvas);
         this.objects?.draw(canvas);
 
@@ -166,6 +267,16 @@ export class Game implements Scene {
         canvas.applyTransform();   
 
         this.drawHUD(canvas);
+
+        if (this.readyGoPhase > 0) {
+
+            this.drawReadyGoText(canvas);
+        }
+
+        if (this.paused) {
+
+            this.drawPauseScreen(canvas);
+        }
     }
 
 

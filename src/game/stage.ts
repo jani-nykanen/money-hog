@@ -89,7 +89,8 @@ export class Stage {
     }
 
 
-    private spawnPlatform(yoff : number, stats : Stats, event : ProgramEvent, initial : boolean = false) : void {
+    private spawnPlatform(yoff : number, stats : Stats, event : ProgramEvent, 
+        initial : boolean = false, noEnemies : boolean = false) : void {
 
         const BOTTOM_OFFSET : number = PLATFORM_OFFSET // 2;
 
@@ -101,7 +102,11 @@ export class Stage {
         if (!initial) {
 
             this.spawnCoins(p, stats);
-            this.spawnEnemies(p);
+
+            if (!noEnemies) {
+
+                this.spawnEnemies(p);
+            }
         }
     }
 
@@ -168,7 +173,7 @@ export class Stage {
 
         for (let i = 0; i < COUNT; ++ i) {
 
-            this.spawnPlatform(-PLATFORM_OFFSET*TILE_HEIGHT*i, stats, event, i == COUNT - 1);
+            this.spawnPlatform(-PLATFORM_OFFSET*TILE_HEIGHT*i, stats, event, i == COUNT - 1, true);
         }
     }
 
@@ -179,5 +184,17 @@ export class Stage {
 
         this.collectibleGenerator = collectibleGenerator;
         this.enemyGenerator = enemyGenerator;
+    }
+
+
+    public reset(stats : Stats, event : ProgramEvent) : void {
+
+        for (let p of this.platforms) {
+
+            p.forceKill();
+        }
+
+        this.platformTimer = 0;
+        this.createInitialPlatforms(stats, event);
     }
 }

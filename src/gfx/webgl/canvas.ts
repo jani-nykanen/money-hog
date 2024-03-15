@@ -212,7 +212,7 @@ export class WebGLCanvas implements Canvas {
         if (bottom < this.height)
             this.fillRect(0, bottom, this.width, this.height - bottom);
         if (left > 0)
-            this.fillRect(0, 0, left, this.width);
+            this.fillRect(0, 0, left, this.height);
         if (right < this.width)
             this.fillRect(right, 0, this.width - right, this.height);
     }
