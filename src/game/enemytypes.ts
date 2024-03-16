@@ -7,6 +7,7 @@ import { Bird } from "./bird.js";
 import { Rabbit } from "./rabbit.js";
 import { Mushroom } from "./mushroom.js";
 import { SpikeBat } from "./spikebat.js";
+import { Missile } from "./missile.js";
 
 
 export const enum EnemyType {
@@ -20,6 +21,8 @@ export const enum EnemyType {
     Rabbit = 6,
     Mushroom = 7,
     SpikeBat = 8,
+
+    Missile = 9,
 }
 
 
@@ -38,6 +41,7 @@ export const ENEMY_WEIGHTS_INITIAL : number[] = [
     0.0,
     0.1,
     
+    0.0,
     0.0
 ];
 
@@ -54,8 +58,9 @@ export const ENEMY_WEIGHTS_FINAL : number[] = [
     0.125,
     0.10,
 
-    0.125
+    0.125,
+    0.0
 ];
 
 
-export const getEnemyConstructor = (t : EnemyType) : Function => ([Slime, Apple, Dog, Bat, SpikeSlime, Bird, Rabbit, Mushroom, SpikeBat][t]) ?? Slime;
+export const getEnemyConstructor = (t : EnemyType) : Function => ([Slime, Apple, Dog, Bat, SpikeSlime, Bird, Rabbit, Mushroom, SpikeBat, Missile][t]) ?? Slime;

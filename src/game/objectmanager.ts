@@ -9,6 +9,11 @@ import { Collectible, CollectibleType } from "./collectible.js";
 import { Stats } from "./stats.js";
 import { Enemy } from "./enemy.js";
 import { EnemyGenerator } from "./enemygenerator.js";
+import { EnemyType } from "./enemytypes.js";
+
+
+
+const MISSILE_TIME : number = 300;
 
 
 export class ObjectManager {
@@ -17,6 +22,8 @@ export class ObjectManager {
     private player : Player;
     private collectibleGenerator : ObjectGenerator<CollectibleType, Collectible>;
     private enemyGenerator : EnemyGenerator;
+
+    private missileTimer : number = 0.0;
 
 
     constructor(stage : Stage, stats : Stats, event : ProgramEvent) {
@@ -31,10 +38,32 @@ export class ObjectManager {
     }
 
 
+    private spawnMissiles(event : ProgramEvent) : void {
+
+        const TOP_OFF : number = 32;
+        const BOTTOM_OFF : number = 32;
+
+        this.missileTimer += event.tick;
+        if (this.missileTimer < MISSILE_TIME)
+            return;
+
+        this.missileTimer -= MISSILE_TIME;
+
+        const dir : -1 | 1 = Math.random() > 0.5 ? 1 : -1;
+
+        const dx : number = dir > 0 ? 0 : event.screenWidth;
+        const dy : number = TOP_OFF + Math.random()*(event.screenHeight - (TOP_OFF + BOTTOM_OFF));
+
+        this.enemyGenerator.spawn(EnemyType.Missile, dx, dy, undefined);
+    }
+
+
     public update(globalSpeedFactor : number, stage : Stage, event : ProgramEvent) {
 
         this.player.update(globalSpeedFactor, event);
         stage.objectCollision(this.player, event);
+
+        this.spawnMissiles(event);
 
         this.collectibleGenerator.update(globalSpeedFactor, this.player, stage, event);
         this.enemyGenerator.update(globalSpeedFactor, stage, this.player, event);
@@ -69,6 +98,8 @@ export class ObjectManager {
 
         this.collectibleGenerator.flush();
         this.enemyGenerator.flush();
+
+        this.missileTimer = 0.0;
     }
 
 

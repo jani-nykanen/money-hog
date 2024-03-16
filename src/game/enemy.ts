@@ -41,6 +41,7 @@ export class Enemy extends GameObject {
     protected canBeMoved : boolean = true;
     protected canMoveOthers : boolean = true;
     protected canBeHeadbutted : boolean = true;
+    protected harmful : boolean = true;
 
     protected stompType : StompType = StompType.Stomp;
     protected bounceRecoverTimer : number = 0.0;
@@ -262,6 +263,11 @@ export class Enemy extends GameObject {
             return;
         }
 
+        if (!this.harmful) {
+
+            return;
+        }
+
         if (this.headbuttCollision(globalSpeedFactor, player, 0, event) ||
             this.stompCollision(player, 0, event)) {
 
@@ -269,8 +275,10 @@ export class Enemy extends GameObject {
             return;
         }
 
-        if (this.bounceRecoverTimer > 0)
+        if (this.bounceRecoverTimer > 0) {
+            
             return;
+        }
 
         //for (let i = -1; i <= 1; ++ i) {
 
