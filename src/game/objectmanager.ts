@@ -10,10 +10,15 @@ import { Stats } from "./stats.js";
 import { Enemy } from "./enemy.js";
 import { EnemyGenerator } from "./enemygenerator.js";
 import { EnemyType } from "./enemytypes.js";
+import { TILE_HEIGHT } from "./tilesize.js";
+import { sampleInterpolatedWeightedUniform } from "../math/random.js";
 
 
-
-const MISSILE_TIME : number = 300;
+const INITIAL_MISSILE_TIME : number = 1800;
+const MISSILE_TIME_MAX : number[] = [600, 180];
+const MISSILE_TIME_MIN : number[] = [300, 120];
+const MISSILE_COUNT_WEIGHTS_INITIAL : number[] = [1.0, 0.0];
+const MISSILE_COUNT_WEIGHTS_FINAL : number[] = [0.60, 0.40];
 
 
 export class ObjectManager {
@@ -35,35 +40,56 @@ export class ObjectManager {
 
         stage.passGenerators(this.collectibleGenerator, this.enemyGenerator);
         stage.createInitialPlatforms(stats, event);
+
+        this.missileTimer = INITIAL_MISSILE_TIME;
     }
 
 
-    private spawnMissiles(event : ProgramEvent) : void {
+    private computeNewMissileTime(t : number) : void {
+
+        const min : number = MISSILE_TIME_MIN[0]*(1.0 - t) + MISSILE_TIME_MIN[1]*t;
+        const max : number = MISSILE_TIME_MAX[0]*(1.0 - t) + MISSILE_TIME_MAX[1]*t;
+
+        this.missileTimer = min + (Math.random()*(max - min) | 0);
+    }
+
+
+    private spawnMissiles(weight : number, event : ProgramEvent) : void {
 
         const TOP_OFF : number = 32;
-        const BOTTOM_OFF : number = 32;
+        const BOTTOM_OFF : number = TILE_HEIGHT/2;
 
-        this.missileTimer += event.tick;
-        if (this.missileTimer < MISSILE_TIME)
+        this.missileTimer -= event.tick;
+        if (this.missileTimer > 0)
             return;
 
-        this.missileTimer -= MISSILE_TIME;
+        this.computeNewMissileTime(weight);
 
-        const dir : -1 | 1 = Math.random() > 0.5 ? 1 : -1;
+        const count : number = sampleInterpolatedWeightedUniform(
+            MISSILE_COUNT_WEIGHTS_INITIAL, 
+            MISSILE_COUNT_WEIGHTS_FINAL, 
+            weight) + 1;
 
-        const dx : number = dir > 0 ? 0 : event.screenWidth;
-        const dy : number = TOP_OFF + Math.random()*(event.screenHeight - (TOP_OFF + BOTTOM_OFF));
+        let dir : -1 | 1 = Math.random() > 0.5 ? 1 : -1;
 
-        this.enemyGenerator.spawn(EnemyType.Missile, dx, dy, undefined);
+        for (let i = 0; i < count; ++ i) {
+
+            const dx : number = dir > 0 ? 0 : event.screenWidth;
+            const dy : number = TOP_OFF + Math.random()*(event.screenHeight - (TOP_OFF + BOTTOM_OFF));
+
+            this.enemyGenerator.spawn(EnemyType.Missile, dx, dy, undefined);
+
+            dir *= -1;
+        }
     }
 
 
-    public update(globalSpeedFactor : number, stage : Stage, event : ProgramEvent) {
+    public update(weight : number, globalSpeedFactor : number, stage : Stage, event : ProgramEvent) {
 
         this.player.update(globalSpeedFactor, event);
         stage.objectCollision(this.player, event);
 
-        this.spawnMissiles(event);
+        this.spawnMissiles(weight, event);
 
         this.collectibleGenerator.update(globalSpeedFactor, this.player, stage, event);
         this.enemyGenerator.update(globalSpeedFactor, stage, this.player, event);
@@ -99,7 +125,7 @@ export class ObjectManager {
         this.collectibleGenerator.flush();
         this.enemyGenerator.flush();
 
-        this.missileTimer = 0.0;
+        this.missileTimer = INITIAL_MISSILE_TIME;
     }
 
 

@@ -91,6 +91,11 @@ export class Stats {
         this.health = this.maxHealth;
         this.bonus = 0;
         this.score = 0;
+
+        this.shownPoints = 0;
+        this.pointsAddSpeed = 0;
+        this.healthUpdateTimer = 0.0;
+        this.bonusUpdateTimer = 0.0;
     }
 
 

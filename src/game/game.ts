@@ -50,7 +50,7 @@ export class Game implements Scene {
 
     private computeGlobalSpeedTarget(event : ProgramEvent) : number {
 
-        const SPEED_UP_TIMES : number[] = [30, 60, 90, 120, 150];
+        const SPEED_UP_TIMES : number[] = [30, 60, 120, 210, 360];
         const BASE_SPEED : number = 0.5;
         const SPEED_ADD : number = 0.25;
 
@@ -156,6 +156,22 @@ export class Game implements Scene {
         const frame : number = Math.floor(2 + (1.0 - t)*4);
 
         canvas.drawBitmap(bmp, Flip.None, dx, dy, frame*16, 0, 16, 16);
+    }
+
+
+    private updateComponents(event : ProgramEvent) : void {
+
+        const MAX_WEIGHT_TIME : number = 60*60*5;
+
+        const weight : number = Math.min(1.0, this.gameTimer/MAX_WEIGHT_TIME);
+
+        this.background?.update(event);
+        this.stage?.update(weight, this.globalSpeed, this.stats, event);
+        if (this.stage !== undefined) {
+
+            this.objects?.update(weight, this.globalSpeed, this.stage, event);
+        }
+        this.stats.update(this.globalSpeed, event);
     }
 
 
@@ -290,8 +306,6 @@ export class Game implements Scene {
 
     public update(event : ProgramEvent) : void {
         
-        const MAX_WEIGHT_TIME : number = 60*60*5;
-
         const pauseButton : InputState = event.input.getAction("pause");
 
         if (this.paused) {
@@ -319,15 +333,7 @@ export class Game implements Scene {
         this.updateReadyGo(event);
         this.updateGlobalTimer(event);
 
-        this.background?.update(event);
-        this.stage?.update( 
-            Math.min(1.0, this.gameTimer/MAX_WEIGHT_TIME), 
-            this.globalSpeed, this.stats, event);
-        if (this.stage !== undefined) {
-
-            this.objects?.update(this.globalSpeed, this.stage, event);
-        }
-        this.stats.update(this.globalSpeed, event);
+        this.updateComponents(event);
 
         if (!this.objects.doesPlayerExist() && !event.transition.isActive()) {
 

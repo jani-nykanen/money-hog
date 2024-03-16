@@ -35,11 +35,10 @@ export class Missile extends Enemy {
     }
 
 
-
     protected updateAI(globalSpeedFactor : number, event : ProgramEvent): void {
 
-        const TARGET_SPEED : number = 8.0;
-        const SPEED_FACTOR : number = 8.0;
+        const TARGET_SPEED : number = 6.0;
+        const SPEED_FACTOR : number = 0.5;
         const ENTRANCE_TIME : number = 48;
         const ENTRANCE_WAIT : number = 16;
         const ENTRANCE_SPEED : number = (this.spr.width/2)/ENTRANCE_TIME;
@@ -56,13 +55,19 @@ export class Missile extends Enemy {
 
                 this.speed.zeros();
                 this.target.x = (1.0 + SPEED_FACTOR*globalSpeedFactor)*TARGET_SPEED*this.dir;
-
-                this.speed.y = -globalSpeedFactor;
-                this.target.y = this.speed.y;        
-
+                
                 this.harmful = true;
             }
+            else {
+
+                return;
+            }
         }
+
+
+        this.speed.y = -globalSpeedFactor;
+        this.target.y = this.speed.y;      
+        
 
         this.spr.animate(this.spr.getRow(), 0, 3, 4, event.tick);
 
