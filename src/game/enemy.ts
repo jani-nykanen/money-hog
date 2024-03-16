@@ -251,6 +251,7 @@ export class Enemy extends GameObject {
 
 
     public preDraw?(canvas : Canvas, bmp : Bitmap | undefined) : void;
+    public postDraw?(canvas : Canvas, bmp : Bitmap | undefined) : void;
 
 
     public playerCollision(player : Player, event : ProgramEvent, globalSpeedFactor : number = 0.0) : void {

@@ -34,13 +34,19 @@ export class Stage {
     }   
 
 
-    private spawnCoins(platform : Platform, stats : Stats) : void {
+    private spawnCoins(weight : number, platform : Platform, stats : Stats) : void {
 
-        const COIN_COUNT_WEIGHTS : number[] = [0.20, 0.60, 0.30];
+        const COIN_COUNT_WEIGHTS_INITIAL : number[] = [0.20, 0.60, 0.30, 0.0];
+        const COIN_COUNT_WEIGHTS_FINAL: number[] = [0.0, 0.30, 0.50, 0.20];
+
+
         const HEART_PROB_FACTOR : number = 0.33;
         const GEM_PROB : number = 0.05;
 
-        const count : number = sampleWeightedUniform(COIN_COUNT_WEIGHTS);
+        const count : number = sampleInterpolatedWeightedUniform(
+            COIN_COUNT_WEIGHTS_INITIAL, 
+            COIN_COUNT_WEIGHTS_FINAL,
+            weight);
         if (count == 0)
             return;
 
@@ -105,7 +111,7 @@ export class Stage {
 
         if (!initial) {
 
-            this.spawnCoins(p, stats);
+            this.spawnCoins(weight, p, stats);
 
             if (!noEnemies) {
 

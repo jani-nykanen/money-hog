@@ -210,8 +210,8 @@ export class Game implements Scene {
             canvas.width/2 - 16, TINY_TEXT_OFFSET, 
             0, 16, 32, 8);
         canvas.setColor(255, 255, 182);
-        canvas.drawText(bmpFontOutlines, this.stats.shownScoreToString(8), 
-            canvas.width/2, TINY_TEXT_OFFSET + 5, -8, 0, Align.Center);
+        canvas.drawText(bmpFontOutlines, this.stats.shownScoreToString(7), 
+            canvas.width/2, TINY_TEXT_OFFSET + 5, -9, 0, Align.Center);
         canvas.setColor();
 
         // Coins

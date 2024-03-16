@@ -1,5 +1,5 @@
 import { ProgramEvent } from "../core/event.js";
-import { clamp } from "../math/utility.js";
+import { clamp, negMod } from "../math/utility.js";
 
 
 export class Stats {
@@ -157,9 +157,19 @@ export class Stats {
 
     public shownScoreToString(maxLength : number) : string {
 
-        // TODO: Generic method for this and above?
         const base : string = String(this.shownPoints);
+        const undotted : string = "0".repeat(maxLength - base.length) + base;;
 
-        return "0".repeat(maxLength - base.length) + base;
+        let target : string = "";
+        for (let i = 0; i < undotted.length; ++ i) {
+
+            const c : string = undotted.charAt(i);
+
+            target += c;
+            if (i != undotted.length - 1 && negMod(i - 1, 3) == 2)
+                target += ".";
+        }
+
+        return "$" + target
     }
 }

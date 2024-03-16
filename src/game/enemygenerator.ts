@@ -70,6 +70,17 @@ export class EnemyGenerator {
     }
 
 
+    public postDraw(canvas : Canvas) : void {
+
+        const bmpEnemies : Bitmap | undefined = canvas.getBitmap("enemies");
+
+        for (let o of this.enemies) {
+
+            o.postDraw?.(canvas, bmpEnemies);
+        }
+    }
+
+
     public spawn(type : EnemyType, x : number, y : number, refPlatform : Platform) : void {
 
         const otype : Function = getEnemyConstructor(type);

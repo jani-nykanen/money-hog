@@ -1,8 +1,11 @@
 import { ProgramEvent } from "../core/event.js";
-import { Flip } from "../gfx/interface.js";
+import { Bitmap, Canvas, Flip } from "../gfx/interface.js";
 import { Enemy } from "./enemy.js";
 import { Platform } from "./platform.js";
 import { TILE_HEIGHT } from "./tilesize.js";
+
+
+const ENTRANCE_TIME : number = 48;
 
 
 export class Missile extends Enemy {
@@ -30,6 +33,7 @@ export class Missile extends Enemy {
         this.fixedY = false;
         this.canBeMoved = false;
         this.harmful = false;
+        this.canMoveOthers = false;
 
         this.friction.x = 0.05;
     }
@@ -39,7 +43,6 @@ export class Missile extends Enemy {
 
         const TARGET_SPEED : number = 6.0;
         const SPEED_FACTOR : number = 0.5;
-        const ENTRANCE_TIME : number = 48;
         const ENTRANCE_WAIT : number = 16;
         const ENTRANCE_SPEED : number = (this.spr.width/2)/ENTRANCE_TIME;
 
@@ -68,7 +71,6 @@ export class Missile extends Enemy {
         this.speed.y = -globalSpeedFactor;
         this.target.y = this.speed.y;      
         
-
         this.spr.animate(this.spr.getRow(), 0, 3, 4, event.tick);
 
         if ((this.dir > 0 && this.pos.x >= event.screenWidth + this.spr.width/2) ||
@@ -77,5 +79,19 @@ export class Missile extends Enemy {
             // console.log("Missile killed!");
             this.forceKill();
         }
+    }
+
+
+    public postDraw(canvas : Canvas, bmp : Bitmap): void {
+
+        if (!this.exist || this.dying || this.entranceTimer >= ENTRANCE_TIME)
+            return;
+
+        const frame : number = Math.floor(this.entranceTimer/4) % 2;
+
+        const dx : number = this.dir > 0 ? 0 : canvas.width - 24;
+        const dy : number = Math.round(this.pos.y) - this.spr.height/2;
+
+        canvas.drawBitmap(bmp, Flip.None, dx, dy, 96 + frame*24, 216, 24, 24);
     }
 }

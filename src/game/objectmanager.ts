@@ -108,6 +108,8 @@ export class ObjectManager {
         this.collectibleGenerator.draw(canvas, bmpCollectibles);
         this.player.draw(canvas);
 
+        this.enemyGenerator.postDraw(canvas);
+
         this.player.postDraw(canvas);
     }
 
