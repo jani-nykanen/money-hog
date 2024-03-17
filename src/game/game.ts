@@ -17,6 +17,8 @@ const GO_TIME : number = 60;
 const SPEED_UP_WAIT : number = 90;
 const SPEED_UP_INITIAL : number = 30;
 
+const TARGET_SCORE : number = 1000000;
+
 
 export class Game implements Scene {
 
@@ -40,6 +42,9 @@ export class Game implements Scene {
     private stats : Stats;
 
     private paused : boolean = false;
+
+    private gameoverPhase : number = 0;
+    private gameoverWave : number = 0.0;
 
 
     constructor() {
@@ -143,6 +148,9 @@ export class Game implements Scene {
         this.speedUpTimer = 0;
         this.speedPhase = 0;
 
+        this.gameoverPhase = 0;
+        this.gameoverWave = 0;
+
         event.transition.setCenter(new Vector(event.screenWidth/2, event.screenHeight/2));
     }
 
@@ -160,6 +168,39 @@ export class Game implements Scene {
             this.objects?.update(weight, this.globalSpeed, this.stage, event);
         }
         this.stats.update(this.globalSpeed, event);
+    }
+
+
+    private updateGameover(event : ProgramEvent) : void {
+
+        const WAVE_SPEED : number = Math.PI*2/90.0;
+        const TEXT_APPEAR_SPEED : number = 1.0/60.0;
+
+        if (event.transition.isActive())
+            return;
+
+        if (this.gameoverPhase == 0 && !this.objects.doesPlayerExist()) {
+
+            this.gameoverPhase = 1;
+            this.gameoverWave = 0.0;
+            this.appearTimer = 0.0;
+        }
+
+        if (this.gameoverPhase == 0)
+            return;
+
+        this.gameoverWave = (this.gameoverWave + WAVE_SPEED*event.tick) % (Math.PI*2);
+        // Reusing this for "press any key" text, since, well, it is also "appearing"!
+        this.appearTimer = (this.appearTimer + TEXT_APPEAR_SPEED*event.tick) % 1.0;
+
+        if (event.input.isAnyPressed()) {
+
+            this.appearTimer = 1.0;
+
+            event.transition.activate(true, TransitionType.Circle, 1.0/30.0, event,
+                (event : ProgramEvent) => this.reset(event), new RGBA(0, 0, 0));
+                //this.objects.getPlayerPosition());
+        }
     }
 
 
@@ -229,14 +270,14 @@ export class Game implements Scene {
         const bmp : Bitmap | undefined = canvas.getBitmap("readygo");
 
         const dx : number = canvas.width/2 - ((bmp?.width ?? 0)/2);
-        const dy : number = canvas.height/2 - ((bmp?.height ?? 0)/4) 
+        const dy : number = canvas.height/2 - ((bmp?.height ?? 0)/4); 
 
         if (this.readyGoPhase == 2) {
 
             if (this.appearTimer < APPEAR_TIME) {
 
                 const t : number = 1.0 - this.appearTimer/APPEAR_TIME;
-                canvas.drawFunnilyAppearingBitmap(bmp, Flip.None, dx, dy, 0, 0, 128, 48, t, 48, 4, 16);
+                canvas.drawFunnilyAppearingBitmap(bmp, Flip.None, dx, dy, 0, 0, 128, 48, t, 48, 4, 8);
                 return;
             }
             canvas.drawBitmap(bmp, Flip.None, dx, dy, 0, (2 - this.readyGoPhase)*48, 128, 48);
@@ -281,6 +322,55 @@ export class Game implements Scene {
         canvas.setColor();
     }
 
+
+    private drawGameOver(canvas : Canvas) : void {
+
+        const TOP_OFFSET : number = 48;
+        const DARKEN_ALPHA : number = 0.67;
+
+        if (this.gameoverPhase == 0)
+            return;
+
+        const bmp : Bitmap | undefined = canvas.getBitmap("gameover");
+        const bmpFontOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
+
+        const dx : number = canvas.width/2 - ((bmp?.width ?? 0)/2);
+        const dy : number = TOP_OFFSET;
+
+        canvas.setColor(0, 0, 0, DARKEN_ALPHA);
+        canvas.fillRect();
+
+        canvas.setColor();
+        canvas.drawVerticallyWavingBitmap(bmp, dx, dy, 0, 0, 144, 32, Math.PI*4, 3, this.gameoverWave);
+
+        const moneyPos : number = 112;
+        const recordPos : number = 160;
+
+        // Headers
+        canvas.setColor(255, 255, 146);
+        canvas.drawText(bmpFontOutlines, "MONEY:", canvas.width/2, moneyPos, -8, 0, Align.Center);
+        canvas.drawText(bmpFontOutlines, "RECORD:", canvas.width/2, recordPos, -8, 0, Align.Center);
+
+        // Numbers
+        canvas.setColor();
+        canvas.drawText(bmpFontOutlines,
+             "$" + String(this.stats.getShownScore()) + "/" + String(1000000) ,
+              canvas.width/2, moneyPos + 12, -8, 0, Align.Center);
+        canvas.drawText(bmpFontOutlines, 
+            "(" + String(Math.floor(100*this.stats.getShownScore()/1000000)) + "%" + ")",
+            canvas.width/2, moneyPos + 24, -8, 0, Align.Center);
+
+        canvas.drawText(bmpFontOutlines, "$0" , canvas.width/2, recordPos + 12, -8, 0, Align.Center);
+
+        if (this.appearTimer < 0.5) {
+
+            canvas.setColor(182, 255, 0);
+            canvas.drawText(bmpFontOutlines, "Press Any Key to Retry", canvas.width/2, 208, -9, 0, Align.Center);
+            canvas.setColor();
+        }
+        
+    }
+
     
     public init(param : SceneParameter, event : ProgramEvent) : void {
 
@@ -308,6 +398,12 @@ export class Game implements Scene {
         
         const pauseButton : InputState = event.input.getAction("pause");
 
+        if (this.gameoverPhase == 1) {
+
+            this.updateGameover(event);
+            return;
+        }
+
         if (this.paused) {
 
             if (pauseButton == InputState.Pressed) {
@@ -332,15 +428,16 @@ export class Game implements Scene {
 
         this.updateReadyGo(event);
         this.updateGlobalTimer(event);
-
         this.updateComponents(event);
+        this.updateGameover(event);
 
+        /*
         if (!this.objects.doesPlayerExist() && !event.transition.isActive()) {
 
             event.transition.activate(true, TransitionType.Circle, 1.0/30.0, event,
                 (event : ProgramEvent) => this.reset(event), new RGBA(0, 0, 0),
                 this.objects.getPlayerPosition());
-        }
+        }*/
     }
 
 
@@ -369,7 +466,10 @@ export class Game implements Scene {
         canvas.transform.loadIdentity();
         canvas.applyTransform();   
 
-        this.drawHUD(canvas);
+        if (this.gameoverPhase != 1) {
+
+            this.drawHUD(canvas);
+        }
 
         if (this.readyGoPhase > 0) {
 
@@ -383,6 +483,8 @@ export class Game implements Scene {
 
             this.drawSpeedUpText(canvas);
         }
+
+        this.drawGameOver(canvas);
     }
 
 

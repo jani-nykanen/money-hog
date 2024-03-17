@@ -349,8 +349,8 @@ export class Enemy extends GameObject {
         if (!this.exist)
             return;
 
-        let dw : number = this.spr.width*this.scale.x;
-        let dh : number = this.spr.height*this.scale.y;
+        let dw : number = Math.round(this.spr.width*this.scale.x);
+        let dh : number = Math.round(this.spr.height*this.scale.y);
 
         if (this.flattenedTimer > 0) {
 

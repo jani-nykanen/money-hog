@@ -91,6 +91,7 @@ export class Stats {
         this.health = this.maxHealth;
         this.bonus = 0;
         this.score = 0;
+        this.coins = 0;
 
         this.shownPoints = 0;
         this.pointsAddSpeed = 0;
@@ -173,5 +174,11 @@ export class Stats {
         return "$" + target;
         */
        return "$" + undotted;
+    }
+
+
+    public stopScoreFlow() : void {
+
+        this.score = this.shownPoints;
     }
 }

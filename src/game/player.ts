@@ -448,6 +448,8 @@ export class Player extends GameObject {
             this.deathTimer = 0;
             this.hurtTimer = 0;
 
+            this.stats.stopScoreFlow();
+
             return;
         }
 

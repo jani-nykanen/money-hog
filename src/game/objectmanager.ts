@@ -101,9 +101,9 @@ export class ObjectManager {
 
         const bmpEnemies : Bitmap | undefined = canvas.getBitmap("enemies");
 
-        canvas.setColor(255, 255, 255, 0.67);
+        // canvas.setColor(255, 255, 255, 0.67);
         this.missileDust.draw(canvas, bmpEnemies);
-        canvas.setColor();
+        // canvas.setColor();
     }
 
 

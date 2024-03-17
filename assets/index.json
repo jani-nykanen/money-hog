@@ -12,6 +12,7 @@
         {"name": "enemies", "path": "enemies.png"},
         {"name": "star_particles", "path": "star_particles.png"},
         {"name": "readygo", "path": "readygo.png"},
+        {"name": "gameover", "path": "gameover.png"},
 
         {"name": "small_numbers", "path": "small_numbers.png"},
         {"name": "font", "path": "font.png"},
