@@ -50,7 +50,7 @@ export class Game implements Scene {
 
     private computeGlobalSpeedTarget(event : ProgramEvent) : number {
 
-        const SPEED_UP_TIMES : number[] = [30, 60, 120, 210, 360];
+        const SPEED_UP_TIMES : number[] = [45, 120, 240, 420, 630];
         const BASE_SPEED : number = 0.5;
         const SPEED_ADD : number = 0.25;
 
@@ -147,21 +147,9 @@ export class Game implements Scene {
     }
 
 
-    private drawBreakingHeart(canvas : Canvas, bmp : Bitmap | undefined,
-        dx : number, dy : number, t : number) : void {
-
-        if (t <= 0)
-            return;
-
-        const frame : number = Math.floor(2 + (1.0 - t)*4);
-
-        canvas.drawBitmap(bmp, Flip.None, dx, dy, frame*16, 0, 16, 16);
-    }
-
-
     private updateComponents(event : ProgramEvent) : void {
 
-        const MAX_WEIGHT_TIME : number = 60*60*5;
+        const MAX_WEIGHT_TIME : number = 60*60*8;
 
         const weight : number = Math.min(1.0, this.gameTimer/MAX_WEIGHT_TIME);
 
@@ -172,6 +160,18 @@ export class Game implements Scene {
             this.objects?.update(weight, this.globalSpeed, this.stage, event);
         }
         this.stats.update(this.globalSpeed, event);
+    }
+
+
+    private drawBreakingHeart(canvas : Canvas, bmp : Bitmap | undefined,
+        dx : number, dy : number, t : number) : void {
+
+        if (t <= 0)
+            return;
+
+        const frame : number = Math.floor(2 + (1.0 - t)*4);
+
+        canvas.drawBitmap(bmp, Flip.None, dx, dy, frame*16, 0, 16, 16);
     }
 
 

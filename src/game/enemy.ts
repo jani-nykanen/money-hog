@@ -24,6 +24,7 @@ export class Enemy extends GameObject {
 
 
     protected scale : Vector;
+    protected shift : Vector;
 
     protected spr : Sprite;
     protected flip : Flip = Flip.None;
@@ -54,6 +55,7 @@ export class Enemy extends GameObject {
         super(x, y, true);
 
         this.scale = new Vector(1, 1);
+        this.shift = new Vector();
 
         this.spr = new Sprite(24, 24);
 
@@ -166,18 +168,18 @@ export class Enemy extends GameObject {
     }
 
 
-    private addPoints(player : Player) : void {
-
-        player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, this.baseScore);
-        player.stats.increaseBonus();
-    }
-
-
     protected edgeEvent?(event : ProgramEvent) : void;
     protected updateAI?(globalSpeedFactor : number, event : ProgramEvent) : void;
     protected bounceEvent?(event : ProgramEvent) : void;
     protected playerEvent?(globalSpeedFactor : number, player : Player, event : ProgramEvent) : boolean;
     protected deathEvent?(globalSpeedFactor : number, event : ProgramEvent) : void;
+
+
+    protected addPoints(player : Player) : void {
+
+        player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, this.baseScore);
+        player.stats.increaseBonus();
+    }
 
 
     protected die(globalSpeedFactor : number, event : ProgramEvent) : boolean {
@@ -245,7 +247,8 @@ export class Enemy extends GameObject {
         this.edgeCollision(0, -64, event.screenHeight + 128, -1, event, true);
         this.edgeCollision(event.screenWidth, -64, event.screenHeight + 128, 1, event, true);
         
-        if (this.pos.y < -this.spr.height/2 ||
+        if ((this.referencePlatform !== undefined && !this.referencePlatform.doesExist()) ||
+            this.pos.y < -this.spr.height/2 ||
             (this.speed.y > 0 && this.pos.y > event.screenHeight + this.spr.height)) {
 
             this.exist = false;
@@ -357,8 +360,8 @@ export class Enemy extends GameObject {
             dh = Math.round(this.spr.height*(1.0 - t) + t*FLATTEN_HEIGHT);
         }
 
-        const dx : number = Math.round(this.pos.x) - dw/2;
-        const dy : number = Math.round(this.pos.y) + this.spr.height/2 - dh + 1;
+        const dx : number = Math.round(this.pos.x + this.shift.x - dw/2) ;
+        const dy : number = Math.round(this.pos.y + this.shift.y + this.spr.height/2 - dh) + 1;
 
         this.spr.draw(canvas, bmp, dx, dy, this.flip, dw, dh);
     }

@@ -657,6 +657,16 @@ export class Player extends GameObject {
     }
 
 
+    public directionalBump(dir : Vector, center : Vector, shift : number, speed : number, event : ProgramEvent) : void {
+
+        this.speed.x = dir.x*speed;
+        this.speed.y = dir.y*speed;
+
+        this.pos.x = center.x + dir.x*shift;
+        this.pos.y = center.y + dir.y*shift;
+    }
+
+
     public stopHeadbutt(globalSpeedFactor : number, createStars : boolean = true, knockback : boolean = false) : void {
 
         const STAR_COUNT : number = 4;

@@ -7,6 +7,7 @@ import { sampleInterpolatedWeightedUniform, sampleWeightedUniform } from "../mat
 import { ENEMY_TYPE_COUNT, ENEMY_WEIGHTS_FINAL, ENEMY_WEIGHTS_INITIAL, EnemyType } from "./enemytypes.js";
 import { EnemyGenerator } from "./enemygenerator.js";
 import { clamp } from "../math/utility.js";
+import { PLATFORM_OFFSET } from "./stage.js";
 
 
 const enum TileType {
@@ -291,6 +292,49 @@ export class Platform implements ExistingObject {
     }
 
 
+    private spawnBumper(weight : number, enemyGenerator : EnemyGenerator) : void {
+
+        const INITIAL_PROB : number = 0.1;
+        const FINAL_PROB : number = 1.0;
+        const MIN_GAP : number = 4;
+
+        const threshold : number = INITIAL_PROB*(1.0 - weight) + FINAL_PROB*weight;
+        if (Math.random() >= threshold)
+            return;
+
+        // Find suitable gap (if any)
+        // TODO: this always chooses the first gap...
+        let gapLength : number = 0;
+        let gapStart : number = 0;
+        for (let i = 0; i < this.width; ++ i) {
+
+            if (this.tiles[i] != TileType.Gap) {
+
+                if (gapLength >= MIN_GAP) {
+
+                    const dx : number = gapStart*TILE_WIDTH + (((gapLength/2)*TILE_WIDTH) | 0 );
+                    enemyGenerator.spawn(EnemyType.Bumper, dx, this.y - 12, this);
+                    return;
+                }
+
+                gapLength = 0;
+            }
+            else {
+
+                if (gapLength == 0) {
+
+                    gapStart = i;
+                    gapLength = 1;
+                }
+                else {
+
+                    ++ gapLength;
+                }
+            }
+        }
+    }
+
+
     private drawBridgeTile(canvas : Canvas, bmp : Bitmap | undefined, x : number) : void {
 
         const OFFSET_Y : number = -1;
@@ -445,11 +489,14 @@ export class Platform implements ExistingObject {
 
     public update(globalSpeedFactor : number, event : ProgramEvent) : void {
 
+        // Needed for bumpers & bunnies (heh)
+        const SAFE_MARGIN : number = PLATFORM_OFFSET*TILE_HEIGHT;
+
         if (!this.exist)
             return;
 
         this.y -= globalSpeedFactor*event.tick;
-        if (this.y < -TILE_HEIGHT) {
+        if (this.y < -TILE_HEIGHT - SAFE_MARGIN) {
 
             this.exist = false;
         }
@@ -549,6 +596,8 @@ export class Platform implements ExistingObject {
                 break;
             }
         }
+
+        this.spawnBumper(weight, enemyGenerator);
     }
 
 

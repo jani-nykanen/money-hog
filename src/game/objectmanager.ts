@@ -1,13 +1,11 @@
 import { ProgramEvent } from "../core/event.js";
-import { Tilemap } from "../tilemap/tilemap.js";
 import { Player } from "./player.js";
-import { Bitmap, Canvas, Effect } from "../gfx/interface.js";
+import { Bitmap, Canvas } from "../gfx/interface.js";
 import { Stage } from "./stage.js";
 import { Vector } from "../math/vector.js";
 import { ObjectGenerator } from "./objectgenerator.js";
 import { Collectible, CollectibleType } from "./collectible.js";
 import { Stats } from "./stats.js";
-import { Enemy } from "./enemy.js";
 import { EnemyGenerator } from "./enemygenerator.js";
 import { EnemyType } from "./enemytypes.js";
 import { TILE_HEIGHT } from "./tilesize.js";
@@ -17,8 +15,8 @@ import { DustParticle } from "./dustparticle.js";
 import { Missile } from "./missile.js";
 
 
-const INITIAL_MISSILE_TIME_MIN : number = 1800;
-const INITIAL_MISSILE_TIME_MAX : number = 2400;
+const INITIAL_MISSILE_TIME_MIN : number = 2700;
+const INITIAL_MISSILE_TIME_MAX : number = 4800;
 const MISSILE_TIME_MAX : number[] = [600, 180];
 const MISSILE_TIME_MIN : number[] = [300, 120];
 const MISSILE_COUNT_WEIGHTS_INITIAL : number[] = [1.0, 0.0];
