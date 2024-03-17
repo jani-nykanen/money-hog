@@ -46,6 +46,8 @@ export class Enemy extends GameObject {
     protected stompType : StompType = StompType.Stomp;
     protected bounceRecoverTimer : number = 0.0;
 
+    protected baseScore : number = 50;
+
 
     constructor(x : number, y : number, referencePlatform : Platform) {
 
@@ -166,9 +168,7 @@ export class Enemy extends GameObject {
 
     private addPoints(player : Player) : void {
 
-        const BASE_SCORE : number = 10;
-
-        player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, BASE_SCORE);
+        player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, this.baseScore);
         player.stats.increaseBonus();
     }
 
@@ -177,11 +177,14 @@ export class Enemy extends GameObject {
     protected updateAI?(globalSpeedFactor : number, event : ProgramEvent) : void;
     protected bounceEvent?(event : ProgramEvent) : void;
     protected playerEvent?(globalSpeedFactor : number, player : Player, event : ProgramEvent) : boolean;
+    protected deathEvent?(globalSpeedFactor : number, event : ProgramEvent) : void;
 
 
     protected die(globalSpeedFactor : number, event : ProgramEvent) : boolean {
 
         const BASE_GRAVITY : number = 4.0;
+
+        this.deathEvent?.(globalSpeedFactor, event);
 
         if (this.flattenedTimer > 0) {
 

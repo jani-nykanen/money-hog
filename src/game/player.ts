@@ -94,7 +94,7 @@ export class Player extends GameObject {
         const HEADBUTT_SPEED : number = 4.0;
         const MAX_HEADBUTT_TIME : number = 16;
         const MIN_HEADBUTT_RELEASE_TIME : number = 8;
-        const FLOOR_HEADBUTT_JUMP : number = -2.25;
+        const FLOOR_HEADBUTT_JUMP : number = -1.125;
 
         const attackButton : InputState = event.input.getAction("attack");
 
@@ -109,7 +109,7 @@ export class Player extends GameObject {
             this.gravityFreeHeadbutt = !this.touchFloor;
             if (!this.gravityFreeHeadbutt) {
 
-                this.speed.y = FLOOR_HEADBUTT_JUMP;
+                this.speed.y = FLOOR_HEADBUTT_JUMP*(1.0 + globalSpeedFactor);
             }
         }
         else if (this.headButting) {
@@ -494,7 +494,7 @@ export class Player extends GameObject {
         canvas.toggleSilhouetteRendering(true);
 
         canvas.applyEffect(Effect.FixedColor);
-        canvas.setColor(256, 173, 219, 0.67);
+        canvas.setColor(255, 173, 219, 0.67);
 
         this.dust.draw(canvas, bmp);
 

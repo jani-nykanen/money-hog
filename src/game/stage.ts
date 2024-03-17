@@ -165,14 +165,14 @@ export class Stage {
     }
 
 
-    public objectCollision(o : GameObject, event : ProgramEvent) : void {
+    public objectCollision(o : GameObject, globalSpeedFactor : number, event : ProgramEvent) : void {
 
         if (!o.doesExist() || (!o.doesForceDeathCollision() && o.isDying()))
             return;
 
         for (let p of this.platforms) {
 
-            p.objectCollision(o, event);
+            p.objectCollision(o, globalSpeedFactor, event);
         }
     }
 

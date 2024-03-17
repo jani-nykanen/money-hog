@@ -40,7 +40,7 @@ export class ObjectGenerator<T, S extends Spawnable<T>> {
 
             o.update(globalSpeedFactor, event);
             o.playerCollision?.(player, event, globalSpeedFactor);
-            stage.objectCollision(o, event);
+            stage.objectCollision(o, globalSpeedFactor, event);
         }
     }
 

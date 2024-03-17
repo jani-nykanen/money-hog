@@ -159,7 +159,7 @@ export class Stats {
 
         const base : string = String(this.shownPoints);
         const undotted : string = "0".repeat(maxLength - base.length) + base;;
-
+/*
         let target : string = "";
         for (let i = 0; i < undotted.length; ++ i) {
 
@@ -170,6 +170,8 @@ export class Stats {
                 target += ".";
         }
 
-        return "$" + target
+        return "$" + target;
+        */
+       return "$" + undotted;
     }
 }

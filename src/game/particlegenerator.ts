@@ -45,4 +45,13 @@ export class ParticleGenerator<T extends Particle> {
             o.draw?.(canvas, bmp);
         }
     }
+
+
+    public flush() : void {
+
+        for (let o of this.particles) {
+
+            o.forceKill();
+        }
+    }
 }

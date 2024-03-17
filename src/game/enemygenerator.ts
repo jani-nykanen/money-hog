@@ -26,7 +26,7 @@ export class EnemyGenerator {
             const o : Enemy = this.enemies[i];
 
             o.update(globalSpeedFactor, event);
-            stage.objectCollision(o, event);
+            stage.objectCollision(o, globalSpeedFactor, event);
             o.playerCollision(player, event, globalSpeedFactor);
 
             if (!o.doesExist()) {
@@ -81,11 +81,15 @@ export class EnemyGenerator {
     }
 
 
-    public spawn(type : EnemyType, x : number, y : number, refPlatform : Platform) : void {
+    public spawn(type : EnemyType, x : number, y : number, refPlatform : Platform) : Enemy {
 
         const otype : Function = getEnemyConstructor(type);
 
-        this.enemies.push(new otype.prototype.constructor(x, y, refPlatform));
+        const o : Enemy = new otype.prototype.constructor(x, y, refPlatform);
+
+        this.enemies.push(o);
+
+        return o;
     }
 
 

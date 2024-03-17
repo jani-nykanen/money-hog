@@ -468,7 +468,7 @@ export class Platform implements ExistingObject {
     }
 
 
-    public objectCollision(o : GameObject, event : ProgramEvent) : void {
+    public objectCollision(o : GameObject, globalSpeedFactor : number, event : ProgramEvent) : void {
 
         const SPIKE_WIDTH : number = 10;
         const SPIKE_HEIGHT : number = 6;
@@ -481,7 +481,8 @@ export class Platform implements ExistingObject {
             if (this.tiles[x] == TileType.Gap)
                 continue;
 
-            o.floorCollision(x*TILE_WIDTH, this.y, TILE_WIDTH, event, this.tiles[x] == TileType.Bridge, this);
+            o.floorCollision(x*TILE_WIDTH, this.y, TILE_WIDTH, globalSpeedFactor, event, 
+                this.tiles[x] == TileType.Bridge, this);
 
             /*
             // Unused since the player "looping" for removed

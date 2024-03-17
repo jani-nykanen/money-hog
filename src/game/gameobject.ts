@@ -94,7 +94,7 @@ export class GameObject implements ExistingObject {
     }
 
 
-    public floorCollision(x : number, y : number, w : number, event : ProgramEvent, 
+    public floorCollision(x : number, y : number, w : number, globalSpeedFactor : number, event : ProgramEvent, 
         isBridge : boolean = false, platformRef : Platform | undefined = undefined) : boolean {
 
         const BOTTOM_MARGIN : number = 4.0;
@@ -104,7 +104,7 @@ export class GameObject implements ExistingObject {
             (this.omitFloorCollision && !this.dying) ||
             this.pos.x + this.collisionBox.x + this.collisionBox.w/2 < x ||
             this.pos.x + this.collisionBox.x - this.collisionBox.w/2 > x + w ||
-            this.speed.y < 0.0)
+            this.speed.y < -globalSpeedFactor)
             return false;
 
         const speedMod : number = Math.abs(this.speed.y)*event.tick;

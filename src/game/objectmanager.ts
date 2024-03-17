@@ -1,7 +1,7 @@
 import { ProgramEvent } from "../core/event.js";
 import { Tilemap } from "../tilemap/tilemap.js";
 import { Player } from "./player.js";
-import { Bitmap, Canvas } from "../gfx/interface.js";
+import { Bitmap, Canvas, Effect } from "../gfx/interface.js";
 import { Stage } from "./stage.js";
 import { Vector } from "../math/vector.js";
 import { ObjectGenerator } from "./objectgenerator.js";
@@ -12,9 +12,13 @@ import { EnemyGenerator } from "./enemygenerator.js";
 import { EnemyType } from "./enemytypes.js";
 import { TILE_HEIGHT } from "./tilesize.js";
 import { sampleInterpolatedWeightedUniform } from "../math/random.js";
+import { ParticleGenerator } from "./particlegenerator.js";
+import { DustParticle } from "./dustparticle.js";
+import { Missile } from "./missile.js";
 
 
-const INITIAL_MISSILE_TIME : number = 1800;
+const INITIAL_MISSILE_TIME_MIN : number = 1800;
+const INITIAL_MISSILE_TIME_MAX : number = 2400;
 const MISSILE_TIME_MAX : number[] = [600, 180];
 const MISSILE_TIME_MIN : number[] = [300, 120];
 const MISSILE_COUNT_WEIGHTS_INITIAL : number[] = [1.0, 0.0];
@@ -29,6 +33,7 @@ export class ObjectManager {
     private enemyGenerator : EnemyGenerator;
 
     private missileTimer : number = 0.0;
+    private missileDust : ParticleGenerator<DustParticle>;
 
 
     constructor(stage : Stage, stats : Stats, event : ProgramEvent) {
@@ -41,7 +46,16 @@ export class ObjectManager {
         stage.passGenerators(this.collectibleGenerator, this.enemyGenerator);
         stage.createInitialPlatforms(stats, event);
 
-        this.missileTimer = INITIAL_MISSILE_TIME;
+        this.computeInitialMissileTime();
+
+        this.missileDust = new ParticleGenerator<DustParticle> ();
+    }
+
+
+    private computeInitialMissileTime() : void {
+        
+        this.missileTimer = INITIAL_MISSILE_TIME_MIN + 
+            Math.floor(Math.random()*(INITIAL_MISSILE_TIME_MAX - INITIAL_MISSILE_TIME_MIN));
     }
 
 
@@ -77,19 +91,31 @@ export class ObjectManager {
             const dx : number = dir > 0 ? 0 : event.screenWidth;
             const dy : number = TOP_OFF + Math.random()*(event.screenHeight - (TOP_OFF + BOTTOM_OFF));
 
-            this.enemyGenerator.spawn(EnemyType.Missile, dx, dy, undefined);
+            const e : Missile = this.enemyGenerator.spawn(EnemyType.Missile, dx, dy, undefined) as Missile;
+            e?.setDustGenerator(this.missileDust);
 
             dir *= -1;
         }
     }
 
 
+    private drawMissileDust(canvas : Canvas) : void {
+
+        const bmpEnemies : Bitmap | undefined = canvas.getBitmap("enemies");
+
+        canvas.setColor(255, 255, 255, 0.67);
+        this.missileDust.draw(canvas, bmpEnemies);
+        canvas.setColor();
+    }
+
+
     public update(weight : number, globalSpeedFactor : number, stage : Stage, event : ProgramEvent) {
 
         this.player.update(globalSpeedFactor, event);
-        stage.objectCollision(this.player, event);
+        stage.objectCollision(this.player, globalSpeedFactor, event);
 
         this.spawnMissiles(weight, event);
+        this.missileDust.update(globalSpeedFactor, event);
 
         this.collectibleGenerator.update(globalSpeedFactor, this.player, stage, event);
         this.enemyGenerator.update(globalSpeedFactor, stage, this.player, event);
@@ -100,6 +126,7 @@ export class ObjectManager {
 
         const bmpCollectibles : Bitmap | undefined = canvas.getBitmap("collectibles");
 
+        this.drawMissileDust(canvas);
         this.enemyGenerator.preDraw(canvas);
 
         this.player.drawParticles(canvas);
@@ -123,11 +150,12 @@ export class ObjectManager {
     public reset(stats : Stats, event : ProgramEvent) : void {
 
         this.player = new Player(event.screenWidth/2, 0, stats);
+        this.missileDust.flush();
 
         this.collectibleGenerator.flush();
         this.enemyGenerator.flush();
 
-        this.missileTimer = INITIAL_MISSILE_TIME;
+        this.computeInitialMissileTime();
     }
 
 
