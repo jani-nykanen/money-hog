@@ -12,8 +12,9 @@ export const enum CollectibleType {
 
     Unknown = 0,
     Coin = 1,
-    Heart = 2,
-    Gem = 3
+    Star = 2,
+    Gem = 3,
+    Heart = 4,
 }
 
 
@@ -79,6 +80,11 @@ export class Collectible extends Spawnable<CollectibleType> {
         case CollectibleType.Heart:
 
             player.stats.changeLives(1);
+            break;
+
+        case CollectibleType.Star:
+
+            // TODO: Make the player invincible
             break;
 
         default:

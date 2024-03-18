@@ -68,16 +68,13 @@ export class Bumper extends Enemy {
 
         const dist : number = Vector.distance(this.pos, player.getPosition());
 
-        if (dist < COLLISION_DISTANCE) {
+        if (this.expandTimer <= 0 && dist < COLLISION_DISTANCE) {
 
             const dir : Vector = Vector.direction(this.pos, player.getPosition());
 
             player.directionalBump(dir, this.pos, COLLISION_DISTANCE, SPEED, event);
-            // if (this.expandTimer <= 0) {
-            
-                this.expandTimer = EXPAND_TIME;
-            // }
 
+            this.expandTimer = EXPAND_TIME;
             this.addPoints(player);
         }
         return true;

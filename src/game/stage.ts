@@ -39,9 +39,8 @@ export class Stage {
         const COIN_COUNT_WEIGHTS_INITIAL : number[] = [0.20, 0.60, 0.30, 0.0];
         const COIN_COUNT_WEIGHTS_FINAL: number[] = [0.0, 0.30, 0.50, 0.20];
 
-
+        const TYPE_WEIGHTS : number[] = [0.90, 0.075, 0.025];
         const HEART_PROB_FACTOR : number = 0.33;
-        const GEM_PROB : number = 0.05;
 
         const count : number = sampleInterpolatedWeightedUniform(
             COIN_COUNT_WEIGHTS_INITIAL, 
@@ -51,7 +50,7 @@ export class Stage {
             return;
 
         const heartProb : number = (1.0 - stats.getHealth()/stats.maxHealth)*HEART_PROB_FACTOR;
-        const typeWeights : number[] = [(1.0 - GEM_PROB)*(1.0 - heartProb), (1.0 - GEM_PROB)*heartProb, GEM_PROB];
+        
 
         const w : number = platform.getWidth()/count;
         
@@ -62,11 +61,17 @@ export class Stage {
         for (let i = 0; i < count; ++ i) {
 
             const dx : number = x*TILE_WIDTH + TILE_WIDTH/2;
-            const type : CollectibleType = specialItemCreated ? 
-                CollectibleType.Coin : 
-                (sampleWeightedUniform(typeWeights) + 1) as CollectibleType;
             
-            // We want to create only one "non-coin" per platform
+            let type : CollectibleType = sampleWeightedUniform(TYPE_WEIGHTS) + 1;
+            if (type != CollectibleType.Coin && specialItemCreated) {
+
+                type = CollectibleType.Coin;
+            }
+
+            if (type == CollectibleType.Coin && Math.random() < heartProb) {
+
+                type = CollectibleType.Heart;
+            }
             specialItemCreated ||= type != CollectibleType.Coin;
 
             this.collectibleGenerator?.spawn(type, dx, dy);
