@@ -9,6 +9,7 @@ import { Stats } from "./stats.js";
 import { TransitionType } from "../core/transition.js";
 import { RGBA } from "../math/rgba.js";
 import { Vector } from "../math/vector.js";
+import { fetchRecordScore, setRecordScore } from "./record.js";
 
 
 const APPEAR_TIME : number = 45;
@@ -46,10 +47,14 @@ export class Game implements Scene {
     private gameoverPhase : number = 0;
     private gameoverWave : number = 0.0;
 
+    private recordScore : number = 0;
+
 
     constructor() {
 
         this.stats = new Stats(3);
+
+        this.recordScore = fetchRecordScore();
     }
 
 
@@ -179,11 +184,19 @@ export class Game implements Scene {
         if (event.transition.isActive())
             return;
 
-        if (this.gameoverPhase == 0 && !this.objects.doesPlayerExist()) {
+        if (this.gameoverPhase == 0 && 
+            !this.objects.doesPlayerExist()) {
 
             this.gameoverPhase = 1;
             this.gameoverWave = 0.0;
             this.appearTimer = 0.0;
+
+            const points : number = this.stats.getShownScore();
+            if (points > this.recordScore) {
+
+                this.recordScore = points;
+                setRecordScore(points);
+            }
         }
 
         if (this.gameoverPhase == 0)
@@ -354,13 +367,13 @@ export class Game implements Scene {
         // Numbers
         canvas.setColor();
         canvas.drawText(bmpFontOutlines,
-             "$" + String(this.stats.getShownScore()) + "/" + String(1000000) ,
+             "$" + String(this.stats.getShownScore()) + "/" + String(TARGET_SCORE) ,
               canvas.width/2, moneyPos + 12, -8, 0, Align.Center);
         canvas.drawText(bmpFontOutlines, 
-            "(" + String(Math.floor(100*this.stats.getShownScore()/1000000)) + "%" + ")",
+            "(" + String(Math.floor(100*this.stats.getShownScore()/TARGET_SCORE)) + "%" + ")",
             canvas.width/2, moneyPos + 24, -8, 0, Align.Center);
 
-        canvas.drawText(bmpFontOutlines, "$0" , canvas.width/2, recordPos + 12, -8, 0, Align.Center);
+        canvas.drawText(bmpFontOutlines, "$" + String(this.recordScore) , canvas.width/2, recordPos + 12, -8, 0, Align.Center);
 
         if (this.appearTimer < 0.5) {
 
