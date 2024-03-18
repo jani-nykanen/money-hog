@@ -16,6 +16,9 @@ import { FlyingText } from  "./flyingtext.js";
 const DEATH_TIME : number = 60;
 
 
+const INVICIBILITY_COLOR : number[] = [182, 255, 146];
+
+
 export class Player extends GameObject {
 
 
@@ -47,6 +50,7 @@ export class Player extends GameObject {
     private deathTimer : number = 0;
     private canControl : boolean = false;
 
+    private jumpInvincibilityTimer : number = 0; // Don't mix this up with the one below
     private invincibilityTimer : number = 0;
 
     public readonly stats : Stats;
@@ -190,6 +194,7 @@ export class Player extends GameObject {
 
         const EPS : number = 0.1;
         const WALK_SPEED : number = 1.5;
+        const STAR_WALK_SPEED : number = 2.25;
         const BASE_GRAVITY : number = 4.0;
 
         if (!this.canControl) {
@@ -212,7 +217,7 @@ export class Player extends GameObject {
             return;
         }
 
-        this.target.x = stick.x*WALK_SPEED
+        this.target.x = stick.x*(this.invincibilityTimer > 0 ? STAR_WALK_SPEED : WALK_SPEED);
         this.target.y = BASE_GRAVITY;
 
         this.handleJumping(event);
@@ -222,17 +227,18 @@ export class Player extends GameObject {
     private updateTimers(globalSpeedFactor : number, event : ProgramEvent) : void {
 
         const JUMP_SPEED : number = -1.5;
+        const STAR_JUMP_SPEED : number = -1.75;
         const DOWN_ICON_ANIMATION_SPEED : number = 1.0/30.0;
 
-        if (this.invincibilityTimer > 0) {
+        if (this.jumpInvincibilityTimer > 0) {
 
-            this.invincibilityTimer -= event.tick;
+            this.jumpInvincibilityTimer -= event.tick;
         }
 
         if (this.jumpTimer > 0.0) {
 
             this.jumpTimer -= event.tick;
-            this.speed.y = JUMP_SPEED - globalSpeedFactor;
+            this.speed.y = (this.invincibilityTimer > 0 ? STAR_JUMP_SPEED : JUMP_SPEED) - globalSpeedFactor;
             this.target.y = this.speed.y;
         }
 
@@ -249,6 +255,11 @@ export class Player extends GameObject {
         if (this.shakeTimer > 0) {
 
             this.shakeTimer -= event.tick;
+        }
+
+        if (this.invincibilityTimer > 0) {
+
+            this.invincibilityTimer -= event.tick;
         }
         
         if (this.touchBridge) {
@@ -429,7 +440,10 @@ export class Player extends GameObject {
         
         this.touchBridge ||= touchBridge;
 
-        this.stats.resetBonus();
+        if (this.invincibilityTimer <= 0) {
+
+            this.stats.resetBonus();
+        }
     }
 
 
@@ -487,6 +501,8 @@ export class Player extends GameObject {
 
     public drawParticles(canvas : Canvas) : void {
 
+        const DUST_ALPHA : number = 0.67;
+
         if (!this.exist)
             return;
 
@@ -496,7 +512,16 @@ export class Player extends GameObject {
         canvas.toggleSilhouetteRendering(true);
 
         canvas.applyEffect(Effect.FixedColor);
-        canvas.setColor(255, 173, 219, 0.67);
+
+        if (this.invincibilityTimer > 0 &&
+            Math.floor(this.invincibilityTimer/4) % 2 != 0) {
+
+            canvas.setColor(...INVICIBILITY_COLOR, DUST_ALPHA);
+        }
+        else {
+
+            canvas.setColor(255, 173, 219, DUST_ALPHA);
+        }
 
         this.dust.draw(canvas, bmp);
 
@@ -535,7 +560,21 @@ export class Player extends GameObject {
         const dx : number = Math.round(this.pos.x) - 12;
         const dy : number = Math.round(this.pos.y) - 12 + 1;
 
+        // this.setInvicibilityColor(canvas);
+        if (this.invincibilityTimer > 0 &&
+            Math.floor(this.invincibilityTimer/4) % 2 == 0) {
+
+            canvas.applyEffect(Effect.FixedColor);
+            canvas.setColor(...INVICIBILITY_COLOR);
+        }
+
         this.sprBody.draw(canvas, bmpBody, dx, dy, this.flip);
+
+        if (this.invincibilityTimer > 0) {
+
+            canvas.applyEffect(Effect.None);
+            canvas.setColor();
+        }
 
         if (this.headButting) {
 
@@ -606,7 +645,8 @@ export class Player extends GameObject {
     public hurtCollision(x : number, y : number, w : number, h : number, event : ProgramEvent, enemyHurt : boolean = false) : boolean {
 
         if (!this.exist || this.dying || this.hurtTimer > 0 ||
-            (enemyHurt && this.invincibilityTimer > 0) ||
+            (enemyHurt && this.jumpInvincibilityTimer > 0) ||
+            this.invincibilityTimer > 0 ||
             !overlayRect(this.pos, this.collisionBox, new Vector(x + w/2, y + h/2), new Rectangle(0, 0, w, h)))
             return false;
 
@@ -638,7 +678,7 @@ export class Player extends GameObject {
         const STAR_SPEED : number = 3.0;
         const STAR_EXIST_TIME : number = 1.0/20.0;
         const STAR_SPEED_FACTOR_Y : number = 0.67; 
-        const INVICIBILITY_TIME : number = 6;
+        const JUMP_INVICIBILITY_TIME : number = 6;
 
         this.speed.y = amount;
         
@@ -648,7 +688,7 @@ export class Player extends GameObject {
         this.canDoubleJump = true;
         this.doubleJumping = false;
 
-        this.invincibilityTimer = INVICIBILITY_TIME;
+        this.jumpInvincibilityTimer = JUMP_INVICIBILITY_TIME;
 
         if (createStars) {
 
@@ -661,7 +701,14 @@ export class Player extends GameObject {
 
     public directionalBump(dir : Vector, center : Vector, shift : number, speed : number, event : ProgramEvent) : void {
 
-        this.speed.x = dir.x*speed;
+        // This is just a random magic number
+        const HORIZONTAL_SCALE_FACTOR : number = 1.33;
+
+        this.headButting = false;
+        this.doubleJumping = false;
+        this.canDoubleJump = true;
+
+        this.speed.x = dir.x*speed*HORIZONTAL_SCALE_FACTOR;
         this.speed.y = dir.y*speed;
 
         this.pos.x = center.x + dir.x*shift;
@@ -712,7 +759,16 @@ export class Player extends GameObject {
     }
 
 
+    public toggleInvicibility(event : ProgramEvent) : void {
+
+        const INVICIBILITY_TIME : number = 60*5;
+
+        this.invincibilityTimer = INVICIBILITY_TIME;
+    }
+
+
     public isHeadbutting = () : boolean => this.headButting;
     public getHeadbuttHitbox = () : Rectangle => this.headbuttHitbox.clone();
     public canBeControlled = () : boolean => this.canControl;
+    public isInvincible = () : boolean => this.invincibilityTimer > 0;
 }

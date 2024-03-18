@@ -64,7 +64,7 @@ export class Bumper extends Enemy {
     protected playerEvent(globalSpeedFactor : number, player : Player, event : ProgramEvent) : boolean {
         
         const COLLISION_DISTANCE : number = 16;
-        const SPEED : number = 4.0;
+        const SPEED : number = 3.5;
 
         const dist : number = Vector.distance(this.pos, player.getPosition());
 

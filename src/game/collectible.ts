@@ -84,7 +84,7 @@ export class Collectible extends Spawnable<CollectibleType> {
 
         case CollectibleType.Star:
 
-            // TODO: Make the player invincible
+            player.toggleInvicibility(event);
             break;
 
         default:

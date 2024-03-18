@@ -168,6 +168,29 @@ export class Enemy extends GameObject {
     }
 
 
+    private inviciblePlayerCollision(player : Player, event : ProgramEvent) : void {
+
+        const FLY_SPEED : number = 4.0;
+
+        if (!this.overlay(player))
+            return;
+
+        this.addPoints(player);
+
+        const dir : Vector = Vector.direction(player.getPosition(), this.pos);
+        
+        this.speed.x = dir.x*FLY_SPEED;
+        this.speed.y = dir.y*FLY_SPEED;
+
+        this.dying = true;
+
+        this.flattenedTimer = 0.0;
+
+        this.flip |= Flip.Vertical;
+        this.spr.setFrame(0, this.spr.getRow());
+    }
+
+
     protected edgeEvent?(event : ProgramEvent) : void;
     protected updateAI?(globalSpeedFactor : number, event : ProgramEvent) : void;
     protected bounceEvent?(event : ProgramEvent) : void;
@@ -264,6 +287,12 @@ export class Enemy extends GameObject {
         
         if (this.dying || !this.exist || player.isDying() || !player.doesExist())
             return;
+
+        if (player.isInvincible()) {
+
+            this.inviciblePlayerCollision(player, event);
+            return;
+        }
 
         if (this.playerEvent?.(globalSpeedFactor, player, event)) {
 
