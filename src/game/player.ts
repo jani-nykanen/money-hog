@@ -10,10 +10,14 @@ import { DustParticle } from "./dustparticle.js";
 import { Stats } from "./stats.js";
 import { StarParticle } from "./starparticle.js";
 import { FlyingText } from  "./flyingtext.js";
+import { Enemy } from "./enemy.js";
 
 
 
 const DEATH_TIME : number = 60;
+
+const STAR_EXIST_TIME : number = 1.0/20.0;
+const STAR_SPEED : number = 3.0;
 
 
 const INVICIBILITY_COLOR : number[] = [182, 255, 146];
@@ -675,8 +679,6 @@ export class Player extends GameObject {
     public bump(amount : number, event : ProgramEvent, createStars : boolean = true) : void {
 
         const STAR_COUNT : number = 6;
-        const STAR_SPEED : number = 3.0;
-        const STAR_EXIST_TIME : number = 1.0/20.0;
         const STAR_SPEED_FACTOR_Y : number = 0.67; 
         const JUMP_INVICIBILITY_TIME : number = 6;
 
@@ -720,7 +722,6 @@ export class Player extends GameObject {
 
         const STAR_COUNT : number = 4;
         const STAR_SPEED : number = 3.0;
-        const STAR_EXIST_TIME : number = 1.0/20.0;
         const JUMP_FACTOR : number = 2.0;
         const HURT_KNOCKBACK : number = 4.0;
 
@@ -744,6 +745,21 @@ export class Player extends GameObject {
 
             this.speed.x = -this.faceDirection*HURT_KNOCKBACK;
         }
+    }
+
+
+    // Oh no no no no no no
+    public spawnInvicibilityKnockStars(o : Enemy) : void {
+
+        const STAR_COUNT : number = 8;
+        const SPEED_FACTOR : number = 1.5;
+
+        const d : Vector = Vector.subtract(o.getPosition(), this.pos);
+
+        const xoff : number = d.x/2;
+        const yoff : number = d.y/2;
+
+        this.spawnStars(xoff, yoff, STAR_COUNT, 0, STAR_SPEED*SPEED_FACTOR, STAR_EXIST_TIME*SPEED_FACTOR, 1.0, 1.0);
     }
 
 

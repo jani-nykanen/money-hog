@@ -188,6 +188,8 @@ export class Enemy extends GameObject {
 
         this.flip |= Flip.Vertical;
         this.spr.setFrame(0, this.spr.getRow());
+
+        player.spawnInvicibilityKnockStars(this);
     }
 
 
