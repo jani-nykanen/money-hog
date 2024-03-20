@@ -11,6 +11,7 @@ import { Stats } from "./stats.js";
 import { StarParticle } from "./starparticle.js";
 import { FlyingText } from  "./flyingtext.js";
 import { Enemy } from "./enemy.js";
+import { STAR_VOLUME, THEME_VOLUME } from "./volume.js";
 
 
 
@@ -119,6 +120,8 @@ export class Player extends GameObject {
 
                 this.speed.y = FLOOR_HEADBUTT_JUMP*(1.0 + globalSpeedFactor);
             }
+
+            event.audio.playSample(event.assets.getSample("headbutt"), 0.50);
         }
         else if (this.headButting) {
 
@@ -154,6 +157,8 @@ export class Player extends GameObject {
         const DOWN_JUMP_SHIFT : number = 4.0;
         const DOWN_JUMP_INITIAL_SPEED : number = 0.0;
 
+        const JUMP_VOLUME : number = 0.50;
+
         const jumpButton : InputState = event.input.getAction("jump");
 
         if (jumpButton == InputState.Pressed) {
@@ -166,10 +171,12 @@ export class Player extends GameObject {
                     this.touchFloor = false;
                     this.touchBridge = false;
                     this.speed.y = DOWN_JUMP_INITIAL_SPEED;
+
+                    event.audio.playSample(event.assets.getSample("jump"), JUMP_VOLUME);
                 }
                 else {
 
-                    // TODO: Play error sound
+                    event.audio.playSample(event.assets.getSample("reject"), 0.50);
                 }
 
                 return;
@@ -185,6 +192,8 @@ export class Player extends GameObject {
                 }
 
                 this.ledgeTimer = 0.0;   
+
+                event.audio.playSample(event.assets.getSample("jump"), JUMP_VOLUME);
             }
         }
         else if ((jumpButton & InputState.DownOrPressed) == 0) {
@@ -264,6 +273,11 @@ export class Player extends GameObject {
         if (this.invincibilityTimer > 0) {
 
             this.invincibilityTimer -= event.tick;
+            if (this.invincibilityTimer <= 0) {
+
+                event.audio.stopMusic();
+                event.audio.playMusic(event.assets.getSample("theme"), THEME_VOLUME);
+            }
         }
         
         if (this.touchBridge) {
@@ -453,14 +467,18 @@ export class Player extends GameObject {
 
     protected updateEvent(globalSpeedFactor : number, event : ProgramEvent): void {
 
-        if (this.pos.y + this.sprBody.height/2 <= 0 ||
-            this.pos.y - this.sprBody.height/2 >= event.screenHeight) {
+        if (this.canControl &&
+            (this.pos.y + this.sprBody.height/2 <= 0 ||
+            this.pos.y - this.sprBody.height/2 >= event.screenHeight)) {
 
             this.hurt(event);
             this.stats.changeLives(-3);
         }
 
         if (this.stats.getHealth() <= 0) {
+
+            // TODO: Move elsewhere, maybe?
+            event.audio.stopMusic();
 
             this.dying = true;
             this.deathTimer = 0;
@@ -780,6 +798,9 @@ export class Player extends GameObject {
         const INVICIBILITY_TIME : number = 60*5;
 
         this.invincibilityTimer = INVICIBILITY_TIME;
+
+        event.audio.stopMusic();
+        event.audio.playMusic(event.assets.getSample("star"), STAR_VOLUME);
     }
 
 

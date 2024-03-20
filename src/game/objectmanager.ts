@@ -22,6 +22,8 @@ const MISSILE_TIME_MIN : number[] = [300, 120];
 const MISSILE_COUNT_WEIGHTS_INITIAL : number[] = [1.0, 0.0];
 const MISSILE_COUNT_WEIGHTS_FINAL : number[] = [0.60, 0.40];
 
+const INITIAL_PLAYER_POS : number = -160;
+
 
 export class ObjectManager {
 
@@ -36,7 +38,7 @@ export class ObjectManager {
 
     constructor(stage : Stage, stats : Stats, event : ProgramEvent) {
 
-        this.player = new Player(event.screenWidth/2, 0, stats);
+        this.player = new Player(event.screenWidth/2, INITIAL_PLAYER_POS, stats);
 
         this.collectibleGenerator = new ObjectGenerator<CollectibleType, Collectible> (Collectible);
         this.enemyGenerator = new EnemyGenerator();
@@ -147,7 +149,7 @@ export class ObjectManager {
 
     public reset(stats : Stats, event : ProgramEvent) : void {
 
-        this.player = new Player(event.screenWidth/2, 0, stats);
+        this.player = new Player(event.screenWidth/2, INITIAL_PLAYER_POS, stats);
         this.missileDust.flush();
 
         this.collectibleGenerator.flush();

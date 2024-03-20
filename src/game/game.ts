@@ -10,9 +10,10 @@ import { TransitionType } from "../core/transition.js";
 import { RGBA } from "../math/rgba.js";
 import { Vector } from "../math/vector.js";
 import { fetchRecordScore, setRecordScore } from "./record.js";
+import { THEME_VOLUME } from "./volume.js";
 
 
-const APPEAR_TIME : number = 45;
+const APPEAR_TIME : number = 40;
 const GO_TIME : number = 60;
 
 const SPEED_UP_WAIT : number = 90;
@@ -118,14 +119,33 @@ export class Game implements Scene {
 
     private updateReadyGo(event : ProgramEvent) : void {
 
+        if (event.transition.isActive())
+            return;
+
+        // Needed in the beginning
+        if (this.readyGoPhase == 3) {
+
+            this.readyGoPhase = 2;
+        }
+
         if (this.readyGoPhase == 2) {
 
-            this.appearTimer = Math.min(APPEAR_TIME, this.appearTimer + event.tick);
+            if (this.appearTimer < APPEAR_TIME) {
+
+                this.appearTimer += event.tick;
+                if (this.appearTimer >= APPEAR_TIME) {
+
+                    this.appearTimer = APPEAR_TIME;
+                    event.audio.playSample(event.assets.getSample("ready"), 0.50); 
+                }
+            }
 
             if (this.objects?.canControlPlayer()) {
 
                 this.readyGoPhase = 1;
                 this.goTimer = GO_TIME;
+
+                event.audio.playSample(event.assets.getSample("go"), 0.50); 
             }
         }
         else if (this.readyGoPhase == 1) {
@@ -134,6 +154,8 @@ export class Game implements Scene {
             if (this.goTimer <= 0.0) {
 
                 this.readyGoPhase = 0;
+
+                event.audio.fadeInMusic(event.assets.getSample("theme"), THEME_VOLUME, 1000);
             }
         }
     }
@@ -146,7 +168,7 @@ export class Game implements Scene {
         this.objects?.reset(this.stats, event);
 
         this.goTimer = 0.0;
-        this.readyGoPhase = 2;
+        this.readyGoPhase = 3;
         this.appearTimer = 0.0;
         this.gameTimer = 0.0;
 
@@ -395,7 +417,7 @@ export class Game implements Scene {
 
         this.globalSpeed = 0.0;
 
-        this.readyGoPhase = 2;
+        this.readyGoPhase = 3;
         this.goTimer = 0;
         this.gameTimer = 0;
         this.appearTimer = 0;
@@ -421,6 +443,7 @@ export class Game implements Scene {
 
             if (pauseButton == InputState.Pressed) {
 
+                event.audio.resumeMusic();
                 this.paused = false;
             }
             return;
@@ -432,6 +455,7 @@ export class Game implements Scene {
                 !this.objects.isPlayerDying() &&
                 pauseButton == InputState.Pressed) {
 
+                event.audio.pauseMusic();
                 this.paused = true;
                 return;
             }
@@ -484,7 +508,7 @@ export class Game implements Scene {
             this.drawHUD(canvas);
         }
 
-        if (this.readyGoPhase > 0) {
+        if (this.readyGoPhase > 0 && this.readyGoPhase < 3) {
 
             this.drawReadyGoText(canvas);
         }

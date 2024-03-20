@@ -17,6 +17,7 @@ const initialEvent = (event : ProgramEvent) : void => {
     event.input.addAction("select", ["Enter", "Space", "KeyZ"], [0, 7]);
 
     event.audio.setGlobalVolume(0.60);
+    event.audio.toggle(true);
 }
 
 
