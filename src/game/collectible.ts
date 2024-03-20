@@ -70,21 +70,25 @@ export class Collectible extends Spawnable<CollectibleType> {
 
             player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, 10);
             player.stats.addCoins(1);
+            event.audio.playSample(event.assets.getSample("coin"), 0.70);
             break;
 
         case CollectibleType.Gem:
 
             player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, 100);
+            event.audio.playSample(event.assets.getSample("gem"), 0.70);
             break;
 
         case CollectibleType.Heart:
 
             player.stats.changeLives(1);
+            event.audio.playSample(event.assets.getSample("heart"), 0.70);
             break;
 
         case CollectibleType.Star:
 
             player.toggleInvicibility(event);
+            event.audio.playSample(event.assets.getSample("starpow"), 0.70);
             break;
 
         default:

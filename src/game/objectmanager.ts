@@ -22,7 +22,7 @@ const MISSILE_TIME_MIN : number[] = [300, 120];
 const MISSILE_COUNT_WEIGHTS_INITIAL : number[] = [1.0, 0.0];
 const MISSILE_COUNT_WEIGHTS_FINAL : number[] = [0.60, 0.40];
 
-const INITIAL_PLAYER_POS : number = -160;
+const INITIAL_PLAYER_POS : number = -192;
 
 
 export class ObjectManager {
@@ -96,6 +96,8 @@ export class ObjectManager {
 
             dir *= -1;
         }
+
+        event.audio.playSample(event.assets.getSample("warning"), 0.55);
     }
 
 

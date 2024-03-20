@@ -31,6 +31,17 @@
         {"name": "headbutt", "path": "headbutt.wav"},
         {"name": "jump", "path": "jump.wav"},
         {"name": "reject", "path": "reject.wav"},
+        {"name": "stomp", "path": "stomp.wav"},
+        {"name": "knock", "path": "knock.wav"},
+        {"name": "coin", "path": "coin.wav"},
+        {"name": "gem", "path": "gem.wav"},
+        {"name": "heart", "path": "heart.wav"},
+        {"name": "hurt", "path": "hurt.wav"},
+        {"name": "bounce", "path": "bounce.wav"},
+        {"name": "starpow", "path": "star.wav"},
+        {"name": "warning", "path": "warning.wav"},
+        {"name": "speedup", "path": "speedup.wav"},
+        {"name": "die", "path": "die.wav"},
 
         {"name": "theme", "path": "theme.ogg"},
         {"name": "star", "path": "star.ogg"}

@@ -76,6 +76,8 @@ export class Bumper extends Enemy {
 
             this.expandTimer = EXPAND_TIME;
             this.addPoints(player);
+
+            event.audio.playSample(event.assets.getSample("bounce"), 0.60);
         }
         return true;
     }

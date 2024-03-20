@@ -121,7 +121,7 @@ export class Player extends GameObject {
                 this.speed.y = FLOOR_HEADBUTT_JUMP*(1.0 + globalSpeedFactor);
             }
 
-            event.audio.playSample(event.assets.getSample("headbutt"), 0.50);
+            event.audio.playSample(event.assets.getSample("headbutt"), 0.60);
         }
         else if (this.headButting) {
 
@@ -157,7 +157,7 @@ export class Player extends GameObject {
         const DOWN_JUMP_SHIFT : number = 4.0;
         const DOWN_JUMP_INITIAL_SPEED : number = 0.0;
 
-        const JUMP_VOLUME : number = 0.50;
+        const JUMP_VOLUME : number = 0.60;
 
         const jumpButton : InputState = event.input.getAction("jump");
 
@@ -471,8 +471,8 @@ export class Player extends GameObject {
             (this.pos.y + this.sprBody.height/2 <= 0 ||
             this.pos.y - this.sprBody.height/2 >= event.screenHeight)) {
 
-            this.hurt(event);
             this.stats.changeLives(-3);
+            this.hurt(event);
         }
 
         if (this.stats.getHealth() <= 0) {
@@ -661,6 +661,13 @@ export class Player extends GameObject {
 
         this.stats.changeLives(-1);
         this.stats.resetBonus();
+
+        if (this.stats.getHealth() <= 0) {
+
+            event.audio.playSample(event.assets.getSample("die"), 0.70);
+            return;
+        }
+        event.audio.playSample(event.assets.getSample("hurt"), 0.70);
     }
 
 
@@ -673,7 +680,6 @@ export class Player extends GameObject {
             return false;
 
         this.hurt(event);
-
         return true;
     }
 

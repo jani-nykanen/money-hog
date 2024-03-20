@@ -74,6 +74,8 @@ export class Game implements Scene {
                 this.speedPhase = i + 1;
                 this.speedUpTimer = SPEED_UP_INITIAL + SPEED_UP_WAIT;
 
+                event.audio.playSample(event.assets.getSample("speedup"), 0.50);
+
                 break
             }
         }
@@ -87,6 +89,9 @@ export class Game implements Scene {
         const TIMER_SPEED_UP : number = 1.0/120.0;
         const TIMER_SPEED_DEATH : number = 1.0/30.0;
         // const INITIAL_SPEED : number = 1.0;
+
+        if (this.readyGoPhase != 0)
+            return;
 
         if (!this.objects.canControlPlayer() ||
             this.objects?.doesPlayerExist() !== true) // since "undefined" is not true
