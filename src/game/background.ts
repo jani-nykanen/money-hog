@@ -1,11 +1,5 @@
 import { ProgramEvent } from "../core/event.js";
-import { Tilemap } from "../tilemap/tilemap.js";
 import { Bitmap, Canvas, Flip } from "../gfx/interface.js";
-import { Vector } from "../math/vector.js";
-import { GameObject } from "./gameobject.js";
-import { Platform } from "./platform.js";
-import { TILE_HEIGHT, TILE_WIDTH } from "./tilesize.js";
-import { next } from "./existingobject.js";
 
 
 const CLOUD_COLORS : number[][] = [
@@ -14,8 +8,6 @@ const CLOUD_COLORS : number[][] = [
     [146, 182, 255],
     [73,  109, 182]
 ];
-
-
 
 
 export class Background {

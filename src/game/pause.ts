@@ -25,7 +25,13 @@ export class Pause {
 
             new MenuButton("Resume", () => {
 
-                event.audio.resumeMusic();
+                if (!event.audio.resumeMusic()) {
+
+                    if (event.audio.isMusicEnabled()) {
+
+                        event.audio.playMusic(event.assets.getSample("theme"), THEME_VOLUME);
+                    }
+                }
                 this.menu.deactivate();
             }),
 

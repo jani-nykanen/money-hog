@@ -2,11 +2,15 @@ import { ProgramEvent } from "./core/event.js";
 import { Program } from "./core/program.js";
 import { WebGLRenderer } from "./gfx/webgl/renderer.js";
 import { Game } from "./game/game.js";
+import { StoryScreen } from "./game/storyscreen.js";
+import { TitleScreen } from "./game/titlescreen.js";
 
 
 const initialEvent = (event : ProgramEvent) : void => {
 
-    event.scenes.addScene("game", new Game(), true);
+    event.scenes.addScene("game", new Game(), false);
+    event.scenes.addScene("story", new StoryScreen(), false);
+    event.scenes.addScene("title", new TitleScreen(), true);
 
     event.assets.parseIndexFile("assets/index.json");
 
@@ -16,7 +20,7 @@ const initialEvent = (event : ProgramEvent) : void => {
     event.input.addAction("back", ["Escape"], [6, 8], false);
     event.input.addAction("select", ["Enter", "Space", "KeyZ"], [0, 7, 9]);
 
-    event.audio.setGlobalVolume(0.60);
+    event.audio.setGlobalVolume(0.40);
     event.audio.toggle(true);
 }
 
