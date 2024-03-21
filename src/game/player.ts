@@ -810,8 +810,16 @@ export class Player extends GameObject {
     }
 
 
+    public kill(event : ProgramEvent) : void {
+
+        this.stats.changeLives(-3);
+        this.hurt(event);
+    }
+
+
     public isHeadbutting = () : boolean => this.headButting;
     public getHeadbuttHitbox = () : Rectangle => this.headbuttHitbox.clone();
     public canBeControlled = () : boolean => this.canControl;
     public isInvincible = () : boolean => this.invincibilityTimer > 0;
+
 }

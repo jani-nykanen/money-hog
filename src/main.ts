@@ -14,7 +14,7 @@ const initialEvent = (event : ProgramEvent) : void => {
     event.input.addAction("attack", ["KeyX", "ControlLeft"], [1, 2, 3]);
     event.input.addAction("pause", ["Enter"], [7, 9]);
     event.input.addAction("back", ["Escape"], [6, 8], false);
-    event.input.addAction("select", ["Enter", "Space", "KeyZ"], [0, 7]);
+    event.input.addAction("select", ["Enter", "Space", "KeyZ"], [0, 7, 9]);
 
     event.audio.setGlobalVolume(0.60);
     event.audio.toggle(true);

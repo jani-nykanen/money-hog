@@ -73,7 +73,7 @@ export class Menu {
             }
 
             this.buttons[this.cursorPos].evaluateCallback(event);
-            event.audio.playSample(event.assets.getSample("select"), 0.50);
+            event.audio.playSample(event.assets.getSample("select"), 0.45);
         }
     }
 

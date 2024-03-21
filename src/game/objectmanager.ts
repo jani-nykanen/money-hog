@@ -19,8 +19,8 @@ const INITIAL_MISSILE_TIME_MIN : number = 2700;
 const INITIAL_MISSILE_TIME_MAX : number = 4800;
 const MISSILE_TIME_MAX : number[] = [600, 180];
 const MISSILE_TIME_MIN : number[] = [300, 120];
-const MISSILE_COUNT_WEIGHTS_INITIAL : number[] = [1.0, 0.0];
-const MISSILE_COUNT_WEIGHTS_FINAL : number[] = [0.60, 0.40];
+const MISSILE_COUNT_WEIGHTS_INITIAL : number[] = [1.0, 0.0, 0.0];
+const MISSILE_COUNT_WEIGHTS_FINAL : number[] = [0.50, 0.40, 0.10];
 
 const INITIAL_PLAYER_POS : number = -192;
 
@@ -161,8 +161,15 @@ export class ObjectManager {
     }
 
 
+    public killPlayer(event : ProgramEvent) : void {
+
+        this.player.kill(event);
+    }
+
+
     public isPlayerDying = () : boolean => this.player.isDying();
     public doesPlayerExist = () : boolean => this.player.doesExist();
     public canControlPlayer = () : boolean => this.player.canBeControlled();
     public getPlayerPosition = () : Vector => this.player.getPosition();
+    public isPlayerInvincible = () : boolean => this.player.isInvincible();
 }

@@ -11,6 +11,7 @@ import { RGBA } from "../math/rgba.js";
 import { Vector } from "../math/vector.js";
 import { fetchRecordScore, setRecordScore } from "./record.js";
 import { THEME_VOLUME } from "./volume.js";
+import { Pause } from "./pause.js";
 
 
 const APPEAR_TIME : number = 40;
@@ -43,7 +44,7 @@ export class Game implements Scene {
 
     private stats : Stats;
 
-    private paused : boolean = false;
+    private pause : Pause | undefined = undefined;
 
     private gameoverPhase : number = 0;
     private gameoverWave : number = 0.0;
@@ -61,7 +62,7 @@ export class Game implements Scene {
 
     private computeGlobalSpeedTarget(event : ProgramEvent) : number {
 
-        const SPEED_UP_TIMES : number[] = [45, 120, 240, 420, 630];
+        const SPEED_UP_TIMES : number[] = [45, 120, 240, 360, 480];
         const BASE_SPEED : number = 0.5;
         const SPEED_ADD : number = 0.25;
 
@@ -189,7 +190,7 @@ export class Game implements Scene {
 
     private updateComponents(event : ProgramEvent) : void {
 
-        const MAX_WEIGHT_TIME : number = 60*60*8;
+        const MAX_WEIGHT_TIME : number = 60*60*6;
 
         const weight : number = Math.min(1.0, this.gameTimer/MAX_WEIGHT_TIME);
 
@@ -234,6 +235,8 @@ export class Game implements Scene {
         this.appearTimer = (this.appearTimer + TEXT_APPEAR_SPEED*event.tick) % 1.0;
 
         if (event.input.isAnyPressed()) {
+
+            event.audio.playSample(event.assets.getSample("select"), 0.50);
 
             this.appearTimer = 1.0;
 
@@ -329,19 +332,6 @@ export class Game implements Scene {
     }
 
 
-    private drawPauseScreen(canvas : Canvas) : void {
-
-        canvas.setColor(0, 0, 0, 0.33);
-        canvas.fillRect();
-
-        const bmpFontOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
-
-        canvas.setColor(255, 255, 73);
-        canvas.drawText(bmpFontOutlines, "PAUSED", canvas.width/2, canvas.height/2 - 8, -7, 0, Align.Center);
-        canvas.setColor();
-    }
-
-
     private drawSpeedUpText(canvas : Canvas) : void {
 
         const YOFF_FACTOR : number = 0.25;
@@ -420,6 +410,8 @@ export class Game implements Scene {
         this.objects = new ObjectManager(this.stage, this.stats, event);
         this.background = new Background();
 
+        this.pause = new Pause((event : ProgramEvent) => this.objects.killPlayer(event), event);
+
         this.globalSpeed = 0.0;
 
         this.readyGoPhase = 3;
@@ -436,34 +428,18 @@ export class Game implements Scene {
 
     public update(event : ProgramEvent) : void {
         
-        const pauseButton : InputState = event.input.getAction("pause");
-
         if (this.gameoverPhase == 1) {
 
             this.updateGameover(event);
             return;
         }
 
-        if (this.paused) {
+        if (!event.transition.isActive() && 
+            this.readyGoPhase == 0 &&
+            !this.objects?.isPlayerDying() &&
+            this.pause?.update(this.objects, event)) {
 
-            if (pauseButton == InputState.Pressed) {
-
-                event.audio.resumeMusic();
-                this.paused = false;
-            }
             return;
-        }
-
-        if (!event.transition.isActive()) {
-
-            if (this.readyGoPhase == 0 && 
-                !this.objects.isPlayerDying() &&
-                pauseButton == InputState.Pressed) {
-
-                event.audio.pauseMusic();
-                this.paused = true;
-                return;
-            }
         }
 
         this.gameTimer += event.tick;
@@ -472,14 +448,6 @@ export class Game implements Scene {
         this.updateGlobalTimer(event);
         this.updateComponents(event);
         this.updateGameover(event);
-
-        /*
-        if (!this.objects.doesPlayerExist() && !event.transition.isActive()) {
-
-            event.transition.activate(true, TransitionType.Circle, 1.0/30.0, event,
-                (event : ProgramEvent) => this.reset(event), new RGBA(0, 0, 0),
-                this.objects.getPlayerPosition());
-        }*/
     }
 
 
@@ -496,7 +464,7 @@ export class Game implements Scene {
         canvas.applyTransform();    
         this.background?.draw(canvas);
 
-        if (!this.paused) {
+        if (!this.pause.isActive()) {
 
             this.objects.applyShake(canvas);
         }
@@ -517,9 +485,9 @@ export class Game implements Scene {
 
             this.drawReadyGoText(canvas);
         }
-        else if (this.paused) {
+        else if (this.pause.isActive()) {
 
-            this.drawPauseScreen(canvas);
+            this.pause.draw(canvas);
         }
         else if (this.speedUpTimer > 0) {
 

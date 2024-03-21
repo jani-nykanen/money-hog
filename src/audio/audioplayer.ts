@@ -7,7 +7,10 @@ export class AudioPlayer {
     private musicTrack : AudioSample | undefined = undefined;
 
     private globalVolume : number;
-    private enabled : boolean = false;
+    // private enabled : boolean = false;
+
+    private sfxEnabled : boolean = true;
+    private musicEnabled : boolean = true;
 
 
     constructor(ctx : AudioContext, globalVolume : number = 1.0) {
@@ -22,7 +25,7 @@ export class AudioPlayer {
         const EPS : number = 0.001;
 
         if (this.ctx === undefined ||
-            !this.enabled || 
+            !this.sfxEnabled || 
             sample === undefined || 
             this.globalVolume*vol <= EPS) {
 
@@ -35,7 +38,7 @@ export class AudioPlayer {
 
     public playMusic(sample : AudioSample | undefined, vol : number = 1.0) : void {
 
-        if (!this.enabled || sample === undefined) 
+        if (!this.musicEnabled || sample === undefined) 
             return;
 
         this.fadeInMusic(sample, vol);
@@ -47,7 +50,7 @@ export class AudioPlayer {
         const EPS = 0.001;
 
         if (this.ctx === undefined ||
-            !this.enabled || this.globalVolume <= EPS) 
+            !this.musicEnabled || this.globalVolume <= EPS) 
             return;
 
         // For some reason 0 fade time does not work
@@ -68,7 +71,7 @@ export class AudioPlayer {
     public pauseMusic() : void {
 
         if (this.ctx === undefined ||
-            !this.enabled || this.musicTrack === undefined)
+            !this.musicEnabled || this.musicTrack === undefined)
             return;
 
         this.musicTrack.pause(this.ctx);
@@ -78,7 +81,7 @@ export class AudioPlayer {
     public resumeMusic() : boolean {
 
         if (this.ctx === undefined ||
-            !this.enabled || this.musicTrack === undefined)
+            !this.musicEnabled || this.musicTrack === undefined)
             return false;
 
         this.musicTrack.resume(this.ctx);
@@ -89,7 +92,7 @@ export class AudioPlayer {
 
     public stopMusic() : void {
 
-        if (!this.enabled || this.musicTrack === undefined)
+        if (!this.musicEnabled || this.musicTrack === undefined)
             return;
 
         this.musicTrack.stop();
@@ -97,10 +100,22 @@ export class AudioPlayer {
     }
 
 
-    public toggle(state : boolean = !this.enabled) : boolean {
+    public toggle(state : boolean) : void {
 
-        this.enabled = state;
-        return this.enabled;
+        this.musicEnabled = state;
+        this.sfxEnabled = state;
+    }
+
+
+    public toggleSFX(state : boolean = !this.sfxEnabled) : void {
+
+        this.sfxEnabled = state;
+    }
+
+
+    public toggleMusic(state : boolean = !this.musicEnabled) : void {
+
+        this.musicEnabled = state;
     }
 
 
@@ -110,10 +125,11 @@ export class AudioPlayer {
     }
 
 
-    public isEnabled = () : boolean => this.enabled;
+    public isSFXEnabled = () : boolean => this.sfxEnabled;
+    public isMusicEnabled = () : boolean => this.musicEnabled;
 
 
-    public getStateString = () : string => "Audio: " + ["Off", "On"][Number(this.enabled)]; 
+    // public getStateString = () : string => "Audio: " + ["Off", "On"][Number(this.enabled)]; 
 
 
     public decodeSample(sampleData : ArrayBuffer, callback : (s : AudioSample) => any) : void {
