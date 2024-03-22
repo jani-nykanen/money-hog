@@ -15,6 +15,8 @@ import { DustParticle } from "./dustparticle.js";
 import { Missile } from "./missile.js";
 
 
+// TODO: Apply difficulty for these
+
 const INITIAL_MISSILE_TIME_MIN : number = 2700;
 const INITIAL_MISSILE_TIME_MAX : number = 4800;
 const MISSILE_TIME_MAX : number[] = [600, 180];

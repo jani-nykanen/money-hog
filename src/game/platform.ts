@@ -8,6 +8,7 @@ import { ENEMY_TYPE_COUNT, ENEMY_WEIGHTS_FINAL, ENEMY_WEIGHTS_INITIAL, EnemyType
 import { EnemyGenerator } from "./enemygenerator.js";
 import { clamp } from "../math/utility.js";
 import { PLATFORM_OFFSET } from "./stage.js";
+import { Difficulty } from "./difficulty.js";
 
 
 const enum TileType {
@@ -44,6 +45,18 @@ const DECORATION_SW : number[] = [32, 16, 16, 16, 16, 16, 16, 16, 16];
 const DECORATION_SH : number[] = [16, 16, 16, 16, 16, 32, 16, 16, 16];
 
 
+const SPIKE_WEIGHTS_INITIAL : number[][] = [
+
+    [0.30, 0.50, 0.20, 0.0],
+    [0.30, 0.45, 0.25, 0.0]
+]
+const SPIKE_WEIGHTS_LAST : number[][] = [
+
+    [0.15, 0.40, 0.40, 0.05],
+    [0.10, 0.35, 0.45, 0.10]
+]
+
+
 export class Platform implements ExistingObject {
 
 
@@ -64,11 +77,9 @@ export class Platform implements ExistingObject {
     }
 
 
-    private createSpikes(weight : number) : void {
+    private createSpikes(difficulty : Difficulty, weight : number) : void {
 
         const SPIKE_MIN_DISTANCE : number = 1;
-        const SPIKE_WEIGHTS_INITIAL : number[] = [0.30, 0.50, 0.20];
-        const SPIKE_WEIGHTS_LAST : number[] = [0.15, 0.40, 0.40, 0.05];
 
         let admissableTileCount : number = 0;
         let admissablePositions : boolean[] = (new Array<boolean> (this.width)).fill(false);
@@ -90,7 +101,10 @@ export class Platform implements ExistingObject {
         }
 
         const maxSpikeCount : number = Math.min(
-            sampleInterpolatedWeightedUniform(SPIKE_WEIGHTS_INITIAL, SPIKE_WEIGHTS_LAST, weight),
+            sampleInterpolatedWeightedUniform(
+                SPIKE_WEIGHTS_INITIAL[difficulty] ?? [], 
+                SPIKE_WEIGHTS_LAST[difficulty] ?? [], 
+                weight),
             Math.floor(Math.random()*(admissableTileCount - 1))
         );
         if (maxSpikeCount <= 0)
@@ -210,7 +224,7 @@ export class Platform implements ExistingObject {
     }
 
 
-    private createPlatform(weight : number, initial : boolean = false) : void {
+    private createPlatform(difficulty : Difficulty, weight : number, initial : boolean = false) : void {
 
         const INITIAL_TYPE_WEIGHTS : number[] = [0.40, 0.40, 0.20];
 
@@ -287,7 +301,7 @@ export class Platform implements ExistingObject {
             }
         }
 
-        this.createSpikes(weight);
+        this.createSpikes(difficulty, weight);
         this.createDecorations();
     }
 
@@ -467,7 +481,7 @@ export class Platform implements ExistingObject {
     }
 
 
-    public spawn(weight : number, y : number, width : number, initial : boolean = false) : void {
+    public spawn(difficulty : Difficulty, weight : number, y : number, width : number, initial : boolean = false) : void {
 
         if (this.tiles.length == 0)
             this.tiles = new Array<TileType> (width);
@@ -481,7 +495,7 @@ export class Platform implements ExistingObject {
         this.y = y;
         this.width = width;
 
-        this.createPlatform(weight, initial);
+        this.createPlatform(difficulty, weight, initial);
 
         this.exist = true;
     }

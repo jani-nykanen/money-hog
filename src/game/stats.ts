@@ -181,4 +181,15 @@ export class Stats {
 
         this.score = this.shownPoints;
     }
+
+
+    public cap(amount : number) : boolean {
+
+        if (this.shownPoints >= amount) {
+
+            this.shownPoints = amount;
+            return true;
+        }
+        return false;
+    }
 }

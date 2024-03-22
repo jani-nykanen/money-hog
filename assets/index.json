@@ -14,7 +14,7 @@
         {"name": "readygo", "path": "readygo.png"},
         {"name": "gameover", "path": "gameover.png"},
         {"name": "story_background", "path": "story_background.png"},
-
+        {"name": "ending", "path": "ending.png"},
 
         {"name": "small_numbers", "path": "small_numbers.png"},
         {"name": "font", "path": "font.png"},
@@ -47,8 +47,10 @@
         {"name": "choose", "path": "choose.wav"},
         {"name": "select", "path": "select.wav"},
         {"name": "pause", "path": "pause.wav"},
+        {"name": "finish", "path": "finish.wav"},
 
         {"name": "theme", "path": "theme.ogg"},
+        {"name": "menu", "path": "menu.ogg"},
         {"name": "star", "path": "star.ogg"}
     ]
 }

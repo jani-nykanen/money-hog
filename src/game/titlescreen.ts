@@ -7,7 +7,7 @@ import { TextBox } from "../ui/textbox.js";
 import { Menu } from "../ui/menu.js";
 import { MenuButton } from "../ui/menubutton.js";
 import { ObjectManager } from "./objectmanager.js";
-import { THEME_VOLUME } from "./volume.js";
+import { MENU_VOLUME, THEME_VOLUME } from "./volume.js";
 import { getSFXText, getMusicText } from "./pause.js";
 
 
@@ -44,7 +44,7 @@ export class TitleScreen implements Scene {
 
 
             new MenuButton("Impossible Game", () => {
-
+                
                 event.audio.stopMusic();
 
                 event.transition.activate(true, TransitionType.Circle, 1.0/30.0, event,
@@ -87,11 +87,16 @@ export class TitleScreen implements Scene {
 
                     if (event.audio.isMusicEnabled()) {
 
-                        event.audio.resumeMusic();
+                        if (!event.audio.resumeMusic()) {
+
+                            event.audio.fadeInMusic(event.assets.getSample("menu"), MENU_VOLUME, 1000);
+                        }
                     }
                 })
 
         ], true);
+
+        event.audio.fadeInMusic(event.assets.getSample("menu"), MENU_VOLUME, 1000);
     }
 
 

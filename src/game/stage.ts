@@ -12,9 +12,32 @@ import { sampleInterpolatedWeightedUniform, sampleWeightedUniform } from "../mat
 import { Stats } from "./stats.js";
 import { Enemy } from "./enemy.js";
 import { EnemyGenerator } from "./enemygenerator.js";
+import { Difficulty } from "./difficulty.js";
 
 
 export const PLATFORM_OFFSET : number = 4;
+
+
+const ENEMY_COUNT_WEIGHTS_INITIAL : number[][] = [
+    [0.30, 0.50, 0.20, 0.0],
+    [0.30, 0.40, 0.25, 0.05],
+];
+const ENEMY_COUNT_WEIGHTS_FINAL : number[][] = [
+    [0.1, 0.20, 0.50, 0.20, 0.0],
+    [0.0, 0.10, 0.50, 0.40, 0.10]
+];
+
+
+const COIN_COUNT_WEIGHTS_INITIAL : number[][] = [
+
+    [0.20, 0.60, 0.30, 0.0],
+    [0.10, 0.50, 0.30, 0.10, 0.0]
+];
+const COIN_COUNT_WEIGHTS_FINAL: number[][] = [
+
+    [0.0, 0.30, 0.50, 0.20],
+    [0.0, 0.20, 0.40, 0.30, 0.10]
+];
 
 
 export class Stage {
@@ -34,17 +57,14 @@ export class Stage {
     }   
 
 
-    private spawnCoins(weight : number, platform : Platform, stats : Stats) : void {
-
-        const COIN_COUNT_WEIGHTS_INITIAL : number[] = [0.20, 0.60, 0.30, 0.0];
-        const COIN_COUNT_WEIGHTS_FINAL: number[] = [0.0, 0.30, 0.50, 0.20];
+    private spawnCoins(difficulty : number, weight : number, platform : Platform, stats : Stats) : void {
 
         const TYPE_WEIGHTS : number[] = [0.90, 0.025, 0.075];
         const HEART_PROB_FACTOR : number = 0.33;
 
         const count : number = sampleInterpolatedWeightedUniform(
-            COIN_COUNT_WEIGHTS_INITIAL, 
-            COIN_COUNT_WEIGHTS_FINAL,
+            COIN_COUNT_WEIGHTS_INITIAL[difficulty] ?? [], 
+            COIN_COUNT_WEIGHTS_FINAL[difficulty] ?? [],
             weight);
         if (count == 0)
             return;
@@ -89,14 +109,11 @@ export class Stage {
     }
 
 
-    private spawnEnemies(weight : number, platform : Platform) : void {
-
-        const ENEMY_COUNT_WEIGHTS_INITIAL : number[] = [0.30, 0.50, 0.20, 0.0];
-        const ENEMY_COUNT_WEIGHTS_FINAL : number[] = [0.1, 0.20, 0.50, 0.20];
+    private spawnEnemies(difficulty : Difficulty, weight : number, platform : Platform) : void {
 
         const count : number = sampleInterpolatedWeightedUniform(
-            ENEMY_COUNT_WEIGHTS_INITIAL, 
-            ENEMY_COUNT_WEIGHTS_FINAL,
+            ENEMY_COUNT_WEIGHTS_INITIAL[difficulty] ?? [], 
+            ENEMY_COUNT_WEIGHTS_FINAL[difficulty] ?? [],
             weight);
         if (count == 0)
             return;
@@ -105,29 +122,31 @@ export class Stage {
     }
 
 
-    private spawnPlatform(weight : number, yoff : number, stats : Stats, event : ProgramEvent, 
+    private spawnPlatform(difficulty : Difficulty, weight : number, 
+        yoff : number, stats : Stats, event : ProgramEvent, 
         initial : boolean = false, noEnemies : boolean = false) : void {
 
-        const BOTTOM_OFFSET : number = PLATFORM_OFFSET // 2;
+        const BOTTOM_OFFSET : number = PLATFORM_OFFSET; // 2;
 
         const p : Platform = next<Platform>(this.platforms, Platform);
 
-        p.spawn(weight, yoff + event.screenHeight + BOTTOM_OFFSET*TILE_HEIGHT,
+        p.spawn(difficulty, weight, yoff + event.screenHeight + BOTTOM_OFFSET*TILE_HEIGHT,
             (event.screenWidth/TILE_WIDTH) | 0, initial);
 
         if (!initial) {
 
-            this.spawnCoins(weight, p, stats);
+            this.spawnCoins(difficulty, weight, p, stats);
 
             if (!noEnemies) {
 
-                this.spawnEnemies(weight, p);
+                this.spawnEnemies(difficulty, weight, p);
             }
         }
     }
 
 
-    private updatePlatforms(weight : number, globalSpeedFactor : number, stats : Stats, event : ProgramEvent) : void {
+    private updatePlatforms(difficulty : Difficulty, weight : number, 
+        globalSpeedFactor : number, stats : Stats, event : ProgramEvent) : void {
 
         // Update existing platforms
         for (let p of this.platforms) {
@@ -139,7 +158,7 @@ export class Stage {
         this.platformTimer += globalSpeedFactor*event.tick;
         if (this.platformTimer >= PLATFORM_OFFSET*TILE_HEIGHT) {
 
-            this.spawnPlatform(weight, 0.0, stats, event);
+            this.spawnPlatform(difficulty, weight, 0.0, stats, event);
             this.platformTimer -= PLATFORM_OFFSET*TILE_HEIGHT;
         }
     } 
@@ -153,10 +172,11 @@ export class Stage {
     }
 
 
-    public update(weight : number, globalSpeedFactor : number, stats : Stats, event : ProgramEvent) : void {
+    public update(difficulty : Difficulty, weight : number, 
+        globalSpeedFactor : number, stats : Stats, event : ProgramEvent) : void {
 
         this.updateTimers(event);
-        this.updatePlatforms(weight, globalSpeedFactor, stats, event);
+        this.updatePlatforms(difficulty, weight, globalSpeedFactor, stats, event);
     }
 
 
@@ -189,7 +209,7 @@ export class Stage {
 
         for (let i = 0; i < COUNT; ++ i) {
 
-            this.spawnPlatform(0.0, -PLATFORM_OFFSET*TILE_HEIGHT*i, stats, event, i == COUNT - 1, true);
+            this.spawnPlatform(0, 0.0, -PLATFORM_OFFSET*TILE_HEIGHT*i, stats, event, i == COUNT - 1, true);
         }
     }
 

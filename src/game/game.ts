@@ -12,20 +12,22 @@ import { Vector } from "../math/vector.js";
 import { fetchRecordScore, setRecordScore } from "./record.js";
 import { THEME_VOLUME } from "./volume.js";
 import { Pause } from "./pause.js";
+import { Difficulty } from "./difficulty.js";
 
 
 const APPEAR_TIME : number = 40;
 const GO_TIME : number = 60;
+const ENDING_TIME : number = 90;
 
 const SPEED_UP_WAIT : number = 90;
 const SPEED_UP_INITIAL : number = 30;
 
+const SPEED_UP_TIMES : number[][] = [
 
-export const enum Difficulty {
+    [45, 120, 240, 360, 540],
+    [30, 90,  210, 360, 480]
+];
 
-    Normal = 0,
-    Impossible = 1
-}
 
 
 export class Game implements Scene {
@@ -37,6 +39,7 @@ export class Game implements Scene {
 
     private goTimer : number = 0.0;
     private appearTimer : number = 0.0;
+    private endingTimer : number = 0;
     private readyGoPhase : number = 0;
 
     private gameTimer : number = 0.0;
@@ -70,15 +73,13 @@ export class Game implements Scene {
 
     private computeGlobalSpeedTarget(event : ProgramEvent) : number {
 
-        const SPEED_UP_TIMES : number[] = [45, 120, 240, 360, 480];
         const BASE_SPEED : number = 0.5;
         const SPEED_ADD : number = 0.25;
 
-        let i = 0
         for (let i = 0; i < SPEED_UP_TIMES.length; ++ i) {
 
             if (this.speedPhase < i + 1 &&
-                this.gameTimer >= SPEED_UP_TIMES[i]*60) {
+                this.gameTimer >= SPEED_UP_TIMES[this.difficulty][i]*60) {
 
                 this.speedPhase = i + 1;
                 this.speedUpTimer = SPEED_UP_INITIAL + SPEED_UP_WAIT;
@@ -203,7 +204,7 @@ export class Game implements Scene {
         const weight : number = Math.min(1.0, this.gameTimer/MAX_WEIGHT_TIME);
 
         this.background?.update(event);
-        this.stage?.update(weight, this.globalSpeed, this.stats, event);
+        this.stage?.update(this.difficulty, weight, this.globalSpeed, this.stats, event);
         if (this.stage !== undefined) {
 
             this.objects?.update(weight, this.globalSpeed, this.stage, event);
@@ -255,6 +256,40 @@ export class Game implements Scene {
     }
 
 
+    // Note: not really ending, but the sequence that takes you
+    // to the ending
+    private updateEnding(event : ProgramEvent) : boolean {
+
+        if (this.endingTimer > 0) {
+
+            this.endingTimer -= event.tick;
+            if (this.endingTimer <= 0.0) {
+
+                event.transition.activate(true, TransitionType.Waves, 1.0/120.0, event,
+                    (event : ProgramEvent) => {
+
+                        event.transition.activate(false, TransitionType.Fade, 1.0/20.0, event, 
+                            () => {}, new RGBA(255, 255, 255));
+                        event.scenes.changeScene("story", event);
+                    }, new RGBA(255, 255, 255));
+            }
+            return true;
+        }
+
+        if (this.stats.cap(this.targetScore)) {
+
+            this.endingTimer = ENDING_TIME;
+
+            event.audio.stopMusic();
+            event.audio.playSample(event.assets.getSample("finish"), 0.50);
+
+            return true;
+        }
+
+        return false;
+    }
+
+
     private drawBreakingHeart(canvas : Canvas, bmp : Bitmap | undefined,
         dx : number, dy : number, t : number) : void {
 
@@ -301,10 +336,14 @@ export class Game implements Scene {
         canvas.drawBitmap(bmpHUD, Flip.None, 
             canvas.width/2 - 16, TINY_TEXT_OFFSET, 
             0, 16, 32, 8);
-        canvas.setColor(255, 255, 182);
-        canvas.drawText(bmpFontOutlines, this.stats.shownScoreToString(7), 
-            canvas.width/2, TINY_TEXT_OFFSET + 5, -8, 0, Align.Center);
-        canvas.setColor();
+
+        if (this.endingTimer <= 0 || Math.floor(this.endingTimer/4) % 2 == 0) {
+
+            canvas.setColor(255, 255, 182);
+            canvas.drawText(bmpFontOutlines, this.stats.shownScoreToString(7), 
+                canvas.width/2, TINY_TEXT_OFFSET + 5, -8, 0, Align.Center);
+            canvas.setColor();
+        }
 
         // Coins
         const coinStr : string = String(this.stats.getCoins());
@@ -436,11 +475,12 @@ export class Game implements Scene {
         this.goTimer = 0;
         this.gameTimer = 0;
         this.appearTimer = 0;
+        this.endingTimer = 0;
 
         this.speedUpTimer = 0;
         this.speedPhase = 0;
 
-        event.transition.activate(false, TransitionType.Circle, 1.0/30.0, event);
+        // event.transition.activate(false, TransitionType.Circle, 1.0/30.0, event);
 
         this.difficulty = (param ?? 0) as Difficulty;
         this.targetScore = (param === 1) ? 9999999 : 1000000;
@@ -451,6 +491,11 @@ export class Game implements Scene {
         
         if (event.transition.isActive() && event.transition.isFadingOut())
             return;
+
+        if (this.updateEnding(event)) {
+
+            return;
+        }
 
         if (this.gameoverPhase == 1) {
 
@@ -524,6 +569,6 @@ export class Game implements Scene {
 
     public dispose() : SceneParameter {
         
-        return 1;
+        return 2 + this.difficulty;
     }
 }

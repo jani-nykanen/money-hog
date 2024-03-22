@@ -92,10 +92,9 @@ export class AudioPlayer {
 
     public stopMusic() : void {
 
-        if (!this.musicEnabled || this.musicTrack === undefined)
-            return;
+        //if (!this.musicEnabled || this.musicTrack === undefined)
 
-        this.musicTrack.stop();
+        this.musicTrack?.stop();
         this.musicTrack = undefined;
     }
 

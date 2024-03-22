@@ -21,7 +21,22 @@ otherwise you shall
 remain a pig for-
 ever!`
 ],
-[]
+[
+`Congratulations!
+You have collected
+the required
+%s!
+`,
+`However, since it
+is more fun to be
+a rich pig than a
+poor human, you 
+decide to keep the
+money.`,
+`It really drives
+the witch crazy!`
+
+]
 ]
 
 
@@ -31,6 +46,7 @@ export class StoryScreen implements Scene {
 
     private text : TextBox;
     private difficultyParam : number = 0;
+    private isEnding : boolean = false;
 
 
     constructor() {
@@ -43,17 +59,26 @@ export class StoryScreen implements Scene {
 
         this.text.clear();
 
-        const text : string[] = Array.from(STORY_TEXT[0]);
-        text[1] = text[1].replace("%s", param === 0 ? "one million dollars" : "9.999.999 dollars");
+        this.isEnding = param === 2;
+
+        // TODO: This is a mess
+        const p : number = (typeof(param) === "number") ? (param % 2) : 0;
+        const text : string[] = Array.from(STORY_TEXT[this.isEnding ? 1 : 0]);
+        const replaceIndex : number = this.isEnding ? 0 : 1;
+
+        text[replaceIndex] = text[replaceIndex].replace("%s", p == 0 ? "one million dollars" : "9.999.999 dollars");
 
         this.text.addText(text);
         this.text.activate(false, (event : ProgramEvent) => {
 
+            // TODO: This is also a mess
             event.transition.activate(true, TransitionType.Fade, 1.0/20.0, event,
             (event : ProgramEvent) => {
 
-                event.transition.deactivate();
-                event.scenes.changeScene("game", event);
+                event.transition.activate(false, 
+                    this.isEnding ? TransitionType.Fade : TransitionType.Circle, 
+                    this.isEnding ? 1.0/60.0 : 1.0/30.0, event);
+                event.scenes.changeScene(this.isEnding ? "ending" : "game", event);
             });
         })
 
