@@ -15,7 +15,7 @@ normal human being,
 into a pig!`,
 
 `The witch demands 
-one million dollars 
+%s 
 before midnight, 
 otherwise you shall 
 remain a pig for-
@@ -30,6 +30,7 @@ export class StoryScreen implements Scene {
 
 
     private text : TextBox;
+    private difficultyParam : number = 0;
 
 
     constructor() {
@@ -40,7 +41,12 @@ export class StoryScreen implements Scene {
 
     public init(param : SceneParameter, event : ProgramEvent) : void {
 
-        this.text.addText(STORY_TEXT[0]);
+        this.text.clear();
+
+        const text : string[] = Array.from(STORY_TEXT[0]);
+        text[1] = text[1].replace("%s", param === 0 ? "one million dollars" : "9.999.999 dollars");
+
+        this.text.addText(text);
         this.text.activate(false, (event : ProgramEvent) => {
 
             event.transition.activate(true, TransitionType.Fade, 1.0/20.0, event,
@@ -50,6 +56,8 @@ export class StoryScreen implements Scene {
                 event.scenes.changeScene("game", event);
             });
         })
+
+        this.difficultyParam = typeof(param) === "number" ? param : 0;
     }
 
 
@@ -77,7 +85,7 @@ export class StoryScreen implements Scene {
 
     public dispose() : SceneParameter {
        
-        return undefined;
+        return this.difficultyParam;
     }
 
 }

@@ -1,5 +1,6 @@
 import { ProgramEvent } from "../core/event.js";
 import { InputState } from "../core/inputstate.js";
+import { TransitionType } from "../core/transition.js";
 import { Canvas } from "../gfx/interface.js";
 import { Menu } from "../ui/menu.js";
 import { MenuButton } from "../ui/menubutton.js";
@@ -65,7 +66,20 @@ export class Pause {
 
                     this.wasInvincibilityThemePlaying = false;
                 }
-            })
+            }),
+
+
+            new MenuButton("Main Menu", 
+                (event : ProgramEvent) => {
+
+                event.audio.stopMusic();
+                event.transition.activate(true, TransitionType.Fade, 1.0/20.0, event,
+                    (event : ProgramEvent) => {
+
+                        event.scenes.changeScene("title", event);
+                    });
+                this.menu.deactivate();
+            }),
 
         ], false);
     }

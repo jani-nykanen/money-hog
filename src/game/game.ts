@@ -20,11 +20,18 @@ const GO_TIME : number = 60;
 const SPEED_UP_WAIT : number = 90;
 const SPEED_UP_INITIAL : number = 30;
 
-const TARGET_SCORE : number = 1000000;
+
+export const enum Difficulty {
+
+    Normal = 0,
+    Impossible = 1
+}
 
 
 export class Game implements Scene {
 
+
+    private difficulty : Difficulty = Difficulty.Normal;
 
     private globalSpeed : number = 0.0;
 
@@ -50,6 +57,7 @@ export class Game implements Scene {
     private gameoverWave : number = 0.0;
 
     private recordScore : number = 0;
+    private targetScore : number = 0;
 
 
     constructor() {
@@ -311,9 +319,19 @@ export class Game implements Scene {
     private drawReadyGoText(canvas : Canvas) : void {
 
         const bmp : Bitmap | undefined = canvas.getBitmap("readygo");
+        const bmpFontOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
 
         const dx : number = canvas.width/2 - ((bmp?.width ?? 0)/2);
         const dy : number = canvas.height/2 - ((bmp?.height ?? 0)/4); 
+
+        if (this.readyGoPhase != 1 || 
+            this.goTimer >= GO_TIME/2 || 
+            Math.floor(this.goTimer/4) % 2 == 0) {
+
+            canvas.setColor(182, 255, 0);
+            canvas.drawText(bmpFontOutlines, "GOAL: $" + String(this.targetScore), canvas.width/2, 24, -8, 0, Align.Center);
+            canvas.setColor();
+        }
 
         if (this.readyGoPhase == 2) {
 
@@ -384,10 +402,10 @@ export class Game implements Scene {
         // Numbers
         canvas.setColor();
         canvas.drawText(bmpFontOutlines,
-             "$" + String(this.stats.getShownScore()) + "/" + String(TARGET_SCORE) ,
+             "$" + String(this.stats.getShownScore()) + "/" + String(this.targetScore) ,
               canvas.width/2, moneyPos + 12, -8, 0, Align.Center);
         canvas.drawText(bmpFontOutlines, 
-            "(" + String(Math.floor(100*this.stats.getShownScore()/TARGET_SCORE)) + "%" + ")",
+            "(" + String(Math.floor(100*this.stats.getShownScore()/this.targetScore)) + "%" + ")",
             canvas.width/2, moneyPos + 24, -8, 0, Align.Center);
 
         canvas.drawText(bmpFontOutlines, "$" + String(this.recordScore) , canvas.width/2, recordPos + 12, -8, 0, Align.Center);
@@ -423,11 +441,17 @@ export class Game implements Scene {
         this.speedPhase = 0;
 
         event.transition.activate(false, TransitionType.Circle, 1.0/30.0, event);
+
+        this.difficulty = (param ?? 0) as Difficulty;
+        this.targetScore = (param === 1) ? 9999999 : 1000000;
     }
 
 
     public update(event : ProgramEvent) : void {
         
+        if (event.transition.isActive() && event.transition.isFadingOut())
+            return;
+
         if (this.gameoverPhase == 1) {
 
             this.updateGameover(event);
@@ -500,6 +524,6 @@ export class Game implements Scene {
 
     public dispose() : SceneParameter {
         
-        return undefined;
+        return 1;
     }
 }

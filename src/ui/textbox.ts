@@ -216,6 +216,12 @@ export class TextBox {
     }
 
 
+    public clear() : void {
+
+        this.textBuffer = new Array<string> ();
+    }
+
+
     public getWidth = () : number => this.width;
     public getHeight = () : number => this.height;
 
