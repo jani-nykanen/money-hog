@@ -97,14 +97,14 @@ export class Stage {
 
             this.collectibleGenerator?.spawn(type, dx, dy);
 
-            if (count == 2) {
+            // if (count == 2) {
 
                 x = w + Math.floor(Math.random()*w);
                 if (x >= w*2) {
 
                     x = w*2 - 1;
                 }
-            }
+            // }
         }
     }
 

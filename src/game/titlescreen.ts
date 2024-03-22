@@ -9,54 +9,41 @@ import { MenuButton } from "../ui/menubutton.js";
 import { ObjectManager } from "./objectmanager.js";
 import { MENU_VOLUME, THEME_VOLUME } from "./volume.js";
 import { getSFXText, getMusicText } from "./pause.js";
+import { Background } from "./background.js";
+
+
+const PRESS_ENTER_TIME : number = 60;
 
 
 export class TitleScreen implements Scene {
 
 
     private menu : Menu | undefined = undefined;
+    private difficultyMenu : Menu | undefined = undefined;
 
     private gameMode : number = 0;
 
+    private titlePhase : number = 0;
+    private pressEnterTimer : number = PRESS_ENTER_TIME - 1;
 
-    constructor() { }
+
+    private background : Background;
+
+
+    constructor() { 
+
+        this.background = new Background();
+    }
 
 
     public init(param : SceneParameter, event : ProgramEvent) : void {
 
         this.menu = new Menu([
 
-            new MenuButton("Normal Game", () => {
+            new MenuButton("Play Game", () => {
 
-                event.audio.stopMusic();
-
-                event.transition.activate(true, TransitionType.Circle, 1.0/30.0, event,
-                (event : ProgramEvent) => {
-
-                    event.transition.deactivate();
-                    event.transition.activate(false, TransitionType.Fade, 1.0/20.0, event);
-
-                    this.gameMode = 0;
-
-                    event.scenes.changeScene("story", event);
-                })
-            }),
-
-
-            new MenuButton("Impossible Game", () => {
-                
-                event.audio.stopMusic();
-
-                event.transition.activate(true, TransitionType.Circle, 1.0/30.0, event,
-                (event : ProgramEvent) => {
-
-                    event.transition.deactivate();
-                    event.transition.activate(false, TransitionType.Fade, 1.0/20.0, event);
-
-                    this.gameMode = 1;
-
-                    event.scenes.changeScene("story", event);
-                })
+                this.menu.deactivate();
+                this.difficultyMenu.activate(0);
             }),
 
 
@@ -71,7 +58,7 @@ export class TitleScreen implements Scene {
                 (event : ProgramEvent) => {
 
                     event.audio.toggleSFX();
-                    this.menu?.changeButtonText(3, getSFXText(event));
+                    this.menu?.changeButtonText(2, getSFXText(event));
                 }),
 
             new MenuButton(getMusicText(event),
@@ -83,7 +70,7 @@ export class TitleScreen implements Scene {
                     }
 
                     event.audio.toggleMusic();
-                    this.menu?.changeButtonText(4, getMusicText(event));
+                    this.menu?.changeButtonText(3, getMusicText(event));
 
                     if (event.audio.isMusicEnabled()) {
 
@@ -94,26 +81,131 @@ export class TitleScreen implements Scene {
                     }
                 })
 
-        ], true);
+        ], param !== undefined);
+        
+
+        this.difficultyMenu = new Menu([
+            new MenuButton("Normal", 
+                (event : ProgramEvent) : void => {
+
+                    this.goToGame(0, event);
+                }
+            ),
+
+            new MenuButton("Impossible", 
+                (event : ProgramEvent) : void => {
+                    
+                    this.goToGame(1, event);
+                }
+            ),
+
+
+            new MenuButton("Back", 
+                (event : ProgramEvent) : void => {
+
+                    this.difficultyMenu.deactivate();
+                    this.menu.activate(0);
+                } 
+            )
+        ]);
+
 
         event.audio.fadeInMusic(event.assets.getSample("menu"), MENU_VOLUME, 1000);
     }
 
 
+    private goToGame(difficulty : number, event : ProgramEvent) : void {
+
+        event.audio.stopMusic();
+
+        event.transition.activate(true, TransitionType.Circle, 1.0/30.0, event,
+            (event : ProgramEvent) => {
+
+            event.transition.deactivate();
+            event.transition.activate(false, TransitionType.Fade, 1.0/20.0, event);
+
+            this.gameMode = difficulty;
+
+            event.scenes.changeScene("story", event);
+        });
+    }
+
+
     public update(event : ProgramEvent) : void {
+
+        this.background.update(event);
 
         if (event.transition.isActive())
             return;
 
-        this.menu?.update(event);
+        if (this.titlePhase == 0) {
+
+            this.pressEnterTimer = (this.pressEnterTimer + 1) % PRESS_ENTER_TIME;
+
+            if (event.input.getAction("select") == InputState.Pressed) {
+
+                this.titlePhase = 1;
+                event.audio.playSample(event.assets.getSample("pause"), 0.50);
+
+                this.menu?.activate(0);
+            }
+            return;
+        }
+
+        // To avoid "double activation", we need to avoid
+        // calling both functions the same time, thus the
+        // "unnecessary" if statements
+        if (this.menu?.isActive()) {
+
+            this.menu?.update(event);
+        }
+        else if (this.difficultyMenu?.isActive()) {
+
+            if (event.input.getAction("back") == InputState.Pressed ||
+                event.input.getAction("back2") == InputState.Pressed) {
+
+                this.difficultyMenu?.deactivate();
+                this.menu?.activate(0);
+
+                event.audio.playSample(event.assets.getSample("reject"), 0.60);
+
+                return;
+            }
+
+            this.difficultyMenu?.update(event);
+        }
     }
 
 
     public redraw(canvas : Canvas) : void {
 
-        canvas.clear(146, 182, 255);
+        const bmpOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
+
+        // canvas.clear(146, 182, 255);
+        this.background.draw(canvas);
+
+        if (this.titlePhase == 0) {
+
+            if (this.pressEnterTimer < PRESS_ENTER_TIME/2) {
+
+                canvas.setColor(182, 255, 0);
+                canvas.drawText(bmpOutlines, "Press Enter to Start", 
+                    canvas.width/2, canvas.height - 64, -8, 0, Align.Center);
+                canvas.setColor();
+            }
+            return;
+        }
 
         this.menu?.draw(canvas, 0, 64);
+        this.difficultyMenu?.draw(canvas, 0, 64);
+
+        if (this.difficultyMenu?.isActive()) {
+
+            
+            canvas.setColor(255, 255, 146);
+            canvas.drawText(bmpOutlines, "Choose difficulty:", canvas.width/2, 152, -8, 0, Align.Center);
+            canvas.setColor();
+        }
     }
 
 

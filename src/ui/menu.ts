@@ -80,13 +80,14 @@ export class Menu {
 
     public draw(canvas : Canvas,
         x : number = 0, y : number = 0, yoff : number = 12, 
-        drawBox : boolean = true, boxColors : RGBA[] | undefined = undefined) : void {
+        drawBox : boolean = true, boxColors : RGBA[] | undefined = undefined,
+        drawShadow : boolean = true, shadowAlpha : number = 0.33, shadowOffset : number = 4) : void {
 
         const BOX_OFFSET : number = 2;
         const SIDE_OFFSET : number = 2;
 
         const BASE_COLOR : number[][] = [[255, 255, 255], [146, 146, 146]];
-        const SELECTED_COLOR : number[][] = [[255, 255, 73], [182, 182, 36]];
+        const SELECTED_COLOR : number[][] = [[255, 255, 0], [182, 182, 36]];
 
         if (!this.active) return;
 
@@ -100,6 +101,17 @@ export class Menu {
         const dy : number = y + canvas.height/2 - h/2; 
 
         if (drawBox) {
+
+            if (drawShadow) {
+
+                canvas.setColor(0, 0, 0, shadowAlpha);
+                canvas.fillRect(
+                    dx - BOX_OFFSET + shadowOffset, 
+                    dy - BOX_OFFSET + shadowOffset, 
+                    w + BOX_OFFSET*2, 
+                    h + BOX_OFFSET*2)
+                canvas.setColor();
+            }
 
             drawUIBox(canvas, 
                 dx - BOX_OFFSET, dy - BOX_OFFSET, 

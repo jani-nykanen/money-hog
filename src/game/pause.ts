@@ -24,19 +24,13 @@ export class Pause {
 
         this.menu = new Menu([
 
-            new MenuButton("Resume", () => {
+            new MenuButton("Resume", (event : ProgramEvent) : void => {
 
-                if (!event.audio.resumeMusic()) {
-
-                    if (event.audio.isMusicEnabled()) {
-
-                        event.audio.playMusic(event.assets.getSample("theme"), THEME_VOLUME);
-                    }
-                }
+                this.resumeMusic(event);
                 this.menu.deactivate();
             }),
 
-            new MenuButton("Restart", (event : ProgramEvent) => {
+            new MenuButton("Restart", (event : ProgramEvent) : void => {
 
                 this.menu.deactivate();
                 event.audio.resumeMusic();
@@ -44,21 +38,19 @@ export class Pause {
             }),
 
             new MenuButton(getSFXText(event),
-            (event : ProgramEvent) => {
+            (event : ProgramEvent) : void => {
 
                 event.audio.toggleSFX();
                 this.menu.changeButtonText(2, getSFXText(event));
             }),
 
             new MenuButton(getMusicText(event),
-            (event : ProgramEvent) => {
+            (event : ProgramEvent) : void => {
 
                 event.audio.toggleMusic();
                 this.menu.changeButtonText(3, getMusicText(event));
 
                 if (this.wasInvincibilityThemePlaying && event.audio.isMusicEnabled()) {
-
-                    console.log("LOl");
 
                     event.audio.stopMusic();
                     event.audio.playMusic(event.assets.getSample("theme"), THEME_VOLUME);
@@ -70,7 +62,7 @@ export class Pause {
 
 
             new MenuButton("Main Menu", 
-                (event : ProgramEvent) => {
+                (event : ProgramEvent) : void => {
 
                 event.audio.stopMusic();
                 event.transition.activate(true, TransitionType.Fade, 1.0/20.0, event,
@@ -82,6 +74,15 @@ export class Pause {
             }),
 
         ], false);
+    }
+
+
+    private resumeMusic(event : ProgramEvent) : void {
+
+        if (!event.audio.resumeMusic() && event.audio.isMusicEnabled()) {
+
+            event.audio.playMusic(event.assets.getSample("theme"), THEME_VOLUME);
+        }
     }
 
 
@@ -122,6 +123,18 @@ export class Pause {
                 return false;
             }
         }
+
+        if (event.input.getAction("back") == InputState.Pressed ||
+                event.input.getAction("back2") == InputState.Pressed) {
+
+            this.menu.deactivate();
+            event.audio.playSample(event.assets.getSample("reject"), 0.60);
+
+            this.resumeMusic(event);
+
+            return false;
+        }
+
         this.menu.update(event);
 
         return true;
