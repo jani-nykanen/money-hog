@@ -5,6 +5,7 @@ import { TransitionType } from "../core/transition.js";
 import { Align, Bitmap, Canvas, Flip } from "../gfx/interface.js";
 import { TextBox } from "../ui/textbox.js";
 import { ControlsGuide } from "./controlsguide.js";
+import { STORY_VOLUME } from "./volume.js";
 
 
 const STORY_TEXT : string[][] = [
@@ -82,6 +83,8 @@ export class StoryScreen implements Scene {
             event.transition.activate(true, TransitionType.Fade, 1.0/20.0, event,
             (event : ProgramEvent) => {
 
+                event.audio.stopMusic();
+
                 if (!this.controlsShown) {
 
                     this.forceDrawControls = true;
@@ -93,6 +96,8 @@ export class StoryScreen implements Scene {
         })
 
         this.difficultyParam = typeof(param) === "number" ? param : 0;
+
+        event.audio.fadeInMusic(event.assets.getSample("story"), STORY_VOLUME, 1000);
     }
 
 

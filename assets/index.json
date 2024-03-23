@@ -53,6 +53,7 @@
 
         {"name": "theme", "path": "theme.ogg"},
         {"name": "menu", "path": "menu.ogg"},
+        {"name": "story", "path": "story.ogg"},
         {"name": "star", "path": "star.ogg"}
     ]
 }
