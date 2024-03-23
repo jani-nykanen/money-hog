@@ -105,16 +105,17 @@ export class StoryScreen implements Scene {
     }
 
 
-    private drawIntroSprites(canvas : Canvas, bmp : Bitmap | undefined, dx : number, dy : number) : void {
+    private drawSprites(canvas : Canvas, bmp : Bitmap | undefined, 
+        dx : number, dy : number, phase : number) : void {
 
         const WITCH_AMPLITUDE : number = 4.0;
 
         // Pig
-        canvas.drawBitmap(bmp, Flip.None, dx + 48, dy + 128 - 52, 0, 0, 24, 24);
+        canvas.drawBitmap(bmp, Flip.None, dx + 40, dy + 128 - 68, 0, phase*40, 40, 40);
 
         // Witch
         const offset : number = Math.round(Math.sin(this.witchWave)*WITCH_AMPLITUDE);
-        canvas.drawBitmap(bmp, Flip.None, dx + 112, dy + 16 + offset, 24, 0, 40, 40);
+        canvas.drawBitmap(bmp, Flip.None, dx + 112, dy + 16 + offset, 40, phase*40, 40, 40);
     }
 
 
@@ -165,11 +166,8 @@ export class StoryScreen implements Scene {
         const dy : number = 16;
 
         canvas.drawBitmap(bmpBackground, Flip.None, dx, dy, 0, 0, 160, 128);
-        if (!this.isEnding) {
-
-            this.drawIntroSprites(canvas, bmpSprites, dx, dy);
-        }
-
+        this.drawSprites(canvas, bmpSprites, dx, dy, Number(this.isEnding));
+        
         this.text.draw(canvas, 0, 64, 4, false, true);
     }
 

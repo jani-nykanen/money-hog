@@ -47,7 +47,7 @@ export class Ending implements Scene {
 
     public dispose() : SceneParameter {
        
-        return undefined;
+        return 0;
     }
 
 }
