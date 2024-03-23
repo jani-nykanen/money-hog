@@ -72,13 +72,12 @@ export class Stage {
         const heartProb : number = (1.0 - stats.getHealth()/stats.maxHealth)*HEART_PROB_FACTOR;
 
         const w : number = platform.getWidth()/count;
-        
-        let x : number = Math.floor(Math.random()*w);
         const dy : number = platform.getY() - (PLATFORM_OFFSET - 1)/2*TILE_HEIGHT;
 
         let specialItemCreated : boolean = false;
         for (let i = 0; i < count; ++ i) {
 
+            const x = i*w + Math.floor(Math.random()*w);
             const dx : number = x*TILE_WIDTH + TILE_WIDTH/2;
             
             let type : CollectibleType = sampleWeightedUniform(TYPE_WEIGHTS) + 1;
@@ -97,14 +96,7 @@ export class Stage {
 
             this.collectibleGenerator?.spawn(type, dx, dy);
 
-            // if (count == 2) {
-
-                x = w + Math.floor(Math.random()*w);
-                if (x >= w*2) {
-
-                    x = w*2 - 1;
-                }
-            // }
+            
         }
     }
 

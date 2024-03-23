@@ -15,6 +15,7 @@
         {"name": "gameover", "path": "gameover.png"},
         {"name": "story_background", "path": "story_background.png"},
         {"name": "ending", "path": "ending.png"},
+        {"name": "controls", "path": "controls.png"},
 
         {"name": "small_numbers", "path": "small_numbers.png"},
         {"name": "font", "path": "font.png"},

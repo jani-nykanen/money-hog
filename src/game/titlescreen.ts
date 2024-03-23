@@ -10,6 +10,7 @@ import { ObjectManager } from "./objectmanager.js";
 import { MENU_VOLUME, THEME_VOLUME } from "./volume.js";
 import { getSFXText, getMusicText } from "./pause.js";
 import { Background } from "./background.js";
+import { ControlsGuide } from "./controlsguide.js";
 
 
 const PRESS_ENTER_TIME : number = 60;
@@ -26,6 +27,7 @@ export class TitleScreen implements Scene {
     private titlePhase : number = 0;
     private pressEnterTimer : number = PRESS_ENTER_TIME - 1;
 
+    private controls : ControlsGuide;
 
     private background : Background;
 
@@ -33,6 +35,7 @@ export class TitleScreen implements Scene {
     constructor() { 
 
         this.background = new Background();
+        this.controls = new ControlsGuide();
     }
 
 
@@ -50,7 +53,7 @@ export class TitleScreen implements Scene {
             new MenuButton("Controls",
                 (event : ProgramEvent) => {
 
-                    event.audio.playSample(event.assets.getSample("reject"), 0.60);
+                    this.controls.activate();
                 }),
 
 
@@ -138,6 +141,12 @@ export class TitleScreen implements Scene {
         if (event.transition.isActive())
             return;
 
+        if (this.controls.isActive()) {
+
+            this.controls.update(event);
+            return;
+        }
+
         if (this.titlePhase == 0) {
 
             this.pressEnterTimer = (this.pressEnterTimer + 1) % PRESS_ENTER_TIME;
@@ -180,9 +189,15 @@ export class TitleScreen implements Scene {
     public redraw(canvas : Canvas) : void {
 
         const bmpOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
+        const bmpFont : Bitmap | undefined = canvas.getBitmap("font");
 
         // canvas.clear(146, 182, 255);
         this.background.draw(canvas);
+
+        canvas.setColor(0, 0, 0);
+        canvas.drawText(bmpFont, "*2024 Jani Nyk@nen", 
+                    canvas.width/2, canvas.height - 10, 0, 0, Align.Center);
+        canvas.setColor();
 
         if (this.titlePhase == 0) {
 
@@ -193,6 +208,12 @@ export class TitleScreen implements Scene {
                     canvas.width/2, canvas.height - 64, -8, 0, Align.Center);
                 canvas.setColor();
             }
+            return;
+        }
+
+        if (this.controls.isActive()) {
+
+            this.controls.draw(canvas, true);
             return;
         }
 

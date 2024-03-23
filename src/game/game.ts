@@ -22,10 +22,12 @@ const ENDING_TIME : number = 90;
 const SPEED_UP_WAIT : number = 90;
 const SPEED_UP_INITIAL : number = 30;
 
+const MAX_WEIGHT_TIME : number[] = [60*60*7, 60*60*6];
+
 const SPEED_UP_TIMES : number[][] = [
 
     [45, 120, 240, 360, 540],
-    [30, 90,  210, 360, 480]
+    [30, 90,  210, 360, 540]
 ];
 
 
@@ -180,7 +182,7 @@ export class Game implements Scene {
 
         this.stats.reset();
         this.stage?.reset(this.stats, event);
-        this.objects?.reset(this.stats, event);
+        this.objects?.reset(this.difficulty, this.stats, event);
 
         this.goTimer = 0.0;
         this.readyGoPhase = 3;
@@ -199,15 +201,13 @@ export class Game implements Scene {
 
     private updateComponents(event : ProgramEvent) : void {
 
-        const MAX_WEIGHT_TIME : number = 60*60*6;
-
-        const weight : number = Math.min(1.0, this.gameTimer/MAX_WEIGHT_TIME);
+        const weight : number = Math.min(1.0, this.gameTimer/MAX_WEIGHT_TIME[this.difficulty]);
 
         this.background?.update(event);
         this.stage?.update(this.difficulty, weight, this.globalSpeed, this.stats, event);
         if (this.stage !== undefined) {
 
-            this.objects?.update(weight, this.globalSpeed, this.stage, event);
+            this.objects?.update(this.difficulty, weight, this.globalSpeed, this.stage, event);
         }
         this.stats.update(this.globalSpeed, event);
     }
@@ -464,7 +464,7 @@ export class Game implements Scene {
         this.stats.reset();
 
         this.stage = new Stage(this.stats, event);
-        this.objects = new ObjectManager(this.stage, this.stats, event);
+        this.objects = new ObjectManager(this.difficulty, this.stage, this.stats, event);
         this.background = new Background();
 
         this.pause = new Pause((event : ProgramEvent) => this.objects.killPlayer(event), event);

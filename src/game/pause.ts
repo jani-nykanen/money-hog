@@ -4,6 +4,7 @@ import { TransitionType } from "../core/transition.js";
 import { Canvas } from "../gfx/interface.js";
 import { Menu } from "../ui/menu.js";
 import { MenuButton } from "../ui/menubutton.js";
+import { ControlsGuide } from "./controlsguide.js";
 import { ObjectManager } from "./objectmanager.js";
 import { THEME_VOLUME } from "./volume.js";
 
@@ -16,11 +17,14 @@ export class Pause {
 
 
     private menu : Menu;
+    private controls : ControlsGuide;
 
     private wasInvincibilityThemePlaying : boolean = false;
 
 
     constructor(restartEvent : (event : ProgramEvent) => void, event : ProgramEvent) {
+
+        this.controls = new ControlsGuide();
 
         this.menu = new Menu([
 
@@ -58,6 +62,13 @@ export class Pause {
 
                     this.wasInvincibilityThemePlaying = false;
                 }
+            }),
+
+
+            new MenuButton("Controls", 
+                (event : ProgramEvent) : void => {
+
+                this.controls.activate();
             }),
 
 
@@ -124,6 +135,12 @@ export class Pause {
             }
         }
 
+        if (this.controls.isActive()) {
+
+            this.controls.update(event);
+            return true;
+        }
+
         if (event.input.getAction("back") == InputState.Pressed ||
                 event.input.getAction("back2") == InputState.Pressed) {
 
@@ -146,6 +163,12 @@ export class Pause {
         canvas.setColor(0, 0, 0, 0.67);
         canvas.fillRect();
         canvas.setColor();
+
+        if (this.controls.isActive()) {
+
+            this.controls.draw(canvas, true);
+            return;
+        }
 
         this.menu.draw(canvas);
     }

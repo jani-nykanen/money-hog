@@ -4,6 +4,7 @@ import { Scene, SceneParameter } from "../core/scene.js";
 import { TransitionType } from "../core/transition.js";
 import { Align, Bitmap, Canvas, Flip } from "../gfx/interface.js";
 import { TextBox } from "../ui/textbox.js";
+import { ControlsGuide } from "./controlsguide.js";
 
 
 const STORY_TEXT : string[][] = [
@@ -48,10 +49,15 @@ export class StoryScreen implements Scene {
     private difficultyParam : number = 0;
     private isEnding : boolean = false;
 
+    private controls : ControlsGuide;
+    private controlsShown : boolean = false;
+    private forceDrawControls : boolean = false;
+
 
     constructor() {
 
         this.text = new TextBox();
+        this.controls = new ControlsGuide();
     }
 
 
@@ -71,18 +77,29 @@ export class StoryScreen implements Scene {
         this.text.addText(text);
         this.text.activate(false, (event : ProgramEvent) => {
 
-            // TODO: This is also a mess
             event.transition.activate(true, TransitionType.Fade, 1.0/20.0, event,
             (event : ProgramEvent) => {
 
-                event.transition.activate(false, 
-                    this.isEnding ? TransitionType.Fade : TransitionType.Circle, 
-                    this.isEnding ? 1.0/60.0 : 1.0/30.0, event);
-                event.scenes.changeScene(this.isEnding ? "ending" : "game", event);
+                if (!this.controlsShown) {
+
+                    this.forceDrawControls = true;
+                    this.controls.activate();
+                    return;
+                }
+                this.transitionEvent(event);
             });
         })
 
         this.difficultyParam = typeof(param) === "number" ? param : 0;
+    }
+
+
+    private transitionEvent(event : ProgramEvent) : void {
+
+        event.transition.activate(false, 
+            this.isEnding ? TransitionType.Fade : TransitionType.Circle, 
+            this.isEnding ? 1.0/60.0 : 1.0/30.0, event);
+        event.scenes.changeScene(this.isEnding ? "ending" : "game", event);
     }
 
 
@@ -91,6 +108,23 @@ export class StoryScreen implements Scene {
         if (event.transition.isActive())
             return;
 
+        if (!this.controlsShown && this.controls.isActive()) {
+
+            this.controls.update(event);
+            if (!this.controls.isActive()) {
+
+                this.controlsShown = true;
+
+                event.transition.activate(true, TransitionType.Fade, 1.0/20.0, event,
+                (event : ProgramEvent) : void => {
+
+                    this.transitionEvent(event);
+                    this.forceDrawControls = false;
+                });
+            }
+            return;
+        } 
+
         this.text.update(event);
     }
 
@@ -98,6 +132,12 @@ export class StoryScreen implements Scene {
     public redraw(canvas : Canvas) : void {
 
         canvas.clear(0, 0, 0);
+
+        if (this.forceDrawControls) {
+
+            this.controls.draw(canvas, false, this.forceDrawControls);
+            return;
+        }
 
         const bmpBackground : Bitmap | undefined = canvas.getBitmap("story_background");
 

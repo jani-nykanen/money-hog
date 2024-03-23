@@ -13,16 +13,21 @@ import { sampleInterpolatedWeightedUniform } from "../math/random.js";
 import { ParticleGenerator } from "./particlegenerator.js";
 import { DustParticle } from "./dustparticle.js";
 import { Missile } from "./missile.js";
+import { Difficulty } from "./difficulty.js";
 
 
-// TODO: Apply difficulty for these
-
-const INITIAL_MISSILE_TIME_MIN : number = 2700;
-const INITIAL_MISSILE_TIME_MAX : number = 4800;
-const MISSILE_TIME_MAX : number[] = [600, 180];
-const MISSILE_TIME_MIN : number[] = [300, 120];
-const MISSILE_COUNT_WEIGHTS_INITIAL : number[] = [1.0, 0.0, 0.0];
-const MISSILE_COUNT_WEIGHTS_FINAL : number[] = [0.50, 0.40, 0.10];
+const INITIAL_MISSILE_TIME_MIN : number[] = [2700, 1800];
+const INITIAL_MISSILE_TIME_MAX : number[] = [4800, 3600];
+const MISSILE_TIME_MAX : number[][] = [[720, 300], [600, 240]];
+const MISSILE_TIME_MIN : number[][] = [[300, 180], [240, 120]];
+const MISSILE_COUNT_WEIGHTS_INITIAL : number[][] = [
+    [1.0, 0.0, 0.0],
+    [0.75, 0.25, 0.0, 0.0]
+];
+const MISSILE_COUNT_WEIGHTS_FINAL : number[][] = [
+    [0.50, 0.40, 0.10, 0.0],
+    [0.30, 0.35, 0.25, 0.10]
+];
 
 const INITIAL_PLAYER_POS : number = -192;
 
@@ -38,7 +43,7 @@ export class ObjectManager {
     private missileDust : ParticleGenerator<DustParticle>;
 
 
-    constructor(stage : Stage, stats : Stats, event : ProgramEvent) {
+    constructor(difficulty : Difficulty, stage : Stage, stats : Stats, event : ProgramEvent) {
 
         this.player = new Player(event.screenWidth/2, INITIAL_PLAYER_POS, stats);
 
@@ -48,29 +53,29 @@ export class ObjectManager {
         stage.passGenerators(this.collectibleGenerator, this.enemyGenerator);
         stage.createInitialPlatforms(stats, event);
 
-        this.computeInitialMissileTime();
+        this.computeInitialMissileTime(difficulty);
 
         this.missileDust = new ParticleGenerator<DustParticle> ();
     }
 
 
-    private computeInitialMissileTime() : void {
+    private computeInitialMissileTime(difficulty : Difficulty) : void {
         
-        this.missileTimer = INITIAL_MISSILE_TIME_MIN + 
-            Math.floor(Math.random()*(INITIAL_MISSILE_TIME_MAX - INITIAL_MISSILE_TIME_MIN));
+        this.missileTimer = INITIAL_MISSILE_TIME_MIN[difficulty] + 
+            Math.floor(Math.random()*(INITIAL_MISSILE_TIME_MAX[difficulty] - INITIAL_MISSILE_TIME_MIN[difficulty]));
     }
 
 
-    private computeNewMissileTime(t : number) : void {
+    private computeNewMissileTime(difficulty : Difficulty, t : number) : void {
 
-        const min : number = MISSILE_TIME_MIN[0]*(1.0 - t) + MISSILE_TIME_MIN[1]*t;
-        const max : number = MISSILE_TIME_MAX[0]*(1.0 - t) + MISSILE_TIME_MAX[1]*t;
+        const min : number = MISSILE_TIME_MIN[difficulty][0]*(1.0 - t) + MISSILE_TIME_MIN[difficulty][1]*t;
+        const max : number = MISSILE_TIME_MAX[difficulty][0]*(1.0 - t) + MISSILE_TIME_MAX[difficulty][1]*t;
 
         this.missileTimer = min + (Math.random()*(max - min) | 0);
     }
 
 
-    private spawnMissiles(weight : number, event : ProgramEvent) : void {
+    private spawnMissiles(difficulty : Difficulty, weight : number, event : ProgramEvent) : void {
 
         const TOP_OFF : number = 32;
         const BOTTOM_OFF : number = TILE_HEIGHT/2;
@@ -79,11 +84,11 @@ export class ObjectManager {
         if (this.missileTimer > 0)
             return;
 
-        this.computeNewMissileTime(weight);
+        this.computeNewMissileTime(difficulty, weight);
 
         const count : number = sampleInterpolatedWeightedUniform(
-            MISSILE_COUNT_WEIGHTS_INITIAL, 
-            MISSILE_COUNT_WEIGHTS_FINAL, 
+            MISSILE_COUNT_WEIGHTS_INITIAL[difficulty], 
+            MISSILE_COUNT_WEIGHTS_FINAL[difficulty], 
             weight) + 1;
 
         let dir : -1 | 1 = Math.random() > 0.5 ? 1 : -1;
@@ -113,12 +118,12 @@ export class ObjectManager {
     }
 
 
-    public update(weight : number, globalSpeedFactor : number, stage : Stage, event : ProgramEvent) {
+    public update(difficulty : Difficulty, weight : number, globalSpeedFactor : number, stage : Stage, event : ProgramEvent) {
 
         this.player.update(globalSpeedFactor, event);
         stage.objectCollision(this.player, globalSpeedFactor, event);
 
-        this.spawnMissiles(weight, event);
+        this.spawnMissiles(difficulty, weight, event);
         this.missileDust.update(globalSpeedFactor, event);
 
         this.collectibleGenerator.update(globalSpeedFactor, this.player, stage, event);
@@ -151,7 +156,7 @@ export class ObjectManager {
     }
 
 
-    public reset(stats : Stats, event : ProgramEvent) : void {
+    public reset(difficulty : Difficulty, stats : Stats, event : ProgramEvent) : void {
 
         this.player = new Player(event.screenWidth/2, INITIAL_PLAYER_POS, stats);
         this.missileDust.flush();
@@ -159,7 +164,7 @@ export class ObjectManager {
         this.collectibleGenerator.flush();
         this.enemyGenerator.flush();
 
-        this.computeInitialMissileTime();
+        this.computeInitialMissileTime(difficulty);
     }
 
 
