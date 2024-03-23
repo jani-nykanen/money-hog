@@ -11,9 +11,9 @@ const STORY_TEXT : string[][] = [
 [
 `Oh no, an evil 
 witch has turned 
-you, a totally 
+you, a completely 
 normal human being, 
-into a pig!`,
+into a dirty pig!`,
 
 `The witch demands 
 %s 
@@ -52,6 +52,8 @@ export class StoryScreen implements Scene {
     private controls : ControlsGuide;
     private controlsShown : boolean = false;
     private forceDrawControls : boolean = false;
+
+    private witchWave : number = 0.0;
 
 
     constructor() {
@@ -103,7 +105,22 @@ export class StoryScreen implements Scene {
     }
 
 
+    private drawIntroSprites(canvas : Canvas, bmp : Bitmap | undefined, dx : number, dy : number) : void {
+
+        const WITCH_AMPLITUDE : number = 4.0;
+
+        // Pig
+        canvas.drawBitmap(bmp, Flip.None, dx + 48, dy + 128 - 52, 0, 0, 24, 24);
+
+        // Witch
+        const offset : number = Math.round(Math.sin(this.witchWave)*WITCH_AMPLITUDE);
+        canvas.drawBitmap(bmp, Flip.None, dx + 112, dy + 16 + offset, 24, 0, 40, 40);
+    }
+
+
     public update(event : ProgramEvent) : void {
+
+        const WITCH_WAVE_SPEED : number = Math.PI*2/120.0;
 
         if (event.transition.isActive())
             return;
@@ -126,6 +143,8 @@ export class StoryScreen implements Scene {
         } 
 
         this.text.update(event);
+
+        this.witchWave = (this.witchWave + WITCH_WAVE_SPEED*event.tick) % (Math.PI*2);
     }
 
 
@@ -140,9 +159,16 @@ export class StoryScreen implements Scene {
         }
 
         const bmpBackground : Bitmap | undefined = canvas.getBitmap("story_background");
+        const bmpSprites : Bitmap | undefined = canvas.getBitmap("story_sprites");
 
-        canvas.drawBitmap(bmpBackground, Flip.None, 
-            canvas.width/2 - (bmpBackground?.width ?? 0)/2, 16, 0, 0, 160, 128);
+        const dx : number = canvas.width/2 - (bmpBackground?.width ?? 0)/2;
+        const dy : number = 16;
+
+        canvas.drawBitmap(bmpBackground, Flip.None, dx, dy, 0, 0, 160, 128);
+        if (!this.isEnding) {
+
+            this.drawIntroSprites(canvas, bmpSprites, dx, dy);
+        }
 
         this.text.draw(canvas, 0, 64, 4, false, true);
     }
