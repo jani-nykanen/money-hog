@@ -2,14 +2,32 @@ import { ProgramEvent } from "../core/event.js";
 import { clamp, negMod } from "../math/utility.js";
 
 
+
+const updateIncreasingNumberThing = (v : number, target : number, speed : number) : number => {
+
+    if (v < target) {
+
+        v = (v + speed) | 0;
+        if (v >= target) {
+
+            v = target;
+        }
+    }
+    return v;
+}
+
+
 export class Stats {
 
 
     private health : number;
     private coins : number = 0;
+    private coinBonus : number = 0; // TODO: Redundant, can be computed from coins easily
     private bonus : number = 0;
     private shownPoints : number = 0;
+    private shownCoinBonus : number = 0;
     private pointsAddSpeed : number = 0;
+    private coinBonusAddSpeed : number = 0;
     private score : number = 0;
 
     private healthUpdateTimer : number = 0.0;
@@ -74,7 +92,7 @@ export class Stats {
         );
         this.score += v;
 
-        this.pointsAddSpeed = Math.ceil((this.score - this.shownPoints) / ADDITION_FACTOR);
+        this.pointsAddSpeed = Math.ceil((this.score - this.shownPoints)/ADDITION_FACTOR);
 
         return v;
     }
@@ -82,7 +100,12 @@ export class Stats {
 
     public addCoins(count : number) : void {
 
+        const ADDITION_FACTOR : number = 10;
+
         this.coins += count;
+
+        this.coinBonus = this.coins*10;
+        this.coinBonusAddSpeed = Math.ceil((this.coinBonus - this.shownCoinBonus)/ADDITION_FACTOR);
     }
 
 
@@ -97,6 +120,9 @@ export class Stats {
         this.pointsAddSpeed = 0;
         this.healthUpdateTimer = 0.0;
         this.bonusUpdateTimer = 0.0;
+        this.coinBonus = 0;
+        this.coinBonusAddSpeed = 0;
+        this.shownCoinBonus = 0;
     }
 
 
@@ -113,7 +139,7 @@ export class Stats {
 
             this.bonusUpdateTimer -= UPDATE_TIMER_SPEED*event.tick;
         }
-
+/*
         if (this.shownPoints < this.score) {
 
             this.shownPoints += this.pointsAddSpeed*event.tick;
@@ -124,6 +150,13 @@ export class Stats {
                 this.shownPoints = this.score;
             }
         }
+*/
+        this.shownPoints = updateIncreasingNumberThing(
+                this.shownPoints, this.score, 
+                this.pointsAddSpeed*event.tick);
+        this.shownCoinBonus = updateIncreasingNumberThing(
+                this.shownCoinBonus, this.coinBonus, 
+                this.coinBonusAddSpeed*event.tick);
     }
 
 
@@ -131,6 +164,7 @@ export class Stats {
     public getBonus = () : number => this.bonus;
     public getScore = () : number => this.score;
     public getShownScore = () : number => Math.round(this.shownPoints);
+    public getShownCoinBonus = () : number => Math.round(this.shownCoinBonus);
     public getCoins = () : number => this.coins;
 
     public getHealthUpdateTimer = () : number => Math.max(0.0, this.healthUpdateTimer);

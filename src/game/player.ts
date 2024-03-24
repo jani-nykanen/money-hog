@@ -615,9 +615,9 @@ export class Player extends GameObject {
         const bmpSmallNumbers : Bitmap | undefined = canvas.getBitmap("small_numbers");
         const bmpPlayer : Bitmap | undefined = canvas.getBitmap("player");
 
-        canvas.setColor(255, 255, 173);
+        // canvas.setColor(255, 255, 173);
         this.flyingText.draw(canvas, bmpSmallNumbers);
-        canvas.setColor();
+        // canvas.setColor();
 
         const dx : number = Math.round(this.pos.x);
         const dy : number = Math.round(this.pos.y) - 24;

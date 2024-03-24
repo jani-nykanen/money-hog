@@ -42,13 +42,13 @@ export class FlyingText extends Particle {
         const dx : number = Math.round(this.pos.x - (str.length + 1)*(8 + FONT_OFFSET)/2);
         const dy : number = Math.round(this.pos.y) - 8;
 
-        canvas.drawBitmap(bmp, Flip.None, dx, dy, 0, 0, 8, 8);
+        canvas.drawBitmap(bmp, Flip.None, dx, dy, 0, 0, 8, 10);
         for (let i = 0; i < str.length; ++ i) {
 
             const c : number = Number(str.charAt(i));
             const sx : number = (c + 1)*8;
 
-            canvas.drawBitmap(bmp, Flip.None, dx + (i + 1)*(8 + FONT_OFFSET), dy, sx, 0, 8, 8);
+            canvas.drawBitmap(bmp, Flip.None, dx + (i + 1)*(8 + FONT_OFFSET), dy, sx, 0, 8, 10);
         }
     }
 

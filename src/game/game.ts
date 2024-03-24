@@ -318,9 +318,12 @@ export class Game implements Scene {
         const HEART_OFFSET_X : number = -1;
         const HEART_EDGE_OFFSET : number = 2;
         const TINY_TEXT_OFFSET : number = 1;
+        const MONEY_OFFSET_X : number = -8;
+        const BONUS_TEXT_OFFSET_X : number = -44;
 
         const bmpHUD : Bitmap | undefined = canvas.getBitmap("hud");
         const bmpFontOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
+        // const bmpFontTiny : Bitmap | undefined = canvas.getBitmap("font_tiny");
 
         // canvas.drawText(bmpFont, "Hello world?", 2, 2, 0, 0);
 
@@ -343,26 +346,45 @@ export class Game implements Scene {
             HEART_EDGE_OFFSET, 
             this.stats.getHealthUpdateTimer());
 
-        // Score
+        // Money
         canvas.drawBitmap(bmpHUD, Flip.None, 
-            canvas.width/2 - 16, TINY_TEXT_OFFSET, 
+            canvas.width/2 - 16 + MONEY_OFFSET_X, TINY_TEXT_OFFSET, 
             0, 16, 32, 8);
 
         if (this.endingTimer <= 0 || Math.floor(this.endingTimer/4) % 2 == 0) {
 
             canvas.setColor(255, 255, 182);
             canvas.drawText(bmpFontOutlines, this.stats.shownScoreToString(7), 
-                canvas.width/2, TINY_TEXT_OFFSET + 5, -8, 0, Align.Center);
+                canvas.width/2 + MONEY_OFFSET_X, TINY_TEXT_OFFSET + 5, -8, 0, Align.Center);
             canvas.setColor();
         }
 
         // Coins
+        /*
         const coinStr : string = String(this.stats.getCoins());
-        const coinX : number = canvas.width - 29 - coinStr.length*8;
+        const coinX : number = canvas.width + COIN_OFFSET_X - coinStr.length*8;
         canvas.drawBitmap(bmpHUD, Flip.None, coinX, 2, 32, 16, 16, 16);
-        canvas.drawText(bmpFontOutlines, "*", coinX + 13, 2, -8, 0, Align.Left);
+        canvas.drawText(bmpFontOutlines, "*", coinX + 13, COIN_TEXT_Y, -8, 0, Align.Left);
         canvas.drawText(bmpFontOutlines, coinStr, 
-            coinX + 22, 2, -8, 0, Align.Left);
+            coinX + 22, COIN_TEXT_Y, -8, 0, Align.Left);
+        */
+
+        // Coin bonus
+        // const bonusStr : string = "+" + String(this.stats.getCoins()*10) + "%";
+        // canvas.drawText(bmpFontTiny, bonusStr, canvas.width - 2, 12, -2, 0, Align.Right);
+
+        canvas.drawBitmap(bmpHUD, Flip.None, 
+            canvas.width  + BONUS_TEXT_OFFSET_X, TINY_TEXT_OFFSET, 
+            0, 24, 32, 8);
+
+        canvas.drawBitmap(bmpHUD, Flip.None, canvas.width + BONUS_TEXT_OFFSET_X - 16, 2, 32, 16, 16, 16);
+
+        const bonusStr : string = "+" + String(this.stats.getShownCoinBonus()) + "%";
+        canvas.setColor(182, 255, 0);
+        canvas.drawText(bmpFontOutlines, bonusStr, 
+                canvas.width + BONUS_TEXT_OFFSET_X + 16, TINY_TEXT_OFFSET + 5, 
+                -8, 0, Align.Center);    
+        canvas.setColor();
     }
 
 
