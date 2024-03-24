@@ -20,7 +20,7 @@ const initialEvent = (event : ProgramEvent) : void => {
 
     event.input.addAction("jump", ["Space", "KeyZ"], [0]);
     event.input.addAction("attack", ["KeyX", "ControlLeft"], [1, 2, 3]);
-    event.input.addAction("pause", ["Enter"], [7, 9]);
+    event.input.addAction("pause", ["Enter", "Escape"], [7, 9]);
     event.input.addAction("back", ["Escape"], [1, 6, 8], false);
     event.input.addAction("back2", ["Backspace"]); // We do not want to prevent escape!
     event.input.addAction("select", ["Enter", "Space", "KeyZ"], [0, 7, 9]);
