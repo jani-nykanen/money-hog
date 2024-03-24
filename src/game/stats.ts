@@ -185,6 +185,8 @@ export class Stats {
     public scoreToString(maxLength : number) : string {
 
         const base : string = String(this.score);
+        if (base.length >= maxLength)   
+            return base;
 
         return "0".repeat(maxLength - base.length) + base;
     }

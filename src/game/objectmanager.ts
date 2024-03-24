@@ -16,16 +16,16 @@ import { Missile } from "./missile.js";
 import { Difficulty } from "./difficulty.js";
 
 
-const INITIAL_MISSILE_TIME_MIN : number[] = [2700, 1800];
-const INITIAL_MISSILE_TIME_MAX : number[] = [4800, 3600];
+const INITIAL_MISSILE_TIME_MIN : number[] = [2400, 1800];
+const INITIAL_MISSILE_TIME_MAX : number[] = [4200, 3600];
 const MISSILE_TIME_MAX : number[][] = [[720, 300], [600, 240]];
 const MISSILE_TIME_MIN : number[][] = [[300, 180], [240, 120]];
 const MISSILE_COUNT_WEIGHTS_INITIAL : number[][] = [
-    [1.0, 0.0, 0.0],
+    [1.0, 0.0, 0.0, 0.0],
     [0.75, 0.25, 0.0, 0.0]
 ];
 const MISSILE_COUNT_WEIGHTS_FINAL : number[][] = [
-    [0.50, 0.40, 0.10, 0.0],
+    [0.45, 0.40, 0.10, 0.05],
     [0.30, 0.40, 0.20, 0.10]
 ];
 
@@ -147,6 +147,12 @@ export class ObjectManager {
         this.enemyGenerator.postDraw(canvas);
 
         this.player.postDraw(canvas);
+    }
+
+
+    public drawPlayerArrow(canvas : Canvas) : void {
+
+        this.player.drawArrow(canvas);
     }
 
 

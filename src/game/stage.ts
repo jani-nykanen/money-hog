@@ -23,7 +23,7 @@ const ENEMY_COUNT_WEIGHTS_INITIAL : number[][] = [
     [0.30, 0.40, 0.25, 0.05],
 ];
 const ENEMY_COUNT_WEIGHTS_FINAL : number[][] = [
-    [0.1, 0.20, 0.50, 0.20, 0.0],
+    [0.05, 0.20, 0.45, 0.25, 0.05],
     [0.0, 0.10, 0.50, 0.40, 0.10]
 ];
 
@@ -49,7 +49,7 @@ const COLLECTIBLE_TYPE_WEIGHTS_INITIAL : number[][] = [
 const COLLECTIBLE_TYPE_WEIGHTS_FINAL : number[][] = [
 
     [0.85, 0.05, 0.10],
-    [0.80, 0.10, 0.10]
+    [0.80, 0.05, 0.15]
 ];
 
 

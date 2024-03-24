@@ -68,14 +68,14 @@ export class StoryScreen implements Scene {
 
         this.text.clear();
 
-        this.isEnding = param === 2;
+        this.isEnding = typeof(param) == "number" && param >= 2;
 
         // TODO: This is a mess
         const p : number = (typeof(param) === "number") ? (param % 2) : 0;
         const text : string[] = Array.from(STORY_TEXT[this.isEnding ? 1 : 0]);
         const replaceIndex : number = this.isEnding ? 0 : 1;
 
-        text[replaceIndex] = text[replaceIndex].replace("%s", p == 0 ? "one million dollars" : "9.999.999 dollars");
+        text[replaceIndex] = text[replaceIndex].replace("%s", p == 0 ? "one million dollars" : "5.000.000 dollars");
 
         this.text.addText(text);
         this.text.activate(false, (event : ProgramEvent) => {

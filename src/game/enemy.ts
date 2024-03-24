@@ -266,6 +266,10 @@ export class Enemy extends GameObject {
 
             this.baseY = this.referencePlatform.getY() - this.spr.height/2 + this.basePlatformOffset;
         }
+        else {
+
+            this.baseY = this.pos.y;
+        }
 
         if (this.fixedY) {
 
@@ -283,7 +287,7 @@ export class Enemy extends GameObject {
         this.edgeCollision(event.screenWidth, -64, event.screenHeight + 128, 1, event, true);
         
         if ((this.referencePlatform !== undefined && !this.referencePlatform.doesExist()) ||
-            this.pos.y < -this.spr.height/2 ||
+            (this.baseY < -this.spr.height/2 && this.pos.y < -this.spr.height/2) ||
             (this.speed.y > 0 && this.pos.y > event.screenHeight + this.spr.height)) {
 
             this.exist = false;
@@ -297,7 +301,8 @@ export class Enemy extends GameObject {
 
     public playerCollision(player : Player, event : ProgramEvent, globalSpeedFactor : number = 0.0) : void {
         
-        if (this.dying || !this.exist || player.isDying() || !player.doesExist())
+        if (this.dying || !this.exist || 
+            player.isDying() || !player.doesExist())
             return;
 
         if (player.isInvincible()) {

@@ -15,6 +15,7 @@ import { Pause } from "./pause.js";
 import { Difficulty } from "./difficulty.js";
 
 
+
 const APPEAR_TIME : number = 40;
 const GO_TIME : number = 60;
 const ENDING_TIME : number = 90;
@@ -24,14 +25,15 @@ const SHOW_CONTROLS_FADE_TIME : number = 30;
 const SPEED_UP_WAIT : number = 90;
 const SPEED_UP_INITIAL : number = 30;
 
-const MAX_WEIGHT_TIME : number[] = [60*60*8, 60*60*7];
+const MAX_WEIGHT_TIME : number[] = [60*60*7, 60*60*6];
 
 const SPEED_UP_TIMES : number[][] = [
 
-    [45, 150, 270, 420, 600],
-    [30, 120, 240, 390, 570]
+    [45, 120, 210, 300, 420],
+    [30, 75, 135, 210, 300]
 ];
 
+const TARGET_MONEY : number[] = [1000000, 5000000];
 
 
 export class Game implements Scene {
@@ -82,7 +84,7 @@ export class Game implements Scene {
         const BASE_SPEED : number = 0.5;
         const SPEED_ADD : number = 0.25;
 
-        for (let i = 0; i < SPEED_UP_TIMES.length; ++ i) {
+        for (let i = 0; i < SPEED_UP_TIMES[0].length; ++ i) {
 
             if (this.speedPhase < i + 1 &&
                 this.gameTimer >= SPEED_UP_TIMES[this.difficulty][i]*60) {
@@ -435,7 +437,7 @@ export class Game implements Scene {
 
     private drawControls(canvas : Canvas) : void {
 
-        const ALPHA : number = 0.50;
+        const ALPHA : number = 0.67;
         const YOFF : number = 16;
 
         const bmpControls : Bitmap | undefined = canvas.getBitmap("controls");
@@ -566,7 +568,7 @@ export class Game implements Scene {
         // event.transition.activate(false, TransitionType.Circle, 1.0/30.0, event);
 
         this.difficulty = (param ?? 0) as Difficulty;
-        this.targetScore = (param === 1) ? 9999999 : 1000000;
+        this.targetScore = TARGET_MONEY[this.difficulty];
     }
 
 
@@ -631,6 +633,7 @@ export class Game implements Scene {
         if (this.gameoverPhase != 1) {
 
             this.drawHUD(canvas);
+            this.objects?.drawPlayerArrow(canvas);
         }
 
         if (this.showControlsTimer > 0) {

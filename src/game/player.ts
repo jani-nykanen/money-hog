@@ -59,6 +59,8 @@ export class Player extends GameObject {
     private jumpInvincibilityTimer : number = 0; // Don't mix this up with the one below
     private invincibilityTimer : number = 0;
 
+    private arrowWave : number = 0.0;
+
     public readonly stats : Stats;
 
 
@@ -243,6 +245,7 @@ export class Player extends GameObject {
         const JUMP_SPEED : number = -1.5;
         const STAR_JUMP_SPEED : number = -1.75;
         const DOWN_ICON_ANIMATION_SPEED : number = 1.0/30.0;
+        const ARROW_WAVE_SPEED : number = Math.PI*2/120.0;
 
         if (this.jumpInvincibilityTimer > 0) {
 
@@ -285,6 +288,8 @@ export class Player extends GameObject {
 
             this.downJumpIconTimer = (this.downJumpIconTimer + DOWN_ICON_ANIMATION_SPEED*event.tick) % 1.0;
         }
+    
+        this.arrowWave = (this.arrowWave + ARROW_WAVE_SPEED*event.tick) % (Math.PI*2);
     }
 
 
@@ -507,7 +512,7 @@ export class Player extends GameObject {
     protected updateEvent(globalSpeedFactor : number, event : ProgramEvent): void {
 
         if (this.canControl &&
-            (this.pos.y + this.sprBody.height/2 <= 0 ||
+            (// this.pos.y + this.sprBody.height/2 <= 0 ||
             this.pos.y - this.sprBody.height/2 >= event.screenHeight)) {
 
             this.stats.changeLives(-3);
@@ -693,6 +698,26 @@ export class Player extends GameObject {
             canvas.setColor();
         }
         */  
+    }
+
+
+    public drawArrow(canvas : Canvas) : void {
+
+        const YOFF : number = 0;
+        const AMPLITUDE : number = 2;
+
+        if (!this.canControl ||
+            this.pos.y > -this.sprBody.height/2)
+            return;
+
+        const bmpPlayer : Bitmap | undefined = canvas.getBitmap("player");
+
+        const dx : number = Math.round(this.pos.x) - 12;
+        const dy : number = YOFF + Math.round(Math.sin(this.arrowWave)*AMPLITUDE);
+
+        canvas.setColor(255, 255, 255, 0.75);
+        canvas.drawBitmap(bmpPlayer, Flip.None, dx, dy, 48, 72, 24, 24);
+        canvas.setColor();
     }
 
 
