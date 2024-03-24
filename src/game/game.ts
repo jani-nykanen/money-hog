@@ -19,6 +19,7 @@ const APPEAR_TIME : number = 40;
 const GO_TIME : number = 60;
 const ENDING_TIME : number = 90;
 const GAMEOVER_APPEAR_TIME : number = 30;
+const SHOW_CONTROLS_FADE_TIME : number = 30;
 
 const SPEED_UP_WAIT : number = 90;
 const SPEED_UP_INITIAL : number = 30;
@@ -27,8 +28,8 @@ const MAX_WEIGHT_TIME : number[] = [60*60*8, 60*60*7];
 
 const SPEED_UP_TIMES : number[][] = [
 
-    [60, 150, 270, 420, 600],
-    [45, 120, 240, 390, 570]
+    [45, 150, 270, 420, 600],
+    [30, 120, 240, 390, 570]
 ];
 
 
@@ -44,6 +45,7 @@ export class Game implements Scene {
     private appearTimer : number = 0.0;
     private endingTimer : number = 0;
     private readyGoPhase : number = 0;
+    private showControlsTimer : number = 0;
 
     private gameTimer : number = 0.0;
 
@@ -177,6 +179,13 @@ export class Game implements Scene {
                 event.audio.fadeInMusic(event.assets.getSample("theme"), THEME_VOLUME, 1000);
             }
         }
+        else {
+
+            if (this.showControlsTimer > 0) {
+
+                this.showControlsTimer -= event.tick;
+            }
+        }
     }
 
 
@@ -196,6 +205,8 @@ export class Game implements Scene {
 
         this.gameoverPhase = 0;
         this.gameoverWave = 0;
+
+        this.showControlsTimer = SHOW_CONTROLS_FADE_TIME;
 
         event.transition.setCenter(new Vector(event.screenWidth/2, event.screenHeight/2));
     }
@@ -422,6 +433,34 @@ export class Game implements Scene {
     }
 
 
+    private drawControls(canvas : Canvas) : void {
+
+        const ALPHA : number = 0.50;
+        const YOFF : number = 16;
+
+        const bmpControls : Bitmap | undefined = canvas.getBitmap("controls");
+    
+        canvas.setColor(255, 255, 255, ALPHA);
+
+        const t : number = this.showControlsTimer/SHOW_CONTROLS_FADE_TIME;
+        const x1 : number = -64 + Math.round(64*t);
+        const x2 : number = canvas.width - Math.round(64*t);
+
+        const y1 : number = canvas.height/2 - 48 - YOFF;
+        const y2 : number = canvas.height/2 + YOFF;
+
+        // Left
+        canvas.drawBitmap(bmpControls, Flip.None, x1, y1, 0, 0, 64, 48);
+        canvas.drawBitmap(bmpControls, Flip.None, x1, y2, 0, 48, 64, 48);
+
+        // Right
+        canvas.drawBitmap(bmpControls, Flip.None, x2, y1, 64, 0, 64, 48);
+        canvas.drawBitmap(bmpControls, Flip.None, x2, y2, 64, 48, 64, 48);
+
+        canvas.setColor();
+    }
+
+
     private drawSpeedUpText(canvas : Canvas) : void {
 
         const YOFF_FACTOR : number = 0.25;
@@ -522,6 +561,8 @@ export class Game implements Scene {
         this.speedUpTimer = 0;
         this.speedPhase = 0;
 
+        this.showControlsTimer = SHOW_CONTROLS_FADE_TIME;
+
         // event.transition.activate(false, TransitionType.Circle, 1.0/30.0, event);
 
         this.difficulty = (param ?? 0) as Difficulty;
@@ -590,6 +631,11 @@ export class Game implements Scene {
         if (this.gameoverPhase != 1) {
 
             this.drawHUD(canvas);
+        }
+
+        if (this.showControlsTimer > 0) {
+
+            this.drawControls(canvas);
         }
 
         if (this.readyGoPhase > 0 && this.readyGoPhase < 3) {

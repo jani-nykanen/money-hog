@@ -40,6 +40,20 @@ const COIN_COUNT_WEIGHTS_FINAL: number[][] = [
 ];
 
 
+const COLLECTIBLE_TYPE_WEIGHTS_INITIAL : number[][] = [
+
+    [0.925, 0.025, 0.05],
+    [0.90, 0.025, 0.075]
+];
+
+const COLLECTIBLE_TYPE_WEIGHTS_FINAL : number[][] = [
+
+    [0.85, 0.05, 0.10],
+    [0.80, 0.10, 0.10]
+];
+
+
+
 export class Stage {
 
 
@@ -59,7 +73,6 @@ export class Stage {
 
     private spawnCoins(difficulty : number, weight : number, platform : Platform, stats : Stats) : void {
 
-        const TYPE_WEIGHTS : number[] = [0.90, 0.025, 0.075];
         const HEART_PROB_FACTOR : number = 0.33;
 
         const count : number = sampleInterpolatedWeightedUniform(
@@ -80,7 +93,9 @@ export class Stage {
             const x = i*w + Math.floor(Math.random()*w);
             const dx : number = x*TILE_WIDTH + TILE_WIDTH/2;
             
-            let type : CollectibleType = sampleWeightedUniform(TYPE_WEIGHTS) + 1;
+            let type : CollectibleType = sampleInterpolatedWeightedUniform(
+                COLLECTIBLE_TYPE_WEIGHTS_INITIAL[difficulty],
+                COLLECTIBLE_TYPE_WEIGHTS_FINAL[difficulty], weight) + 1;
             if (type != CollectibleType.Coin && specialItemCreated) {
 
                 type = CollectibleType.Coin;

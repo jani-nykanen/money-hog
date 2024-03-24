@@ -96,7 +96,7 @@ export class TitleScreen implements Scene {
                 }
             ),
 
-            new MenuButton("Impossible", 
+            new MenuButton("Hard", 
                 (event : ProgramEvent) : void => {
                     
                     this.goToGame(1, event);
