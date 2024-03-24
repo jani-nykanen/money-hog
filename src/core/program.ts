@@ -47,17 +47,17 @@ export class Program {
 
         const OUTLINE : number = 1;
         const WIDTH : number  = 80;
-        const HEIGHT : number  = 16;
+        const HEIGHT : number  = 12;
 
         const p : number = this.event.assets.getLoadingPercentage();
 
         const dx : number = canvas.width/2 - WIDTH/2;
         const dy : number = canvas.height/2 - HEIGHT/2;
 
-        canvas.clear(0, 73, 146);
+        canvas.clear(0, 0, 0);
         canvas.setColor();
         canvas.fillRect(dx, dy, WIDTH, HEIGHT);
-        canvas.setColor(0, 73, 146);
+        canvas.setColor(0, 0, 0);
         canvas.fillRect(dx + OUTLINE, dy + OUTLINE, WIDTH - OUTLINE*2, HEIGHT - OUTLINE*2);
         canvas.setColor();
         canvas.fillRect(dx + OUTLINE*2, dy + OUTLINE*2, (WIDTH - OUTLINE*4)*p, HEIGHT - OUTLINE*4);

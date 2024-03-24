@@ -5,6 +5,7 @@ import { Game } from "./game/game.js";
 import { StoryScreen } from "./game/storyscreen.js";
 import { TitleScreen } from "./game/titlescreen.js";
 import { Ending } from "./game/ending.js";
+import { Intro } from "./game/intro.js";
 
 
 const initialEvent = (event : ProgramEvent) : void => {
@@ -12,7 +13,8 @@ const initialEvent = (event : ProgramEvent) : void => {
     event.scenes.addScene("game", new Game(), false);
     event.scenes.addScene("story", new StoryScreen(), false);
     event.scenes.addScene("ending", new Ending(), false);
-    event.scenes.addScene("title", new TitleScreen(), true);
+    event.scenes.addScene("title", new TitleScreen(), false);
+    event.scenes.addScene("intro", new Intro(), true);
 
     event.assets.parseIndexFile("assets/index.json");
 

@@ -18,6 +18,7 @@ import { Difficulty } from "./difficulty.js";
 const APPEAR_TIME : number = 40;
 const GO_TIME : number = 60;
 const ENDING_TIME : number = 90;
+const GAMEOVER_APPEAR_TIME : number = 30;
 
 const SPEED_UP_WAIT : number = 90;
 const SPEED_UP_INITIAL : number = 30;
@@ -59,6 +60,7 @@ export class Game implements Scene {
     private pause : Pause | undefined = undefined;
 
     private gameoverPhase : number = 0;
+    private gameoverAppearTimer : number = 0.0;
     private gameoverWave : number = 0.0;
 
     private recordScore : number = 0;
@@ -227,6 +229,7 @@ export class Game implements Scene {
             this.gameoverPhase = 1;
             this.gameoverWave = 0.0;
             this.appearTimer = 0.0;
+            this.gameoverAppearTimer = GAMEOVER_APPEAR_TIME;
 
             const points : number = this.stats.getShownScore();
             if (points > this.recordScore) {
@@ -239,11 +242,19 @@ export class Game implements Scene {
         if (this.gameoverPhase == 0)
             return;
 
-        this.gameoverWave = (this.gameoverWave + WAVE_SPEED*event.tick) % (Math.PI*2);
-        // Reusing this for "press any key" text, since, well, it is also "appearing"!
-        this.appearTimer = (this.appearTimer + TEXT_APPEAR_SPEED*event.tick) % 1.0;
+        if (this.gameoverAppearTimer > 0) {
 
-        if (event.input.isAnyPressed()) {
+            this.gameoverAppearTimer -= event.tick;
+        }
+        else {
+
+            // Reusing this for "press any key" text, since, well, it is also "appearing"!
+            this.appearTimer = (this.appearTimer + TEXT_APPEAR_SPEED*event.tick) % 1.0;
+        }
+        this.gameoverWave = (this.gameoverWave + WAVE_SPEED*event.tick) % (Math.PI*2);
+        
+        if (this.gameoverAppearTimer <= 0 &&
+            event.input.isAnyPressed()) {
 
             event.audio.playSample(event.assets.getSample("select"), 0.50);
 
@@ -424,32 +435,41 @@ export class Game implements Scene {
         const dx : number = canvas.width/2 - ((bmp?.width ?? 0)/2);
         const dy : number = TOP_OFFSET;
 
-        canvas.setColor(0, 0, 0, DARKEN_ALPHA);
+        const t : number = this.gameoverAppearTimer/GAMEOVER_APPEAR_TIME;
+
+        canvas.setColor(0, 0, 0, (1.0 - t)*DARKEN_ALPHA);
         canvas.fillRect();
 
         canvas.setColor();
-        canvas.drawVerticallyWavingBitmap(bmp, dx, dy, 0, 0, 144, 32, Math.PI*4, 3, this.gameoverWave);
+        canvas.drawVerticallyWavingBitmap(bmp, 
+            dx, dy - Math.round(128*t), 
+            0, 0, 144, 32, 
+            Math.PI*4, 3, this.gameoverWave);
 
         const moneyPos : number = 112;
         const recordPos : number = 160;
 
+        const textShift : number = Math.round(t*canvas.width);
+
         // Headers
         canvas.setColor(255, 255, 146);
-        canvas.drawText(bmpFontOutlines, "MONEY:", canvas.width/2, moneyPos, -8, 0, Align.Center);
-        canvas.drawText(bmpFontOutlines, "RECORD:", canvas.width/2, recordPos, -8, 0, Align.Center);
+        canvas.drawText(bmpFontOutlines, "MONEY:", canvas.width/2 - textShift, moneyPos, -8, 0, Align.Center);
+        canvas.drawText(bmpFontOutlines, "RECORD:", canvas.width/2 + textShift, recordPos, -8, 0, Align.Center);
 
         // Numbers
         canvas.setColor();
         canvas.drawText(bmpFontOutlines,
              "$" + String(this.stats.getShownScore()) + "/" + String(this.targetScore) ,
-              canvas.width/2, moneyPos + 12, -8, 0, Align.Center);
+              canvas.width/2 - textShift, moneyPos + 12, -8, 0, Align.Center);
         canvas.drawText(bmpFontOutlines, 
             "(" + String(Math.floor(100*this.stats.getShownScore()/this.targetScore)) + "%" + ")",
-            canvas.width/2, moneyPos + 24, -8, 0, Align.Center);
+            canvas.width/2 - textShift, moneyPos + 24, -8, 0, Align.Center);
 
-        canvas.drawText(bmpFontOutlines, "$" + String(this.recordScore) , canvas.width/2, recordPos + 12, -8, 0, Align.Center);
+        canvas.drawText(bmpFontOutlines, "$" + String(this.recordScore), 
+            canvas.width/2 + textShift, recordPos + 12, -8, 0, Align.Center);
 
-        if (this.appearTimer < 0.5) {
+        if (this.appearTimer < 0.5 && 
+            this.gameoverAppearTimer <= 0) {
 
             canvas.setColor(182, 255, 0);
             canvas.drawText(bmpFontOutlines, "Press Any Key to Retry", canvas.width/2, 208, -9, 0, Align.Center);

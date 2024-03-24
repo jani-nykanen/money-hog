@@ -17,6 +17,8 @@
         {"name": "ending", "path": "ending.png"},
         {"name": "controls", "path": "controls.png"},
         {"name": "story_sprites", "path": "story_sprites.png"},
+        {"name": "logo", "path": "logo.png"},
+        {"name": "created_by", "path": "created_by.png"},
 
         {"name": "small_numbers", "path": "small_numbers.png"},
         {"name": "font", "path": "font.png"},

@@ -26,6 +26,7 @@ export class TitleScreen implements Scene {
 
     private titlePhase : number = 0;
     private pressEnterTimer : number = PRESS_ENTER_TIME - 1;
+    private logoWave : number = 0.0;
 
     private controls : ControlsGuide;
 
@@ -136,7 +137,11 @@ export class TitleScreen implements Scene {
 
     public update(event : ProgramEvent) : void {
 
+        const LOGO_WAVE_SPEED : number = Math.PI*2/90.0;
+
         this.background.update(event);
+
+        this.logoWave = (this.logoWave + LOGO_WAVE_SPEED*event.tick) % (Math.PI*2);
 
         if (event.transition.isActive())
             return;
@@ -190,9 +195,13 @@ export class TitleScreen implements Scene {
 
         const bmpOutlines : Bitmap | undefined = canvas.getBitmap("font_outlines");
         const bmpFont : Bitmap | undefined = canvas.getBitmap("font");
+        const bmpLogo : Bitmap | undefined = canvas.getBitmap("logo");
 
         // canvas.clear(146, 182, 255);
         this.background.draw(canvas);
+        
+        // Logo
+        canvas.drawVerticallyWavingBitmap(bmpLogo, canvas.width/2 - (bmpLogo?.width ?? 0)/2, 32, 0, 0, 160, 112, Math.PI*4, 4, this.logoWave);
 
         canvas.setColor(0, 0, 0);
         canvas.drawText(bmpFont, "*2024 Jani Nyk@nen", 

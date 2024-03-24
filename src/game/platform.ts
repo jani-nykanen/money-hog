@@ -4,7 +4,7 @@ import { GameObject } from "./gameobject.js";
 import { Canvas, Bitmap, Flip } from "../gfx/interface.js";
 import { TILE_HEIGHT, TILE_WIDTH } from "./tilesize.js";
 import { sampleInterpolatedWeightedUniform, sampleWeightedUniform } from "../math/random.js";
-import { ENEMY_TYPE_COUNT, ENEMY_WEIGHTS_FINAL, ENEMY_WEIGHTS_INITIAL, EnemyType } from "./enemytypes.js";
+import { ENEMY_WEIGHTS_FINAL, ENEMY_WEIGHTS_INITIAL, EnemyType } from "./enemytypes.js";
 import { EnemyGenerator } from "./enemygenerator.js";
 import { clamp } from "../math/utility.js";
 import { PLATFORM_OFFSET } from "./stage.js";

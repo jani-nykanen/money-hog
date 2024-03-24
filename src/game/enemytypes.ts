@@ -28,9 +28,6 @@ export const enum EnemyType {
 }
 
 
-export const ENEMY_TYPE_COUNT : number = 8;
-
-
 export const ENEMY_WEIGHTS_INITIAL : number[] = [
 
     0.25,
