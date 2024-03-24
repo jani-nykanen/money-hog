@@ -12,6 +12,7 @@ import { StarParticle } from "./starparticle.js";
 import { FlyingText } from  "./flyingtext.js";
 import { Enemy } from "./enemy.js";
 import { STAR_VOLUME, THEME_VOLUME } from "./volume.js";
+import { clamp } from "../math/utility.js";
 
 
 
@@ -20,7 +21,7 @@ const DEATH_TIME : number = 60;
 const STAR_EXIST_TIME : number = 1.0/20.0;
 const STAR_SPEED : number = 3.0;
 
-
+const INVICIBILITY_TIME : number = 60*5;
 const INVICIBILITY_COLOR : number[] = [182, 255, 146];
 
 
@@ -429,6 +430,44 @@ export class Player extends GameObject {
     }
 
 
+    private drawStarPowerBar(canvas : Canvas, alpha : number = 0.67) : void {
+
+        const BOTTOM_OFFSET : number = 16;
+        const WIDTH : number = 16;
+        const HEIGHT : number = 2;
+
+        if (this.invincibilityTimer < 60 &&
+            Math.floor(this.invincibilityTimer/4) % 2 == 1) {
+
+            return;
+        }
+
+        const dx : number = Math.round(this.pos.x) - (WIDTH + 4)/2;
+        const dy : number = Math.round(this.pos.y) + BOTTOM_OFFSET;
+
+        const t : number = this.invincibilityTimer/INVICIBILITY_TIME;
+        const w : number = clamp(Math.round(t*WIDTH), 0, WIDTH);
+        
+        canvas.toggleSilhouetteRendering(true);
+
+        canvas.setColor(182, 255, 73, alpha);
+        canvas.fillRect(dx, dy, w, HEIGHT);
+
+        canvas.setColor(146, 146, 146, alpha);
+        canvas.fillRect(dx, dy, WIDTH, HEIGHT);
+
+        canvas.setColor(0, 0, 0, alpha);
+        canvas.fillRect(dx - 1, dy - 1, WIDTH + 2, HEIGHT + 2);
+
+        // TODO: For loop & lookup table
+        canvas.setColor(255, 255, 255, alpha);
+        canvas.fillRect(dx - 2, dy - 2, WIDTH + 4, HEIGHT + 4);
+
+        canvas.toggleSilhouetteRendering(false);
+        canvas.setColor();
+    }
+
+
     protected die(globalSpeedFactor : number, event : ProgramEvent) : boolean {
         
         this.updateTimers(globalSpeedFactor, event);
@@ -628,6 +667,11 @@ export class Player extends GameObject {
             canvas.drawBitmap(bmpPlayer, Flip.None, dx - 12, dy - 4, frame*24, 72, 24, 24);
         }
 
+        if (this.invincibilityTimer > 0) {
+            
+            this.drawStarPowerBar(canvas);
+        }
+
         if (this.stats.getBonus() <= 10)
             return;
 
@@ -648,7 +692,7 @@ export class Player extends GameObject {
             canvas.drawBitmap(bmpPlayer, Flip.None, dx - 12, 0, 48, 72, 24, 24);
             canvas.setColor();
         }
-        */
+        */  
     }
 
 
@@ -800,8 +844,6 @@ export class Player extends GameObject {
 
 
     public toggleInvicibility(event : ProgramEvent) : void {
-
-        const INVICIBILITY_TIME : number = 60*5;
 
         this.invincibilityTimer = INVICIBILITY_TIME;
 

@@ -26,7 +26,7 @@ const MISSILE_COUNT_WEIGHTS_INITIAL : number[][] = [
 ];
 const MISSILE_COUNT_WEIGHTS_FINAL : number[][] = [
     [0.50, 0.40, 0.10, 0.0],
-    [0.30, 0.35, 0.25, 0.10]
+    [0.30, 0.40, 0.20, 0.10]
 ];
 
 const INITIAL_PLAYER_POS : number = -192;

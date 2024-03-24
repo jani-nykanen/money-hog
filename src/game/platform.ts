@@ -306,13 +306,13 @@ export class Platform implements ExistingObject {
     }
 
 
-    private spawnBumper(weight : number, enemyGenerator : EnemyGenerator) : void {
+    private spawnBumper(difficulty : number, weight : number, enemyGenerator : EnemyGenerator) : void {
 
-        const INITIAL_PROB : number = 0.1;
-        const FINAL_PROB : number = 1.0;
+        const INITIAL_PROB : number[] = [0.05, 0.1];
+        const FINAL_PROB : number[] = [0.5, 0.75];
         const MIN_GAP : number = 4;
 
-        const threshold : number = INITIAL_PROB*(1.0 - weight) + FINAL_PROB*weight;
+        const threshold : number = INITIAL_PROB[difficulty]*(1.0 - weight) + FINAL_PROB[difficulty]*weight;
         if (Math.random() >= threshold)
             return;
 
@@ -587,7 +587,7 @@ export class Platform implements ExistingObject {
     }
 
 
-    public spawnEnemies(weight : number, enemyGenerator : EnemyGenerator, count : number) : void {
+    public spawnEnemies(difficulty : Difficulty, weight : number, enemyGenerator : EnemyGenerator, count : number) : void {
 
         if (count == 0)
             return;
@@ -611,7 +611,7 @@ export class Platform implements ExistingObject {
             }
         }
 
-        this.spawnBumper(weight, enemyGenerator);
+        this.spawnBumper(difficulty, weight, enemyGenerator);
     }
 
 

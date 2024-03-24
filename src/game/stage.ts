@@ -110,7 +110,7 @@ export class Stage {
         if (count == 0)
             return;
 
-        platform.spawnEnemies(weight, this.enemyGenerator, count);
+        platform.spawnEnemies(difficulty, weight, this.enemyGenerator, count);
     }
 
 
