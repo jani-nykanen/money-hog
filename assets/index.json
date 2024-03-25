@@ -52,6 +52,7 @@
         {"name": "select", "path": "select.wav"},
         {"name": "pause", "path": "pause.wav"},
         {"name": "finish", "path": "finish.wav"},
+        {"name": "warning2", "path": "warning2.wav"},
 
         {"name": "theme", "path": "theme.ogg"},
         {"name": "menu", "path": "menu.ogg"},

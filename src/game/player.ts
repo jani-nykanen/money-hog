@@ -24,6 +24,10 @@ const STAR_SPEED : number = 3.0;
 const INVICIBILITY_TIME : number = 60*5;
 const INVICIBILITY_COLOR : number[] = [182, 255, 146];
 
+const INSTANT_KILL_TIME : number = 180;
+const INSTANT_KILL_RECOVER : number = 120;
+const INSTANT_KILL_WARNING_TIME : number = 75;
+
 
 export class Player extends GameObject {
 
@@ -58,6 +62,9 @@ export class Player extends GameObject {
 
     private jumpInvincibilityTimer : number = 0; // Don't mix this up with the one below
     private invincibilityTimer : number = 0;
+
+    private instantKillTimer : number = 0;
+    private instantKillRecoverTimer : number = 0;
 
     private arrowWave : number = 0.0;
 
@@ -288,8 +295,39 @@ export class Player extends GameObject {
 
             this.downJumpIconTimer = (this.downJumpIconTimer + DOWN_ICON_ANIMATION_SPEED*event.tick) % 1.0;
         }
+
+        if (this.dying)
+            return;
     
         this.arrowWave = (this.arrowWave + ARROW_WAVE_SPEED*event.tick) % (Math.PI*2);
+
+        if (this.canControl && this.pos.y < -this.sprBody.height/2) {
+
+            const oldTime : number = this.instantKillTimer;
+
+            this.instantKillRecoverTimer = 0;
+            this.instantKillTimer += event.tick;
+            if (this.instantKillTimer >= INSTANT_KILL_TIME) {
+
+                this.stats.changeLives(-3);
+                this.hurt(event);
+                this.checkDeath(event);
+            }
+            else if (oldTime < INSTANT_KILL_TIME - INSTANT_KILL_WARNING_TIME &&
+                this.instantKillTimer >= INSTANT_KILL_TIME - INSTANT_KILL_WARNING_TIME) {
+
+                event.audio.playSample(event.assets.getSample("warning2"), 0.60);
+            }
+        }
+        else if (this.instantKillTimer > 0) {
+
+            this.instantKillRecoverTimer += event.tick;
+            if (this.instantKillRecoverTimer >= INSTANT_KILL_RECOVER) {
+
+                this.instantKillTimer = 0;
+                this.instantKillRecoverTimer = 0;
+            }
+        }
     }
 
 
@@ -299,7 +337,6 @@ export class Player extends GameObject {
         const HEADBUTT_SPEED_BONUS : number = 2.0;
         const VANISH_SPEED : number = 1.0/45.0;
         const EPS : number = 0.01;
-
 
         const standingStill : boolean = this.touchFloor && 
             Math.abs(this.target.x) < EPS && 
@@ -412,6 +449,23 @@ export class Player extends GameObject {
     }
 
 
+    private checkDeath(event : ProgramEvent) : boolean {
+
+        if (this.stats.getHealth() > 0)
+            return false;
+
+        // TODO: Move elsewhere, maybe?
+        event.audio.stopMusic();
+
+        this.dying = true;
+        this.deathTimer = 0;
+        this.hurtTimer = 0;
+
+        this.stats.stopScoreFlow();
+        return true;
+    }
+
+
     // Draw what now?
     private drawDeathBalls(canvas : Canvas, bmp : Bitmap | undefined) : void {
 
@@ -473,6 +527,57 @@ export class Player extends GameObject {
     }
 
 
+    private drawInstantKillBar(canvas : Canvas) : void {
+
+        const WIDTH : number = 80;
+        const YOFF : number = -16;
+        const BASE_ALPHA : number = 0.80;
+        const RECOVER_FADE_TIME : number = 60;
+        
+        if (this.instantKillTimer <= 0)
+            return;
+
+        const bmpHUD : Bitmap | undefined = canvas.getBitmap("hud");
+
+        const dx : number = canvas.width/2 - WIDTH/2;
+        const dy : number = canvas.height + YOFF;
+
+        let alpha : number = BASE_ALPHA;
+        const threshold : number = INSTANT_KILL_RECOVER - RECOVER_FADE_TIME;
+        if (this.instantKillRecoverTimer > threshold) {
+
+            alpha = BASE_ALPHA*(1.0 - (this.instantKillRecoverTimer - threshold)/RECOVER_FADE_TIME);
+        }
+
+        canvas.toggleSilhouetteRendering(true);
+        canvas.setColor(255, 255, 255, alpha);
+
+        // Bar
+        const t : number = this.instantKillTimer/INSTANT_KILL_TIME;
+        const w : number = Math.round((1.0 - t)*WIDTH);
+
+        let shiftx : number = 0;
+        if (this.pos.y < -this.sprBody.height/2 &&
+            this.instantKillTimer >= INSTANT_KILL_TIME - INSTANT_KILL_WARNING_TIME) {
+            
+            shiftx = (Math.floor(this.instantKillTimer/4) % 2)*4;
+        }
+
+        canvas.drawBitmap(bmpHUD, Flip.None, dx, dy, 64 + shiftx, 18, 4, 12, w, 12);
+
+        // Background
+        canvas.drawBitmap(bmpHUD, Flip.None, dx + 2, dy, 76, 18, 4, 12, WIDTH - 4, 12);
+        canvas.drawBitmap(bmpHUD, Flip.None, dx - 2, dy, 72, 18, 4, 12);
+        canvas.drawBitmap(bmpHUD, Flip.None, dx + WIDTH - 2, dy, 80, 18, 4, 12);
+
+        // Icon
+        canvas.drawBitmap(bmpHUD, Flip.None, dx - 18, dy - 3, 48, 16, 16, 16);
+
+        canvas.toggleSilhouetteRendering(false);
+        canvas.setColor();
+    }
+
+
     protected die(globalSpeedFactor : number, event : ProgramEvent) : boolean {
         
         this.updateTimers(globalSpeedFactor, event);
@@ -519,16 +624,7 @@ export class Player extends GameObject {
             this.hurt(event);
         }
 
-        if (this.stats.getHealth() <= 0) {
-
-            // TODO: Move elsewhere, maybe?
-            event.audio.stopMusic();
-
-            this.dying = true;
-            this.deathTimer = 0;
-            this.hurtTimer = 0;
-
-            this.stats.stopScoreFlow();
+        if (this.checkDeath(event)) {
 
             return;
         }
@@ -701,13 +797,20 @@ export class Player extends GameObject {
     }
 
 
+    // TODO: Rename, this also draws the instant kill bar
     public drawArrow(canvas : Canvas) : void {
 
         const YOFF : number = 0;
         const AMPLITUDE : number = 2;
 
-        if (!this.canControl ||
-            this.pos.y > -this.sprBody.height/2)
+        if (this.dying ||
+            !this.exist ||
+            !this.canControl)
+            return;
+
+        this.drawInstantKillBar(canvas);
+
+        if (this.pos.y > -this.sprBody.height/2)
             return;
 
         const bmpPlayer : Bitmap | undefined = canvas.getBitmap("player");
