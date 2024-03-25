@@ -21,7 +21,8 @@ export class Program {
     constructor(ctx : AudioContext, type : Function, 
         canvasWidth? : number, canvasHeight? : number,
         preserveSquarePixels : boolean = true, dynamicCanvas : boolean = false,
-        maxCanvasWidth? : number, maxCanvasHeight? : number) {
+        maxCanvasWidth : number | undefined = undefined, 
+        maxCanvasHeight : number | undefined = undefined) {
 
         this.renderer = (new type.prototype.constructor (
             canvasWidth, canvasHeight, 

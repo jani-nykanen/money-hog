@@ -36,3 +36,6 @@ closure:
 	rm -rf ./temp
 	mkdir -p temp
 	java -jar $(CLOSURE_PATH) --js $(JS_FILES) --js_output_file temp/out.js --compilation_level ADVANCED_OPTIMIZATIONS --language_out ECMASCRIPT_2020
+
+
+compress: js closure

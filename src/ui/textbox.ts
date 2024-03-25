@@ -25,15 +25,15 @@ export class TextBox {
     private finishEvent : ((event : ProgramEvent) => void) | undefined = undefined;
 
 
-    constructor(fixedSize : boolean = false, fixedWidth? : number, fixedHeight? : number) {   
+    constructor(fixedSize : boolean = false, fixedWidth : number = 0, fixedHeight : number = 0) {   
 
         this.textBuffer = new Array<string> ();
 
         this.fixedSize = fixedSize;
         if (fixedSize) {
 
-            this.width = fixedWidth ?? 0;
-            this.height = fixedHeight ?? 0;
+            this.width = fixedWidth;
+            this.height = fixedHeight ;
         }
     }
 
@@ -56,7 +56,8 @@ export class TextBox {
     }
 
 
-    public activate(instant : boolean = false, finishEvent? : (event : ProgramEvent) => void) : void {
+    public activate(instant : boolean = false, 
+        finishEvent : (event : ProgramEvent) => void | undefined = undefined) : void {
 
         if (this.textBuffer.length == 0)
             return;
@@ -156,7 +157,7 @@ export class TextBox {
     public draw(canvas : Canvas, 
         x : number = 0, y : number = 0, yoff : number = 2,
         drawBox : boolean = true, drawIcon : boolean = true,
-        boxColors? : RGBA[]) : void {
+        boxColors : RGBA[] | undefined = undefined) : void {
 
         const BOX_OFFSET : number = 2;
         const SIDE_OFFSET : number = 2;

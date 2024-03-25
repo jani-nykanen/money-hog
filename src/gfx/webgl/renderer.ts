@@ -162,7 +162,8 @@ export class WebGLRenderer implements Renderer {
 
     constructor(canvasWidth : number | undefined, canvasHeight : number | undefined, 
         preserveSquarePixels : boolean = false,  dynamicCanvas : boolean = false,
-        maxCanvasWidth? : number, maxCanvasHeight? : number) {
+        maxCanvasWidth : number | undefined = undefined, 
+        maxCanvasHeight : number | undefined = undefined) {
 
         const [hcanvas, gl] : [HTMLCanvasElement, WebGLRenderingContext] = createCanvasElement(window.innerWidth, window.innerHeight);
         if (gl === null) {

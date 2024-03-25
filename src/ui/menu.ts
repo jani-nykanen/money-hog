@@ -20,7 +20,8 @@ export class Menu {
 
 
     constructor(buttons : Array<MenuButton>, makeActive : boolean = false,
-        fixedWidth? : number, fixedHeight? : number) {
+        fixedWidth : number | undefined = undefined, 
+        fixedHeight : number | undefined = undefined) {
 
         this.buttons = buttons.map((_, i) => buttons[i].clone());
     
