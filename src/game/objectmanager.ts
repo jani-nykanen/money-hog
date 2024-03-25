@@ -16,10 +16,10 @@ import { Missile } from "./missile.js";
 import { Difficulty } from "./difficulty.js";
 
 
-const INITIAL_MISSILE_TIME_MIN : number[] = [2400, 1800];
-const INITIAL_MISSILE_TIME_MAX : number[] = [4200, 3600];
+const INITIAL_MISSILE_TIME_MIN : number[] = [3000, 1800];
+const INITIAL_MISSILE_TIME_MAX : number[] = [4800, 3600];
+const MISSILE_TIME_MIN : number[][] = [[360, 180], [240, 120]];
 const MISSILE_TIME_MAX : number[][] = [[720, 300], [600, 240]];
-const MISSILE_TIME_MIN : number[][] = [[300, 180], [240, 120]];
 const MISSILE_COUNT_WEIGHTS_INITIAL : number[][] = [
     [1.0, 0.0, 0.0, 0.0],
     [0.75, 0.25, 0.0, 0.0]

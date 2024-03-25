@@ -25,15 +25,15 @@ const SHOW_CONTROLS_FADE_TIME : number = 30;
 const SPEED_UP_WAIT : number = 90;
 const SPEED_UP_INITIAL : number = 30;
 
-const MAX_WEIGHT_TIME : number[] = [60*60*7, 60*60*6];
+const MAX_WEIGHT_TIME : number[] = [60*60*8, 60*60*7];
 
 const SPEED_UP_TIMES : number[][] = [
 
-    [45, 120, 210, 300, 420],
-    [30, 75, 135, 210, 300]
+    [60, 150, 270, 420, 600],
+    [30, 120, 240, 390, 540]
 ];
 
-const TARGET_MONEY : number[] = [1000000, 5000000];
+const TARGET_MONEY : number[] = [1000000, 2000000];
 
 
 export class Game implements Scene {

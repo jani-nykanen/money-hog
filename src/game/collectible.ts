@@ -68,14 +68,14 @@ export class Collectible extends Spawnable<CollectibleType> {
 
         case CollectibleType.Coin:
 
-            player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, 10);
+            player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, 5);
             player.stats.addCoins(1);
             event.audio.playSample(event.assets.getSample("coin"), 0.70);
             break;
 
         case CollectibleType.Gem:
 
-            player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, 100);
+            player.addPoints(this.pos.x, this.pos.y - this.spr.height/2, 50);
             event.audio.playSample(event.assets.getSample("gem"), 0.70);
             break;
 

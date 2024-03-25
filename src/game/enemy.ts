@@ -49,7 +49,7 @@ export class Enemy extends GameObject {
     protected stompType : StompType = StompType.Stomp;
     protected bounceRecoverTimer : number = 0.0;
 
-    protected baseScore : number = 50;
+    protected baseScore : number = 25;
 
 
     constructor(x : number, y : number, referencePlatform : Platform) {

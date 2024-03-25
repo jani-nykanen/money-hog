@@ -783,6 +783,8 @@ export class Player extends GameObject {
         this.canDoubleJump = true;
         this.doubleJumping = false;
 
+        this.jumpTimer = 0;
+
         this.jumpInvincibilityTimer = JUMP_INVICIBILITY_TIME;
 
         if (createStars) {
@@ -802,6 +804,8 @@ export class Player extends GameObject {
         this.headButting = false;
         this.doubleJumping = false;
         this.canDoubleJump = true;
+
+        this.jumpTimer = 0;
 
         this.speed.x = dir.x*speed*HORIZONTAL_SCALE_FACTOR;
         this.speed.y = dir.y*speed;
@@ -827,6 +831,8 @@ export class Player extends GameObject {
         this.headButtTimer = 0.0;
         this.canDoubleJump = true;
         this.doubleJumping = false;
+
+        this.jumpTimer = 0;
 
         if (createStars) {
             

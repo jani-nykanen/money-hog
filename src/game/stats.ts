@@ -195,6 +195,9 @@ export class Stats {
     public shownScoreToString(maxLength : number) : string {
 
         const base : string = String(this.shownPoints);
+        if (base.length >= maxLength)   
+            return base;
+
         const undotted : string = "0".repeat(maxLength - base.length) + base;;
 /*
         let target : string = "";
