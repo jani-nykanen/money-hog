@@ -10,8 +10,8 @@ export class Particle implements ExistingObject {
     protected pos : Vector;
     protected speed : Vector;
 
-    protected timer : number;
-    protected timerSpeed : number;
+    protected timer : number = 0.0;
+    protected timerSpeed : number = 1.0;
 
     protected exist : boolean = false;
 

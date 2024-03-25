@@ -68,7 +68,7 @@ export class Platform implements ExistingObject {
 
     private exist : boolean = false;
 
-    private width : number;
+    private width : number = 0;
 
 
     constructor() {

@@ -8,7 +8,7 @@ import { Player } from "./player.js";
 export class Spawnable<T> extends GameObject {
 
 
-    protected type : T;
+    protected type : T | null = null; // null added to get rid of Closure warning
     protected dynamic : boolean = false;
 
 

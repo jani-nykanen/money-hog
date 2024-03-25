@@ -19,6 +19,9 @@ export class Tilemap {
         this.width = Number(root.getAttribute("width"));
         this.height = Number(root.getAttribute("height"));
 
+        this.tileLayers = new Map<string, number[]> ();
+        this.properties = new Map<string, string> ();
+
         this.parseLayerData(root);
         this.parseProperties(root);
     }
@@ -26,19 +29,16 @@ export class Tilemap {
 
     private parseLayerData(root : HTMLMapElement) : void {
 
-        this.tileLayers = new Map<string, number[]> ();
-
         const data : HTMLCollectionOf<Element> = root.getElementsByTagName("layer");
         if (data === null) {
 
             return;
         }
 
-        let content : Array<string> | undefined;
         for (let i = 0; i < data.length; ++ i) {
 
             // I guess this beats typecasting to any...
-            content = data[i].getElementsByTagName("data")[0]?.
+            const content : Array<string> | undefined = data[i].getElementsByTagName("data")[0]?.
                 childNodes[0]?.
                 nodeValue?.
                 replace(/(\r\n|\n|\r)/gm, "")?.
@@ -52,8 +52,6 @@ export class Tilemap {
 
 
     private parseProperties(root : HTMLMapElement) : void {
-
-        this.properties = new Map<string, string> ();
 
         const prop : Element = root.getElementsByTagName("properties")[0];
         if (prop !== undefined) {

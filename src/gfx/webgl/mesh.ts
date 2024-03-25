@@ -15,7 +15,7 @@ export class Mesh {
     constructor(gl : WebGLRenderingContext, 
             vertices : Float32Array,     
             indices : Uint16Array,
-            textureCoordinates? : Float32Array) {
+            textureCoordinates : Float32Array | undefined = undefined) {
 
         this.elementCount = indices.length;
 

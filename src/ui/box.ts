@@ -9,7 +9,9 @@ const DEFAULT_COLORS : RGBA[] = [
 ];
 
 
-export const drawUIBox = (canvas : Canvas, x : number, y : number, w : number, h : number, colors? : RGBA[]) : void => {
+export const drawUIBox = (canvas : Canvas, 
+    x : number, y : number, w : number, h : number, 
+    colors : RGBA[] | undefined = undefined) : void => {
 
     colors = colors ?? DEFAULT_COLORS;
 

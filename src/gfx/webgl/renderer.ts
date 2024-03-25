@@ -71,7 +71,7 @@ const initGL = (gl : WebGLRenderingContext) : void => {
 }
 
 
-export enum ShaderType {
+export const enum ShaderType {
 
     Textured = 0,
     NoTexture = 1,
