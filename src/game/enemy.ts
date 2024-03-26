@@ -11,7 +11,7 @@ import { Player } from "./player.js";
 const FLATTEN_ANIMATION_TIME : number = 10;
 const FLATTEN_WAIT : number = 30;
 
-const KNOCK_VOLUME : number = 0.70;
+const KNOCK_VOLUME : number = 0.60;
 
 
 export const enum StompType {
@@ -107,7 +107,7 @@ export class Enemy extends GameObject {
                     this.bounceEvent?.(event);
                     this.addPoints(player);
 
-                    event.audio.playSample(event.assets.getSample("bounce"), 0.60);
+                    event.audio.playSample(event.assets.getSample("bounce"), 0.55);
                 }
                 else {
 
@@ -116,7 +116,7 @@ export class Enemy extends GameObject {
                 return false;
             }
 
-            event.audio.playSample(event.assets.getSample("stomp"), 0.70);
+            event.audio.playSample(event.assets.getSample("stomp"), 0.60);
 
             this.dying = true;
             this.flattenedTimer = FLATTEN_ANIMATION_TIME + FLATTEN_WAIT;

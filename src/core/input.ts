@@ -60,6 +60,15 @@ export class Input {
         this.addAction("up",    ["ArrowUp"],    [12]);
         this.addAction("left",  ["ArrowLeft"],  [14]);
         this.addAction("down",  ["ArrowDown"],  [13]);
+
+        window.addEventListener("mousedown", () => {
+
+            window.focus();
+        });
+        window.addEventListener("mousemove", () => {
+
+            window.focus();
+        })
     }
 
 

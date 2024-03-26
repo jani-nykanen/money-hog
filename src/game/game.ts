@@ -159,7 +159,7 @@ export class Game implements Scene {
                 if (this.appearTimer >= APPEAR_TIME) {
 
                     this.appearTimer = APPEAR_TIME;
-                    event.audio.playSample(event.assets.getSample("ready"), 0.50); 
+                    event.audio.playSample(event.assets.getSample("ready"), 0.45); 
                 }
             }
 
@@ -168,7 +168,7 @@ export class Game implements Scene {
                 this.readyGoPhase = 1;
                 this.goTimer = GO_TIME;
 
-                event.audio.playSample(event.assets.getSample("go"), 0.50); 
+                event.audio.playSample(event.assets.getSample("go"), 0.45); 
             }
         }
         else if (this.readyGoPhase == 1) {
@@ -288,6 +288,8 @@ export class Game implements Scene {
 
             this.endingTimer -= event.tick;
             if (this.endingTimer <= 0.0) {
+
+                setRecordScore(this.targetScore);
 
                 event.transition.activate(true, TransitionType.Waves, 1.0/120.0, event,
                     (event : ProgramEvent) => {
