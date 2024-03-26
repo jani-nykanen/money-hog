@@ -2,7 +2,7 @@
 
 ...is an action arcade platformer thing for web. It is completely written in TypeScript, using only standard web technologies like WebGL and WebAudio, no additional frameworks or libraries were used.
 
-[The game can be played on Itch.io](https://jani-nykanen.itch.io/another-pig-game?secret=5npgzpyhkup2tMXmIHL2NCXM0I)
+[The game can be played on Itch.io](https://jani-nykanen.itch.io/money-hog)
 
 
 -----
